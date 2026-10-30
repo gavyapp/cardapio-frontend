@@ -1,0 +1,4 @@
+#!/bin/sh
+# Avisa sobre o padrão de branch e mensagem (ver CLAUDE.md). Nunca bloqueia o commit.
+node scripts/git/commit-msg.mjs "$1" || true
+exit 0
