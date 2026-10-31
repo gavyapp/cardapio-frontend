@@ -24,6 +24,8 @@ npm run db:link       # pede a senha do banco (Supabase > Project Settings > Dat
 npm run db:types      # gera src/lib/database.types.ts a partir do banco linkado
 ```
 
+O código acessa o banco só por `src/lib/data/` (ver `docs/adr/0003-camada-de-dados.md`).
+
 Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR; passo a passo em `docs/adr/0001-banco-so-muda-por-migration.md`. Testes do banco em `supabase/tests/database/` (`npx supabase test db`); padrão em `docs/adr/0002-testes-do-banco.md`. O GitHub Actions roda esses testes em todo PR que mexe em `supabase/` (workflow "Testes do banco").
 
 A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia no projeto de dev, criado pelo dashboard. Lá ela não deve rodar de novo, só ser marcada como aplicada (uma vez):
@@ -46,4 +48,4 @@ Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` j�
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.
 
-Variáveis de ambiente (Production e Preview): `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+Variáveis de ambiente (Production e Preview): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `SUPABASE_SECRET_KEY` (esta sem `NEXT_PUBLIC_`, nunca vai para o navegador).
