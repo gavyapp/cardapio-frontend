@@ -26,6 +26,12 @@ npm run db:types      # gera src/lib/database.types.ts a partir do banco linkado
 
 Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR.
 
+A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia no projeto de dev, criado pelo dashboard. Lá ela não deve rodar de novo, só ser marcada como aplicada (uma vez):
+
+```bash
+npx supabase migration repair --status applied 20261031013000
+```
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.
