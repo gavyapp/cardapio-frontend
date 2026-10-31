@@ -6,6 +6,7 @@ set local search_path = public, extensions;
 
 select plan(5);
 
+-- Dado: pedido novo (RECEBIDO) numa loja com um funcionário logado
 insert into auth.users (id, email) values
   ('a0000000-0000-0000-0000-000000000002', 'staff-a@teste.local');
 insert into public.profiles (id, email) values
@@ -27,7 +28,6 @@ select (public.create_order(
 ) ->> 'id')::uuid as id;
 grant select on pedido to authenticated;
 
--- Funcionário da loja, logado.
 set local role authenticated;
 do $$ begin
   perform set_config('request.jwt.claims', '{"sub": "a0000000-0000-0000-0000-000000000002", "role": "authenticated"}', true);
@@ -35,23 +35,23 @@ end $$;
 
 select lives_ok(
   $$ select public.update_order_status((select id from pedido), 'EM_PREPARO') $$,
-  'funcionário aceita o pedido');
+  'funcionário aceita o pedido → sem erro');
 select results_eq(
   $$ select from_status::text, to_status::text from public.order_events
      where order_id = (select id from pedido) and to_status = 'EM_PREPARO' $$,
   $$ values ('RECEBIDO', 'EM_PREPARO') $$,
-  'evento sai de RECEBIDO para EM_PREPARO');
+  'pedido aceito → evento de RECEBIDO para EM_PREPARO');
 select is(
   (public.update_order_status((select id from pedido), 'EM_PREPARO', null, true)).is_paid,
-  true, 'marca como pago sem mudar o status');
+  true, 'marcar como pago no mesmo status → pago, status mantido');
 
 select throws_ok(
   $$ update public.orders set total = 0 where id = (select id from pedido) $$,
-  '42501', null, 'membro não altera pedido direto na tabela');
+  '42501', null, 'UPDATE direto em orders → negado');
 select throws_ok(
   $$ insert into public.order_events (store_id, order_id, to_status)
      select '5a000000-0000-0000-0000-000000000001', id, 'CONCLUIDO' from pedido $$,
-  '42501', null, 'membro não grava evento direto');
+  '42501', null, 'INSERT direto em order_events → negado');
 
 select * from finish();
 rollback;
