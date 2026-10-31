@@ -10,6 +10,10 @@ cp .env.example .env.local   # preencha URL e publishable key do Supabase de dev
 npm run dev
 ```
 
+## Git
+
+Branches, commits e PRs seguem o padrão descrito em `CLAUDE.md` (seção "Padrão git"). O `npm install` ativa um hook que avisa quando algo foge do padrão, sem bloquear.
+
 ## Supabase
 
 A CLI vem como dependência de dev (`npx supabase ...`). Projeto de dev: `evvisoyaehtvgzvqapmv`.
