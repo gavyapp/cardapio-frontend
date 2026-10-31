@@ -1,4 +1,4 @@
--- B5: funções internas fora da API.
+-- Funções internas fora da API.
 --
 -- Tudo que está no schema public com EXECUTE liberado vira endpoint em
 -- /rest/v1/rpc/<nome>. As funções abaixo só servem às policies e ao trigger
@@ -35,7 +35,7 @@ alter function public.set_updated_at() set search_path = '';
 
 -- O corpo de mark_order_read chama is_store_member pelo nome, então precisa
 -- apontar para o novo schema. update_order_status é recriada na migration
--- seguinte (B2) já com o nome novo.
+-- seguinte, já com o nome novo.
 create or replace function public.mark_order_read(p_order_id uuid)
  returns void
  language sql

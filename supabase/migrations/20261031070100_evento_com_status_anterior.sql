@@ -1,10 +1,10 @@
--- B2: o evento de mudança de status gravava from_status igual ao status novo,
+-- O evento de mudança de status gravava from_status igual ao status novo,
 -- porque lia v_order.status depois do UPDATE. Agora guarda o status anterior
 -- antes de atualizar.
 --
 -- Também passa a aceitar só marcar como pago (p_status igual ao atual e
 -- p_is_paid informado). Antes isso era feito por UPDATE direto em orders,
--- que a migration seguinte (B3) fecha.
+-- que a migration seguinte fecha.
 
 create or replace function public.update_order_status(p_order_id uuid, p_status order_status, p_note text default null::text, p_is_paid boolean default null::boolean)
  returns orders

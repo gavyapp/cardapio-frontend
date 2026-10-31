@@ -1,10 +1,10 @@
--- B1 e B6: regras que faltavam no create_order.
+-- Regras que faltavam no create_order.
 --
--- B1: a loja aceitava pedido fechada, chamando a API direto. A regra de
--- aberto/fechado fica na função is_store_open, que o cardápio (T10) também
--- usa para mostrar o status.
+-- A loja aceitava pedido fechada, chamando a API direto. A regra de
+-- aberto/fechado fica na função is_store_open, que o cardápio também usa
+-- para mostrar o status.
 --
--- B6: create_order passa a recusar produto de categoria desligada,
+-- create_order também passa a recusar produto de categoria desligada,
 -- complemento de grupo excluído, forma de pagamento que a loja não aceita
 -- (settings.payment_methods, lista de 'DINHEIRO' | 'CARTAO' | 'PIX'; sem a
 -- chave, aceita todas) e troco menor que o total.
@@ -94,7 +94,7 @@ begin
     raise exception 'Loja indisponível' using errcode = 'P0001';
   end if;
 
-  -- B1: loja fechada não recebe pedido
+  -- Loja fechada não recebe pedido
   if not public.is_store_open(p_store_id) then
     raise exception 'Loja fechada' using errcode = 'P0001';
   end if;
@@ -108,7 +108,7 @@ begin
   if p_mode = 'ENTREGA' and p_address is null then
     raise exception 'Endereço é obrigatório para entrega' using errcode = 'P0001';
   end if;
-  -- B6: forma de pagamento aceita pela loja (sem a chave, aceita todas)
+  -- Forma de pagamento aceita pela loja (sem a chave, aceita todas)
   if jsonb_typeof(v_store.settings -> 'payment_methods') = 'array'
      and not (v_store.settings -> 'payment_methods') ? p_payment_method::text then
     raise exception 'Forma de pagamento não aceita pela loja' using errcode = 'P0001';
@@ -149,7 +149,7 @@ begin
       raise exception 'Quantidade inválida' using errcode = 'P0001';
     end if;
 
-    -- B6: categoria desligada ou excluída também deixa o produto indisponível
+    -- Categoria desligada ou excluída também deixa o produto indisponível
     select p.* into v_product
     from public.products p
     join public.categories cat on cat.id = p.category_id
@@ -183,7 +183,7 @@ begin
       join public.product_complement_groups pcg
         on pcg.complement_group_id = c.complement_group_id
        and pcg.product_id = v_product.id
-      -- B6: grupo excluído não oferece complemento
+      -- Grupo excluído não oferece complemento
       join public.complement_groups g
         on g.id = c.complement_group_id
        and g.deleted_at is null
@@ -257,7 +257,7 @@ begin
   -- Promoções: regras ainda não definidas; desconto fica 0 no MVP.
   v_total := v_subtotal + v_delivery_fee - v_discount;
 
-  -- B6: troco para menos que o total não fecha a conta
+  -- Troco para menos que o total não fecha a conta
   if p_change_for is not null and p_change_for < v_total then
     raise exception 'Troco deve ser maior ou igual ao total (R$ %)', v_total using errcode = 'P0001';
   end if;

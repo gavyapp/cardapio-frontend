@@ -1,4 +1,4 @@
--- B3: a policy "members update orders" deixava qualquer membro mudar status,
+-- A policy "members update orders" deixava qualquer membro mudar status,
 -- total ou itens do pedido direto na tabela, sem passar pelas regras de
 -- transição e sem gravar evento. Sem ela, pedido só muda pelas funções
 -- update_order_status e mark_order_read.

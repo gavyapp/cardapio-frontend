@@ -1,4 +1,4 @@
--- B4: a policy "members manage stores" valia para tudo (insert, update,
+-- A policy "members manage stores" valia para tudo (insert, update,
 -- delete) e em todas as colunas. Qualquer membro podia excluir a loja ou
 -- mudar slug (quebra os QR codes impressos), plan, active e
 -- next_order_number, que são da equipe.
