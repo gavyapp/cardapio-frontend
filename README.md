@@ -29,7 +29,7 @@ Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migr
 A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia no projeto de dev, criado pelo dashboard. Lá ela não deve rodar de novo, só ser marcada como aplicada (uma vez):
 
 ```bash
-npx supabase migration repair --status applied 20261031013000
+npx supabase migration repair --status applied 20261031013000 --linked
 ```
 
 ## Vercel
