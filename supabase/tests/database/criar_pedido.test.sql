@@ -1,10 +1,11 @@
--- Validações do create_order: produto de categoria desligada, complemento de
--- grupo excluído, forma de pagamento aceita pela loja e troco.
+-- Validações do create_order: dados obrigatórios, produto disponível e da
+-- própria loja, complemento de grupo excluído, forma de pagamento aceita pela
+-- loja e troco.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(6);
+select plan(14);
 
 -- Dado: loja aberta que aceita PIX e dinheiro, com um Burger de R$ 10
 -- numa categoria ativa e outro produto numa categoria desligada
@@ -16,6 +17,17 @@ insert into public.categories (id, store_id, name, is_available) values
 insert into public.products (id, store_id, category_id, name, price) values
   ('9a000000-0000-0000-0000-000000000001', '5a000000-0000-0000-0000-000000000001', 'ca000000-0000-0000-0000-000000000001', 'Burger', 10),
   ('9a000000-0000-0000-0000-000000000002', '5a000000-0000-0000-0000-000000000001', 'ca000000-0000-0000-0000-000000000002', 'Escondido', 10);
+-- Dado: produto esgotado na mesma loja
+insert into public.products (id, store_id, category_id, name, price, is_available) values
+  ('9a000000-0000-0000-0000-000000000003', '5a000000-0000-0000-0000-000000000001', 'ca000000-0000-0000-0000-000000000001', 'Esgotado', 10, false);
+-- Dado: loja B aberta com o próprio produto, e loja desativada
+insert into public.stores (id, slug, name, is_open_override, active) values
+  ('5b000000-0000-0000-0000-000000000001', 'teste-loja-b', 'Loja B', true, true),
+  ('5d000000-0000-0000-0000-000000000001', 'teste-loja-desativada', 'Loja D', true, false);
+insert into public.categories (id, store_id, name) values
+  ('cb000000-0000-0000-0000-000000000001', '5b000000-0000-0000-0000-000000000001', 'Lanches B');
+insert into public.products (id, store_id, category_id, name, price) values
+  ('9b000000-0000-0000-0000-000000000001', '5b000000-0000-0000-0000-000000000001', 'cb000000-0000-0000-0000-000000000001', 'Burger B', 10);
 -- Dado: grupo de complementos excluído, ainda ligado ao Burger
 insert into public.complement_groups (id, store_id, name, deleted_at) values
   ('6a000000-0000-0000-0000-000000000001', '5a000000-0000-0000-0000-000000000001', 'Antigo', now());
@@ -24,6 +36,37 @@ insert into public.complements (id, store_id, complement_group_id, name, price) 
 insert into public.product_complement_groups (store_id, product_id, complement_group_id) values
   ('5a000000-0000-0000-0000-000000000001', '9a000000-0000-0000-0000-000000000001', '6a000000-0000-0000-0000-000000000001');
 
+select throws_ok(
+  $$ select public.create_order('5d000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000001"}]') $$,
+  'P0001', 'Loja indisponível', 'loja desativada → recusado');
+select throws_ok(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX', '[]') $$,
+  'P0001', 'Pedido sem itens', 'pedido sem itens → recusado');
+select throws_ok(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', '  ', '11999990000', 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000001"}]') $$,
+  'P0001', 'Nome e telefone são obrigatórios', 'nome em branco → recusado');
+select throws_ok(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', null, 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000001"}]') $$,
+  'P0001', 'Nome e telefone são obrigatórios', 'sem telefone → recusado');
+select throws_ok(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'ENTREGA', 'Cliente', '11999990000', 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000001"}]') $$,
+  'P0001', 'Endereço é obrigatório para entrega', 'entrega sem endereço → recusado');
+select throws_ok(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000001", "quantity": 0}]') $$,
+  'P0001', 'Quantidade inválida', 'quantidade 0 → recusado');
+select throws_like(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX',
+       '[{"product_id": "9a000000-0000-0000-0000-000000000003"}]') $$,
+  'Produto indisponível%', 'produto esgotado → recusado');
+select throws_like(
+  $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX',
+       '[{"product_id": "9b000000-0000-0000-0000-000000000001"}]') $$,
+  'Produto indisponível%', 'produto da loja B num pedido da loja A → recusado');
 select throws_like(
   $$ select public.create_order('5a000000-0000-0000-0000-000000000001', 'RETIRADA', 'Cliente', '11999990000', 'PIX',
        '[{"product_id": "9a000000-0000-0000-0000-000000000002"}]') $$,
