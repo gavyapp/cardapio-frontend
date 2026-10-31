@@ -2,6 +2,8 @@
 
 Next.js + Supabase + Vercel. Setup e comandos no `README.md`.
 
+Decisões de arquitetura ficam em `docs/adr/`. Banco: só muda por migration, e migration aplicada não se edita (ADR 0001).
+
 ## Padrão git
 
 Fluxo: `main` + branches curtas, uma por task, com merge squash via PR.
