@@ -32,6 +32,16 @@ A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia 
 npx supabase migration repair --status applied 20261031013000 --linked
 ```
 
+### Dados de exemplo
+
+`supabase/seed.sql` cria a Stack Burguer com o cardápio real (categorias, produtos, complementos e horários) e um login do painel: `dono@stackburguer.test` / `stack1234`. Roda sozinho no `supabase db reset` local. No projeto de dev, rode uma vez a partir da main:
+
+```bash
+npx supabase db push --linked --include-seed
+```
+
+Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` já existe, o seed não faz nada.
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.
