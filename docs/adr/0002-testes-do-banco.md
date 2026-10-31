@@ -17,7 +17,7 @@ Testes em SQL com pgTAP, em `supabase/tests/database/`. Cada arquivo roda dentro
 npx supabase test db
 ```
 
-Precisa do Supabase local (Docker). O CI deve rodar os mesmos testes a cada PR.
+Localmente precisa do Supabase local (Docker). No GitHub, o workflow `.github/workflows/testes-do-banco.yml` sobe um Supabase do zero, aplica todas as migrations e roda os mesmos testes em todo PR que mexe em `supabase/`.
 
 ### Um arquivo por assunto
 

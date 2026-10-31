@@ -1,0 +1,43 @@
+# Sobe um Supabase local (Docker do próprio runner), aplica todas as
+# migrations do zero e roda os testes pgTAP de supabase/tests/database.
+# Roda em todo PR que mexe no banco e a cada merge na main.
+name: Testes do banco
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/testes-do-banco.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+  workflow_dispatch:
+
+concurrency:
+  group: testes-do-banco-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pgtap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          # Mesma versão do devDependency em package.json
+          version: 2.122.0
+
+      # Só o que os testes precisam: banco, auth e storage (criam os
+      # schemas auth e storage usados pelas migrations).
+      - name: Subir Supabase local e aplicar migrations
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Rodar testes pgTAP
+        run: supabase test db
+
+      - name: Parar Supabase
+        if: always()
+        run: supabase stop --no-backup
