@@ -24,7 +24,7 @@ npm run db:link       # pede a senha do banco (Supabase > Project Settings > Dat
 npm run db:types      # gera src/lib/database.types.ts a partir do banco linkado
 ```
 
-Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR; passo a passo em `docs/adr/0001-banco-so-muda-por-migration.md`.
+Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR; passo a passo em `docs/adr/0001-banco-so-muda-por-migration.md`. Testes do banco em `supabase/tests/database/` (`npx supabase test db`); padrão em `docs/adr/0002-testes-do-banco.md`.
 
 A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia no projeto de dev, criado pelo dashboard. Lá ela não deve rodar de novo, só ser marcada como aplicada (uma vez):
 

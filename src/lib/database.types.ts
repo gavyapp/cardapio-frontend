@@ -526,6 +526,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_available: boolean
+          is_suggested: boolean
           name: string
           price: number
           sort_order: number
@@ -541,6 +542,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_available?: boolean
+          is_suggested?: boolean
           name: string
           price: number
           sort_order?: number
@@ -556,6 +558,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_available?: boolean
+          is_suggested?: boolean
           name?: string
           price?: number
           sort_order?: number
@@ -852,7 +855,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      auth_store_ids: { Args: never; Returns: string[] }
       create_order: {
         Args: {
           p_address?: Json
@@ -868,7 +870,10 @@ export type Database = {
         Returns: Json
       }
       get_order_by_token: { Args: { p_token: string }; Returns: Json }
-      is_store_member: { Args: { p_store_id: string }; Returns: boolean }
+      is_store_open: {
+        Args: { p_at?: string; p_store_id: string }
+        Returns: boolean
+      }
       mark_order_read: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: { p_store_id: string }; Returns: number }
       update_order_status: {
