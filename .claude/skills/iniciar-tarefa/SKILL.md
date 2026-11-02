@@ -6,6 +6,7 @@ description: Começa uma tarefa neste repo. Atualiza a main, cria a branch no pa
 # Iniciar tarefa
 
 Entrada (argumento ou conversa), uma destas:
+
 - número da issue: `12`, `#12` ou `T12` (issue N = task TN);
 - tipo + descrição, para trabalho sem issue: `fix "header quebrado no mobile"`;
 - nada: pergunte qual a task ou o que vai ser feito.
@@ -17,11 +18,13 @@ Padrão de branch, tipos e mensagens: seção "Padrão git" do `CLAUDE.md`.
 1. **Alterações pendentes.** Rode `git status --porcelain`. Se houver algo, mostre o resumo e pergunte: levar para a nova branch, guardar com `git stash`, ou parar. Não descarte nada.
 
 2. **Atualizar a base.** A base é `main`, salvo se o usuário pedir outra.
+
    ```bash
    git fetch origin main
    git switch main
    git pull --ff-only origin main
    ```
+
    Se o `pull --ff-only` falhar porque a main local tem commits que não estão no remoto, avise e pergunte o que fazer antes de seguir. Se a opção escolhida no passo 1 foi levar as alterações, crie a branch a partir de `origin/main` sem trocar para a main: `git switch -c <branch> origin/main`.
 
 3. **Ler a task.** Com número de issue, busque título, labels e responsáveis com `gh issue view N --json title,labels,assignees,state` (ou as ferramentas do GitHub MCP, se o `gh` não estiver disponível). Se a issue estiver fechada, avise e confirme se é essa mesma.
@@ -32,6 +35,7 @@ Padrão de branch, tipos e mensagens: seção "Padrão git" do `CLAUDE.md`.
 
 4. **Criar a branch.** `tipo/numero-descricao` (ex.: `feat/12-cardapio-publico`), ou `tipo/descricao` sem task.
    Se a branch já existir, local ou no remoto, troque para ela em vez de criar outra.
+
    ```bash
    git switch -c feat/12-cardapio-publico
    ```

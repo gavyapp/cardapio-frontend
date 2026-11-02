@@ -19,7 +19,8 @@ export default function Home() {
             Cardápio <Badge>shadcn/ui</Badge>
           </CardTitle>
           <CardDescription>
-            Projeto Next.js configurado com Tailwind v4 e shadcn/ui.
+            Projeto Next.js configurado com Tailwind v4 e
+            shadcn/ui.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
