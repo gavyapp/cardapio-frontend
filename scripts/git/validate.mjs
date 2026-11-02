@@ -2,7 +2,7 @@
 // Usado pelo hook do git (.githooks/commit-msg) e pelo hook do Claude Code.
 import { execSync } from "node:child_process";
 
-export const TIPOS = [
+export const TYPES = [
   "feat",
   "fix",
   "refactor",
@@ -12,16 +12,16 @@ export const TIPOS = [
 ];
 
 const BRANCH_RE = new RegExp(
-  `^(${TIPOS.join("|")})/(?:(\\d+)-)?[a-z0-9][a-z0-9-]*$`,
+  `^(${TYPES.join("|")})/(?:(\\d+)-)?[a-z0-9][a-z0-9-]*$`,
 );
 const MSG_RE = new RegExp(
-  `^(${TIPOS.join("|")})(\\([^)]+\\))?!?: \\S`,
+  `^(${TYPES.join("|")})(\\([^)]+\\))?!?: \\S`,
 );
 // Mensagens geradas pelo próprio git, que não seguem o padrão.
-const MSG_IGNORADA_RE =
+const IGNORED_MSG_RE =
   /^(Merge |Revert |fixup! |squash! |amend! )/;
 
-export function branchAtual() {
+export function currentBranch() {
   try {
     return execSync("git branch --show-current", {
       encoding: "utf8",
@@ -33,11 +33,11 @@ export function branchAtual() {
 }
 
 // Número da task a partir do nome da branch (feat/12-carrinho -> 12).
-export function taskDaBranch(branch) {
+export function taskFromBranch(branch) {
   return BRANCH_RE.exec(branch)?.[2] ?? null;
 }
 
-export function validarBranch(branch) {
+export function validateBranch(branch) {
   if (!branch) return []; // HEAD solto (rebase, checkout de commit)
   if (branch === "main") {
     return [
@@ -46,10 +46,10 @@ export function validarBranch(branch) {
   }
   if (!BRANCH_RE.test(branch)) {
     return [
-      `Branch "${branch}" fora do padrão tipo/numero-descricao (tipos: ${TIPOS.join(", ")}).`,
+      `Branch "${branch}" fora do padrão tipo/numero-descricao (tipos: ${TYPES.join(", ")}).`,
     ];
   }
-  if (!taskDaBranch(branch)) {
+  if (!taskFromBranch(branch)) {
     return [
       "Branch sem task vinculada. Se existir uma issue, inclua o número: tipo/numero-descricao.",
     ];
@@ -57,23 +57,23 @@ export function validarBranch(branch) {
   return [];
 }
 
-export function validarMensagem(mensagem) {
-  const titulo = mensagem
+export function validateMessage(message) {
+  const title = message
     .split("\n")
-    .find((linha) => linha.trim() && !linha.startsWith("#"))
+    .find((line) => line.trim() && !line.startsWith("#"))
     ?.trim();
-  if (!titulo || MSG_IGNORADA_RE.test(titulo)) return [];
+  if (!title || IGNORED_MSG_RE.test(title)) return [];
 
-  const avisos = [];
-  if (!MSG_RE.test(titulo)) {
-    avisos.push(
-      `Mensagem fora do padrão "tipo: descrição" (ex.: "feat: adiciona carrinho"). Tipos: ${TIPOS.join(", ")}.`,
+  const warnings = [];
+  if (!MSG_RE.test(title)) {
+    warnings.push(
+      `Mensagem fora do padrão "tipo: descrição" (ex.: "feat: adiciona carrinho"). Tipos: ${TYPES.join(", ")}.`,
     );
   }
-  if (titulo.length > 72) {
-    avisos.push(
-      `Título com ${titulo.length} caracteres. Prefira até 72.`,
+  if (title.length > 72) {
+    warnings.push(
+      `Título com ${title.length} caracteres. Prefira até 72.`,
     );
   }
-  return avisos;
+  return warnings;
 }

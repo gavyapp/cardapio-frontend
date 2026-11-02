@@ -9,15 +9,15 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/database.types";
 
-import { urlDoSupabase } from "./env";
+import { supabaseUrl } from "./env";
 
-export function criarClienteAdministrador() {
-  const chaveSecreta = process.env.SUPABASE_SECRET_KEY;
-  if (!chaveSecreta) {
+export function createAdminSupabase() {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) {
     throw new Error("Variável de ambiente SUPABASE_SECRET_KEY não definida (veja .env.example).");
   }
 
-  return createClient<Database>(urlDoSupabase(), chaveSecreta, {
+  return createClient<Database>(supabaseUrl(), secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

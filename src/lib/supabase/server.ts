@@ -8,19 +8,19 @@ import { cookies } from "next/headers";
 
 import type { Database } from "@/lib/database.types";
 
-import { chavePublica, urlDoSupabase } from "./env";
+import { publishableKey, supabaseUrl } from "./env";
 
-export async function criarClienteServidor() {
+export async function createServerSupabase() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(urlDoSupabase(), chavePublica(), {
+  return createServerClient<Database>(supabaseUrl(), publishableKey(), {
     cookies: {
       getAll() {
         return cookieStore.getAll();
       },
-      setAll(cookiesParaGravar) {
+      setAll(cookiesToSet) {
         try {
-          for (const { name, value, options } of cookiesParaGravar) {
+          for (const { name, value, options } of cookiesToSet) {
             cookieStore.set(name, value, options);
           }
         } catch {
