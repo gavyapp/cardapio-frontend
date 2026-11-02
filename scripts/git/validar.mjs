@@ -2,12 +2,24 @@
 // Usado pelo hook do git (.githooks/commit-msg) e pelo hook do Claude Code.
 import { execSync } from "node:child_process";
 
-export const TIPOS = ["feat", "fix", "refactor", "chore", "docs", "test"];
+export const TIPOS = [
+  "feat",
+  "fix",
+  "refactor",
+  "chore",
+  "docs",
+  "test",
+];
 
-const BRANCH_RE = new RegExp(`^(${TIPOS.join("|")})/(?:(\\d+)-)?[a-z0-9][a-z0-9-]*$`);
-const MSG_RE = new RegExp(`^(${TIPOS.join("|")})(\\([^)]+\\))?!?: \\S`);
+const BRANCH_RE = new RegExp(
+  `^(${TIPOS.join("|")})/(?:(\\d+)-)?[a-z0-9][a-z0-9-]*$`,
+);
+const MSG_RE = new RegExp(
+  `^(${TIPOS.join("|")})(\\([^)]+\\))?!?: \\S`,
+);
 // Mensagens geradas pelo próprio git, que não seguem o padrão.
-const MSG_IGNORADA_RE = /^(Merge |Revert |fixup! |squash! |amend! )/;
+const MSG_IGNORADA_RE =
+  /^(Merge |Revert |fixup! |squash! |amend! )/;
 
 export function branchAtual() {
   try {
@@ -59,7 +71,9 @@ export function validarMensagem(mensagem) {
     );
   }
   if (titulo.length > 72) {
-    avisos.push(`Título com ${titulo.length} caracteres. Prefira até 72.`);
+    avisos.push(
+      `Título com ${titulo.length} caracteres. Prefira até 72.`,
+    );
   }
   return avisos;
 }

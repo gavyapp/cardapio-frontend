@@ -2,17 +2,29 @@
 // Problemas de padrão: segura o commit uma vez para o Claude corrigir ou confirmar com o usuário.
 // Para seguir mesmo assim, o Claude repete o comando com PADRAO_GIT_OK=1 na frente.
 import { readFileSync } from "node:fs";
-import { branchAtual, validarBranch, validarMensagem } from "./validar.mjs";
+import {
+  branchAtual,
+  validarBranch,
+  validarMensagem,
+} from "./validar.mjs";
 
 const entrada = JSON.parse(readFileSync(0, "utf8"));
 const comando = entrada.tool_input?.command ?? "";
 
-if (!/\bgit\s+commit\b/.test(comando) || /\bPADRAO_GIT_OK=1\b/.test(comando)) process.exit(0);
+if (
+  !/\bgit\s+commit\b/.test(comando) ||
+  /\bPADRAO_GIT_OK=1\b/.test(comando)
+)
+  process.exit(0);
 
 function mensagemDoComando(cmd) {
-  const heredoc = /<<-?\s*['"]?(\w+)['"]?\s*\n([\s\S]*?)\n\s*\1\b/.exec(cmd);
+  const heredoc =
+    /<<-?\s*['"]?(\w+)['"]?\s*\n([\s\S]*?)\n\s*\1\b/.exec(
+      cmd,
+    );
   if (heredoc) return heredoc[2];
-  const arquivo = /(?:-F|--file)[\s=]+(['"]?)([^\s'"]+)\1/.exec(cmd);
+  const arquivo =
+    /(?:-F|--file)[\s=]+(['"]?)([^\s'"]+)\1/.exec(cmd);
   if (arquivo) {
     try {
       return readFileSync(arquivo[2], "utf8");
@@ -20,18 +32,28 @@ function mensagemDoComando(cmd) {
       // arquivo ilegível: valida só a branch
     }
   }
-  const inline = /(?:-m|--message)[\s=]+(?:"((?:[^"\\]|\\.)*)"|'([^']*)'|(\S+))/.exec(cmd);
-  return inline ? (inline[1] ?? inline[2] ?? inline[3]) : null;
+  const inline =
+    /(?:-m|--message)[\s=]+(?:"((?:[^"\\]|\\.)*)"|'([^']*)'|(\S+))/.exec(
+      cmd,
+    );
+  return inline
+    ? (inline[1] ?? inline[2] ?? inline[3])
+    : null;
 }
 
 const branch = branchAtual();
 const mensagem = mensagemDoComando(comando);
-const avisos = [...validarBranch(branch), ...(mensagem ? validarMensagem(mensagem) : [])];
+const avisos = [
+  ...validarBranch(branch),
+  ...(mensagem ? validarMensagem(mensagem) : []),
+];
 
 if (!avisos.length) process.exit(0);
 
 // Falta de task sozinha não segura o commit: só lembra.
-const soFaltaTask = avisos.length === 1 && avisos[0].startsWith("Branch sem task");
+const soFaltaTask =
+  avisos.length === 1 &&
+  avisos[0].startsWith("Branch sem task");
 const lista = avisos.map((a) => `- ${a}`).join("\n");
 
 const saida = soFaltaTask

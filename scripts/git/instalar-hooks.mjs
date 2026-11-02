@@ -2,7 +2,9 @@
 import { execSync } from "node:child_process";
 
 try {
-  execSync("git config core.hooksPath .githooks", { stdio: "ignore" });
+  execSync("git config core.hooksPath .githooks", {
+    stdio: "ignore",
+  });
 } catch {
   // sem repositório git: nada a fazer
 }
