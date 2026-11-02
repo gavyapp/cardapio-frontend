@@ -8,7 +8,7 @@ description: Cuida de commit, sincronização com a main, push e PR neste repo s
 Funciona sozinha, tenha ou não sido usada a `iniciar-tarefa`. Padrão: seção "Padrão git" do `CLAUDE.md`.
 Regra principal: **nunca proibir**. Quando algo foge do padrão, avise e sugira a correção. Se o usuário quiser seguir assim, siga.
 
-Um hook (`.claude/settings.json`) confere todo `git commit` antes de rodar. Se ele segurar o commit, corrija o que ele apontou ou confirme com o usuário. Para seguir mesmo assim, repita o comando com `PADRAO_GIT_OK=1` na frente.
+Um hook (`.claude/settings.json`) confere todo `git commit` antes de rodar. Se ele segurar o commit, corrija o que ele apontou ou confirme com o usuário. Para seguir mesmo assim, repita o comando com `GIT_STANDARD_OK=1` na frente.
 
 ## 1. Ler o estado
 

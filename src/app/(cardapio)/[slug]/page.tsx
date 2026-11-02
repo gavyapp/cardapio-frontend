@@ -3,7 +3,7 @@ import { Suspense } from "react";
 // Página provisória do cardápio público. A versão real entra com as rotas por loja.
 type Params = Promise<{ slug: string }>;
 
-async function NomeDaLoja({ params }: { params: Params }) {
+async function StoreName({ params }: { params: Params }) {
   const { slug } = await params;
   return (
     <p className="text-muted-foreground">
@@ -12,7 +12,7 @@ async function NomeDaLoja({ params }: { params: Params }) {
   );
 }
 
-export default function PaginaDoCardapio({
+export default function MenuPage({
   params,
 }: {
   params: Params;
@@ -26,7 +26,7 @@ export default function PaginaDoCardapio({
           </p>
         }
       >
-        <NomeDaLoja params={params} />
+        <StoreName params={params} />
       </Suspense>
     </main>
   );

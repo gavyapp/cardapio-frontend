@@ -6,26 +6,26 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "@/lib/database.types";
 
-import { chavePublica, urlDoSupabase } from "./env";
+import { publishableKey, supabaseUrl } from "./env";
 
-export async function atualizarSessao(request: NextRequest) {
-  let resposta = NextResponse.next({ request });
+export async function refreshSession(request: NextRequest) {
+  let response = NextResponse.next({ request });
 
-  const supabase = createServerClient<Database>(urlDoSupabase(), chavePublica(), {
+  const supabase = createServerClient<Database>(supabaseUrl(), publishableKey(), {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesParaGravar, headers) {
-        for (const { name, value } of cookiesParaGravar) {
+      setAll(cookiesToSet, headers) {
+        for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
-        resposta = NextResponse.next({ request });
-        for (const { name, value, options } of cookiesParaGravar) {
-          resposta.cookies.set(name, value, options);
+        response = NextResponse.next({ request });
+        for (const { name, value, options } of cookiesToSet) {
+          response.cookies.set(name, value, options);
         }
-        for (const [chave, valor] of Object.entries(headers)) {
-          resposta.headers.set(chave, valor);
+        for (const [key, value] of Object.entries(headers)) {
+          response.headers.set(key, value);
         }
       },
     },
@@ -35,5 +35,5 @@ export async function atualizarSessao(request: NextRequest) {
   // valida o token e, se precisar, grava os cookies renovados.
   await supabase.auth.getClaims();
 
-  return resposta;
+  return response;
 }
