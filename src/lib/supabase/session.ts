@@ -8,8 +8,18 @@ import type { Database } from "@/lib/database.types";
 
 import { publishableKey, supabaseUrl } from "./env";
 
-export async function refreshSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
+/**
+ * Renova a sessão e devolve a resposta. Com `rewriteTo`, a resposta é um
+ * rewrite para essa URL (usado pelo proxy para subdomínio → caminho), e
+ * os cookies renovados vão junto.
+ */
+export async function refreshSession(request: NextRequest, rewriteTo?: URL) {
+  const respond = () =>
+    rewriteTo
+      ? NextResponse.rewrite(rewriteTo, { request })
+      : NextResponse.next({ request });
+
+  let response = respond();
 
   const supabase = createServerClient<Database>(supabaseUrl(), publishableKey(), {
     cookies: {
@@ -20,7 +30,7 @@ export async function refreshSession(request: NextRequest) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
-        response = NextResponse.next({ request });
+        response = respond();
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set(name, value, options);
         }
