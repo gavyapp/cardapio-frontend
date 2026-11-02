@@ -1,0 +1,3 @@
+# Fim de linha LF no repositório para todos os arquivos de texto.
+# Evita que o clone no Windows apareça com arquivos modificados.
+* text=auto eol=lf
