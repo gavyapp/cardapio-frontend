@@ -9,7 +9,8 @@ const supabaseDireto = {
 };
 const clientesSupabase = {
   group: ["@/lib/supabase", "@/lib/supabase/*", "**/lib/supabase", "**/lib/supabase/*"],
-  message: "Os clientes do Supabase só são usados dentro de src/lib/data (docs/adr/0003-camada-de-dados.md).",
+  message:
+    "Os clientes do Supabase só são usados dentro de src/lib/data (docs/adr/0003-camada-de-dados.md).",
 };
 
 const eslintConfig = defineConfig([
