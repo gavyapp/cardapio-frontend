@@ -1,12 +1,22 @@
 // Chamado pelo .githooks/commit-msg com o caminho do arquivo da mensagem.
 import { readFileSync } from "node:fs";
-import { branchAtual, validarBranch, validarMensagem } from "./validar.mjs";
+import {
+  currentBranch,
+  validateBranch,
+  validateMessage,
+} from "./validate.mjs";
 
-const mensagem = readFileSync(process.argv[2], "utf8");
-const avisos = [...validarBranch(branchAtual()), ...validarMensagem(mensagem)];
+const message = readFileSync(process.argv[2], "utf8");
+const warnings = [
+  ...validateBranch(currentBranch()),
+  ...validateMessage(message),
+];
 
-if (avisos.length) {
-  console.error("\n⚠ Padrão git (commit feito mesmo assim):");
-  for (const aviso of avisos) console.error(`  - ${aviso}`);
+if (warnings.length) {
+  console.error(
+    "\n⚠ Padrão git (commit feito mesmo assim):",
+  );
+  for (const warning of warnings)
+    console.error(`  - ${warning}`);
   console.error("");
 }

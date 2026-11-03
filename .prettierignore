@@ -1,0 +1,12 @@
+# Gerados
+.next
+out
+build
+coverage
+node_modules
+next-env.d.ts
+package-lock.json
+src/lib/database.types.ts
+
+# Banco: SQL e config da CLI têm formatação própria
+supabase
