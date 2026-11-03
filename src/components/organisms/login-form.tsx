@@ -1,10 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import {
+  CircleAlert,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+} from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Label } from "@/components/atoms/label";
+import { Field } from "@/components/molecules/field";
 
 export type LoginState = {
   error: string | null;
@@ -32,11 +38,14 @@ export function LoginForm({
     action,
     INITIAL_STATE,
   );
+  const [showPassword, setShowPassword] = useState(false);
+  const invalid = state.error ? true : undefined;
 
   return (
     <form
       action={submit}
       className="flex flex-col gap-4"
+      aria-busy={pending}
       noValidate
     >
       <input
@@ -44,38 +53,81 @@ export function LoginForm({
         name="proximo"
         value={redirectTo}
       />
-      <div className="grid gap-2">
-        <Label htmlFor="email">E-mail</Label>
+      <Field id="email" label="E-mail">
         <Input
           id="email"
           name="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
+          placeholder="voce@sualoja.com.br"
           defaultValue={state.email}
-          aria-invalid={state.error ? true : undefined}
+          aria-invalid={invalid}
+          aria-describedby={
+            state.error ? "login-error" : undefined
+          }
+          readOnly={pending}
           required
         />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="senha">Senha</Label>
-        <Input
-          id="senha"
-          name="senha"
-          type="password"
-          autoComplete="current-password"
-          aria-invalid={state.error ? true : undefined}
-          required
-        />
-      </div>
+      </Field>
+      <Field id="senha" label="Senha">
+        <div className="relative">
+          <Input
+            id="senha"
+            name="senha"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            className="pr-11"
+            aria-invalid={invalid}
+            aria-describedby={
+              state.error ? "login-error" : undefined
+            }
+            readOnly={pending}
+            required
+          />
+          <button
+            type="button"
+            onClick={() =>
+              setShowPassword((shown) => !shown)
+            }
+            aria-label={
+              showPassword
+                ? "Ocultar senha"
+                : "Mostrar senha"
+            }
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-foreground"
+          >
+            {showPassword ? (
+              <EyeOff className="size-5" />
+            ) : (
+              <Eye className="size-5" />
+            )}
+          </button>
+        </div>
+      </Field>
       {state.error && (
         <p
+          id="login-error"
           role="alert"
-          className="text-sm text-destructive"
+          className="flex items-start gap-2 rounded-lg bg-destructive-soft px-3 py-2.5 text-sm text-destructive"
         >
+          <CircleAlert className="mt-px size-4 shrink-0" />
           {state.error}
         </p>
       )}
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button
+        type="submit"
+        size="lg"
+        className="mt-2"
+        disabled={pending}
+      >
+        {pending && (
+          <LoaderCircle
+            data-icon="inline-start"
+            className="animate-spin"
+          />
+        )}
         {pending ? "Entrando..." : "Entrar"}
       </Button>
     </form>

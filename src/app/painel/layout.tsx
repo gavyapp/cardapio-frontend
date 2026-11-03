@@ -27,14 +27,12 @@ async function PanelWithAccess({
   const access = await requirePanelAccess(PANEL_ROUTE);
 
   if (access.status === "no-store") {
+    // Sem loja, o menu e as abas do painel não levam a nada.
     return (
-      <>
-        <PanelHeader store={null} onSignOut={signOut} />
-        <NoStoreNotice
-          email={access.user.email}
-          signOutAction={signOut}
-        />
-      </>
+      <NoStoreNotice
+        email={access.user.email}
+        signOutAction={signOut}
+      />
     );
   }
 
