@@ -107,7 +107,12 @@ function GroupSummary({
   usedByCount?: number;
 }) {
   const required = isRequiredGroup(group.minSelect);
+  // Na lista para adicionar, o tipo vai no texto, sem selo.
+  const showBadge = usedByCount === undefined;
   const details = [
+    ...(showBadge
+      ? []
+      : [required ? "Obrigatório" : "Opcional"]),
     describeChoiceRule(group.minSelect, group.maxSelect),
     group.options.length === 1
       ? "1 opção"
@@ -126,17 +131,19 @@ function GroupSummary({
         <span className="text-[15px] font-semibold">
           {group.name}
         </span>
-        <Badge
-          variant={required ? "default" : "outline"}
-          className={cn(
-            "h-5 rounded-md px-1.5 text-[11px] font-semibold",
-            required
-              ? "bg-foreground text-background"
-              : "border-transparent bg-muted text-muted-foreground",
-          )}
-        >
-          {required ? "Obrigatório" : "Opcional"}
-        </Badge>
+        {showBadge ? (
+          <Badge
+            variant={required ? "default" : "outline"}
+            className={cn(
+              "h-5 rounded-md px-1.5 text-[11px] font-semibold",
+              required
+                ? "bg-foreground text-background"
+                : "border-transparent bg-muted text-muted-foreground",
+            )}
+          >
+            {required ? "Obrigatório" : "Opcional"}
+          </Badge>
+        ) : null}
       </div>
       <span className="text-[13px]">
         {details.join(" · ")}
