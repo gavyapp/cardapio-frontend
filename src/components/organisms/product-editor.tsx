@@ -898,9 +898,9 @@ function EditorForm({
         ) : null}
       </div>
 
-      <footer className="flex shrink-0 flex-wrap items-center gap-2 border-t px-4 py-4 sm:px-6">
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t px-4 py-4 sm:px-6">
         {product ? (
-          <>
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -916,35 +916,37 @@ function EditorForm({
             >
               Duplicar produto
             </Button>
-          </>
+          </div>
         ) : null}
-        <span className="flex-1" />
-        {isWizard && step > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => goTo((step - 1) as Step)}
-          >
-            Voltar
+        {/* Cancelar e Salvar ficam sempre juntos, à direita. */}
+        <div className="ml-auto flex gap-2">
+          {isWizard && step > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => goTo((step - 1) as Step)}
+            >
+              Voltar
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+            >
+              Cancelar
+            </Button>
+          )}
+          <Button type="submit" disabled={pending}>
+            {pending
+              ? "Salvando…"
+              : !isWizard
+                ? "Salvar"
+                : step < 2
+                  ? "Continuar"
+                  : "Salvar produto"}
           </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-          >
-            Cancelar
-          </Button>
-        )}
-        <Button type="submit" disabled={pending}>
-          {pending
-            ? "Salvando…"
-            : !isWizard
-              ? "Salvar"
-              : step < 2
-                ? "Continuar"
-                : "Salvar produto"}
-        </Button>
+        </div>
       </footer>
 
       <ComplementGroupEditor
