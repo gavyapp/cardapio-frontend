@@ -44,6 +44,18 @@ npx supabase db push --linked --include-seed
 
 Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` já existe, o seed não faz nada.
 
+## Testes E2E
+
+Playwright em `e2e/`, contra o Supabase local (precisa de Docker). Padrão em `docs/adr/0004-testes-e2e.md`.
+
+```bash
+npx supabase start          # uma vez; aplica migrations e seed
+npx playwright install chromium   # uma vez por máquina
+npm run test:e2e            # ou npm run test:e2e:ui para o modo interativo
+```
+
+O GitHub Actions roda os mesmos testes em todo PR (workflow "Testes E2E").
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.

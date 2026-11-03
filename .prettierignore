@@ -10,3 +10,8 @@ src/lib/database.types.ts
 
 # Banco: SQL e config da CLI têm formatação própria
 supabase
+
+# Relatórios do Playwright
+playwright-report
+test-results
+blob-report

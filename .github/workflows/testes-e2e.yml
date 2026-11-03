@@ -1,0 +1,65 @@
+# Testes E2E com Playwright (ver docs/adr/0004-testes-e2e.md). Sobe um
+# Supabase local, aplica todas as migrations e o seed, faz o build do Next
+# apontando para ele e roda os testes de e2e/ no Chromium.
+# Roda em todo PR e a cada merge na main.
+name: Testes E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: testes-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          # Mesma versão do devDependency em package.json
+          version: 2.122.0
+
+      # Banco, auth, storage e API (o app fala com o Supabase pela API).
+      # O seed roda junto com as migrations.
+      - name: Subir Supabase local com migrations e seed
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta,realtime
+
+      - name: Instalar o Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      # O playwright.config.ts lê URL e chaves do `supabase status` e faz o
+      # build e o start do Next antes dos testes.
+      - name: Rodar testes E2E
+        run: npm run test:e2e
+
+      - name: Guardar relatório
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-playwright
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Parar Supabase
+        if: always()
+        run: supabase stop --no-backup

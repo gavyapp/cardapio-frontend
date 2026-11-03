@@ -8,6 +8,8 @@ Acesso ao banco só por `src/lib/data/`, nunca Supabase direto em página ou com
 
 Testes do banco: pgTAP em `supabase/tests/database/`, um arquivo por assunto, cenário em `-- Dado:` e descrição `quando → então` (ADR 0002).
 
+Testes E2E: Playwright em `e2e/`, contra o Supabase local com o seed, um arquivo por assunto (ADR 0004).
+
 Nome de arquivo e comentário dizem o assunto, nunca o código da task (T04, B3...). Código de task só no PR, na branch e no commit.
 
 Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo (`formatPhone`, `store-theme.ts`). Texto de interface, comentários, commits e PRs em pt-BR.
