@@ -35,3 +35,24 @@ export function formatPhone(phone: string): string {
   }
   return digits;
 }
+
+/** 6.5 → "6,50", para preencher campo de valor (sem "R$"). */
+export function formatAmountInput(value: number): string {
+  return value.toFixed(2).replace(".", ",");
+}
+
+/**
+ * Valor digitado em reais → número. Aceita "6,50", "6.50", "1.234,50" e
+ * "R$ 6,50". Devolve null se não for um valor válido.
+ */
+export function parseAmountInput(
+  input: string,
+): number | null {
+  let text = input.replace(/R\$|\s/g, "");
+  if (!text) return null;
+  if (text.includes(",")) {
+    text = text.replace(/\./g, "").replace(",", ".");
+  }
+  if (!/^\d+(\.\d{1,2})?$/.test(text)) return null;
+  return Number(text);
+}

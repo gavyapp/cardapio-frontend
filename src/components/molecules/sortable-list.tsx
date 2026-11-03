@@ -33,6 +33,7 @@ export function SortableList<T extends { id: string }>({
   renderItem,
   handleLabel,
   className,
+  itemClassName,
 }: {
   items: readonly T[];
   onReorder: (items: T[]) => void;
@@ -41,6 +42,8 @@ export function SortableList<T extends { id: string }>({
   /** Nome acessível da alça, ex.: "Mover Burgers". */
   handleLabel: (item: T) => string;
   className?: string;
+  /** Classe de cada item (ex.: cantos arredondados de cartão). */
+  itemClassName?: string;
 }) {
   // Id estável entre servidor e navegador (evita erro de hidratação).
   const dndId = useId();
@@ -91,6 +94,7 @@ export function SortableList<T extends { id: string }>({
               key={item.id}
               id={item.id}
               handleLabel={handleLabel(item)}
+              className={itemClassName}
             >
               {(dragHandle) => renderItem(item, dragHandle)}
             </SortableItem>
@@ -104,10 +108,12 @@ export function SortableList<T extends { id: string }>({
 function SortableItem({
   id,
   handleLabel,
+  className,
   children,
 }: {
   id: string;
   handleLabel: string;
+  className?: string;
   children: (dragHandle: ReactNode) => ReactNode;
 }) {
   const {
@@ -143,6 +149,7 @@ function SortableItem({
       className={cn(
         "relative bg-card",
         isDragging && "z-10 shadow-elevated",
+        className,
       )}
     >
       {children(dragHandle)}
