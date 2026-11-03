@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useRef,
   useState,
   useTransition,
   type ReactNode,
@@ -20,6 +21,7 @@ import { Switch } from "@/components/atoms/switch";
 import { Textarea } from "@/components/atoms/textarea";
 import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
+import { FieldError } from "@/components/molecules/field-error";
 import { ImagePicker } from "@/components/molecules/image-picker";
 import { SortableList } from "@/components/molecules/sortable-list";
 import {
@@ -38,6 +40,7 @@ import {
   PRODUCT_BADGES,
   PRODUCT_DESCRIPTION_LIMIT,
 } from "@/lib/product-fields";
+import { focusFirstInvalid } from "@/lib/focus-first-invalid";
 import { cn } from "@/lib/utils";
 
 export type ProductDraft = {
@@ -226,6 +229,7 @@ function EditorForm({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const allCategories = [
     ...categories,
@@ -278,6 +282,7 @@ function EditorForm({
     setErrors(found);
     if (found.name || found.price) {
       goTo(0);
+      focusFirstInvalid(formRef.current);
       return false;
     }
     if (found.category) {
@@ -336,6 +341,8 @@ function EditorForm({
 
   return (
     <form
+      ref={formRef}
+      noValidate
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
@@ -971,18 +978,6 @@ function EditorForm({
         }}
       />
     </form>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <span
-      role="alert"
-      className="text-[13px] text-destructive"
-    >
-      {message}
-    </span>
   );
 }
 
