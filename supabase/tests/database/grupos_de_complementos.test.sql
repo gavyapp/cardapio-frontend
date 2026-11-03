@@ -57,9 +57,10 @@ do $$ begin
   perform set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
 end $$;
 
-update public.complements set is_available = false where name = 'Bacon';
+update public.complements set is_available = false
+ where store_id = '5a000000-0000-0000-0000-000000000001' and name = 'Bacon';
 select is(
-  (select is_available from public.complements where name = 'Bacon'),
+  (select is_available from public.complements where store_id = '5a000000-0000-0000-0000-000000000001' and name = 'Bacon'),
   true,
   'dono B pausa opção da loja A → opção continua disponível');
 
@@ -71,11 +72,11 @@ do $$ begin
 end $$;
 
 select results_eq(
-  $$ select name from public.complements order by name $$,
+  $$ select name from public.complements where store_id = '5a000000-0000-0000-0000-000000000001' order by name $$,
   $$ values ('Bacon'), ('Cheddar') $$,
   'visitante lista opções → excluída não aparece');
 select results_eq(
-  $$ select name from public.complements where is_available order by name $$,
+  $$ select name from public.complements where store_id = '5a000000-0000-0000-0000-000000000001' and is_available order by name $$,
   $$ values ('Bacon') $$,
   'visitante filtra disponíveis → pausada fica de fora');
 
