@@ -235,7 +235,7 @@ export function ProductList({
         </span>
         <div
           className={cn(
-            "flex min-w-0 flex-col gap-1",
+            "flex min-w-0 flex-col gap-0.5 leading-tight",
             !product.isAvailable && "opacity-60",
           )}
         >

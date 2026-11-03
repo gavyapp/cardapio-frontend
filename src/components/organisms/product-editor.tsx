@@ -716,7 +716,7 @@ function EditorForm({
                   renderItem={(group, dragHandle) => (
                     <div className="flex gap-1 py-2 pr-4 pl-1 sm:pr-6">
                       {dragHandle}
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
                         <div className="flex min-h-11 flex-wrap items-center gap-1">
                           <span className="mr-auto text-[15px] font-semibold">
                             {group.name}
@@ -831,7 +831,7 @@ function EditorForm({
                         key={group.id}
                         className="flex items-start gap-3 border-b px-4 py-3 sm:px-6"
                       >
-                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
                           <span className="text-[15px] font-semibold">
                             {group.name}
                           </span>
