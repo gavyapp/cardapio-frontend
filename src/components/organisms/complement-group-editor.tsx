@@ -16,9 +16,10 @@ import { Switch } from "@/components/atoms/switch";
 import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
 import { NumberStepper } from "@/components/molecules/number-stepper";
+import { cn } from "@/lib/utils";
 import { SortableList } from "@/components/molecules/sortable-list";
 import type { ActionResultWith } from "@/lib/action-result";
-import { describeGroupRule } from "@/lib/complement-rules";
+import { describeChoiceRule } from "@/lib/complement-rules";
 import {
   formatAmountInput,
   parseAmountInput,
@@ -126,15 +127,21 @@ function EditorForm({
   onDone: () => void;
 }) {
   const [name, setName] = useState(group?.name ?? "");
-  const [minSelect, setMinSelect] = useState(
-    group?.minSelect ?? 0,
+  const [isRequired, setIsRequired] = useState(
+    group ? group.minSelect > 0 : true,
   );
   const [maxSelect, setMaxSelect] = useState(
     group?.maxSelect ?? 1,
   );
-  const [allowRepeat, setAllowRepeat] = useState(
-    group?.allowRepeat ?? false,
-  );
+  // Como no protótipo, a tela só escolhe obrigatório ou opcional: obrigatório
+  // pede pelo menos 1 escolha. Um mínimo maior, vindo do banco, é mantido
+  // enquanto couber no máximo.
+  const minSelect = isRequired
+    ? Math.min(
+        Math.max(group?.minSelect ?? 1, 1),
+        maxSelect,
+      )
+    : 0;
   const [rows, setRows] = useState<OptionRow[]>(() =>
     toRows(group),
   );
@@ -159,10 +166,6 @@ function EditorForm({
   }
 
   function submit() {
-    if (minSelect > maxSelect) {
-      setError("O mínimo não pode ser maior que o máximo.");
-      return;
-    }
     const options: ComplementGroupDraft["options"] = [];
     for (const row of filledRows) {
       const price = parseAmountInput(row.price);
@@ -183,7 +186,8 @@ function EditorForm({
         name,
         minSelect,
         maxSelect,
-        allowRepeat,
+        // Sem controle na tela por enquanto; mantém o que já estava.
+        allowRepeat: group?.allowRepeat ?? false,
         options,
       });
       if (result.ok) onDone();
@@ -237,56 +241,60 @@ function EditorForm({
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-3 sm:gap-4">
-          <div className="grid gap-2">
-            <Label>Mínimo</Label>
-            <NumberStepper
-              label="Mínimo de escolhas"
-              value={minSelect}
-              min={0}
-              max={50}
-              onChange={(value) => {
-                setMinSelect(value);
-                if (value > maxSelect) setMaxSelect(value);
-                setError(null);
-              }}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label>Máximo</Label>
-            <NumberStepper
-              label="Máximo de escolhas"
-              value={maxSelect}
-              min={Math.max(1, minSelect)}
-              max={50}
-              onChange={(value) => {
-                setMaxSelect(value);
-                setError(null);
-              }}
-            />
-          </div>
-          <div className="col-span-2 grid gap-2 sm:col-span-1">
-            <Label htmlFor="group-repeat">
-              Repetir opção
-            </Label>
-            <div className="flex h-11 items-center gap-3">
-              <Switch
-                id="group-repeat"
-                checked={allowRepeat}
-                onCheckedChange={setAllowRepeat}
-              />
-              <span className="text-[13px] text-muted-foreground">
-                Ex.: 2× bacon
-              </span>
-            </div>
+        <div className="grid gap-2">
+          <Label id="group-required-label">
+            O cliente precisa escolher?
+          </Label>
+          <div
+            role="radiogroup"
+            aria-labelledby="group-required-label"
+            className="flex w-fit overflow-hidden rounded-md border"
+          >
+            {(
+              [
+                [true, "Obrigatório"],
+                [false, "Opcional"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={label}
+                type="button"
+                role="radio"
+                aria-checked={isRequired === value}
+                onClick={() => {
+                  setIsRequired(value);
+                  setError(null);
+                }}
+                className={cn(
+                  "h-11 px-4 text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset",
+                  isRequired === value
+                    ? "bg-foreground font-semibold text-background"
+                    : "bg-card hover:bg-muted",
+                )}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
-        <p className="-mt-3 text-[13px] text-muted-foreground">
-          {describeGroupRule(minSelect, maxSelect)}
-          {minSelect > 0
-            ? ". O cliente só adiciona o produto depois de escolher."
-            : ". O cliente pode pular."}
-        </p>
+
+        <div className="grid gap-2">
+          <Label>Máximo</Label>
+          <NumberStepper
+            label="Máximo de escolhas"
+            value={maxSelect}
+            min={1}
+            max={50}
+            onChange={(value) => {
+              setMaxSelect(value);
+              setError(null);
+            }}
+          />
+          <p className="text-[13px] text-muted-foreground">
+            O cliente vê: &quot;
+            {describeChoiceRule(minSelect, maxSelect)}&quot;
+          </p>
+        </div>
 
         <div className="grid gap-2">
           <p className="text-sm font-medium">Opções</p>
