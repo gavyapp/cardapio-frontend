@@ -60,7 +60,16 @@ const groupSchema = z
   })
   .refine((group) => group.minSelect <= group.maxSelect, {
     message: "O mínimo não pode ser maior que o máximo.",
-  });
+  })
+  .refine(
+    (group) =>
+      group.allowRepeat ||
+      group.maxSelect <= group.options.length,
+    {
+      message:
+        "O máximo passa do número de opções. Diminua o máximo ou adicione opções.",
+    },
+  );
 
 export async function saveComplementGroupAction(
   input: z.input<typeof groupSchema>,
