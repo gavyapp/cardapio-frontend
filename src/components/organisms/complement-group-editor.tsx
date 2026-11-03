@@ -63,7 +63,10 @@ function toRows(
     id: option.id ?? crypto.randomUUID(),
     complementId: option.id,
     name: option.name,
-    price: formatAmountInput(option.price),
+    price:
+      option.price > 0
+        ? formatAmountInput(option.price)
+        : "",
     isAvailable: option.isAvailable,
   }));
 }
@@ -72,7 +75,7 @@ function newRow(): OptionRow {
   return {
     id: crypto.randomUUID(),
     name: "",
-    price: "0,00",
+    price: "",
     isAvailable: true,
   };
 }
@@ -168,7 +171,10 @@ function EditorForm({
   function submit() {
     const options: ComplementGroupDraft["options"] = [];
     for (const row of filledRows) {
-      const price = parseAmountInput(row.price);
+      // Opção sem preço é grátis.
+      const price = row.price.trim()
+        ? parseAmountInput(row.price)
+        : 0;
       if (price === null) {
         setError(`Preço inválido em "${row.name.trim()}".`);
         return;
@@ -323,6 +329,7 @@ function EditorForm({
                   <CurrencyInput
                     aria-label={`Preço adicional de ${row.name.trim() || "opção"}`}
                     value={row.price}
+                    placeholder="Grátis"
                     onChange={(event) =>
                       updateRow(row.id, {
                         price: event.target.value,
