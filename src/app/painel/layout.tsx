@@ -5,16 +5,40 @@ import {
   PanelHeader,
   type HeaderStore,
 } from "@/components/organisms/panel-header";
+import { NoStoreNotice } from "@/components/organisms/no-store-notice";
 import { Toaster } from "@/components/atoms/sonner";
 import { findStoreBySlug } from "@/lib/data/store";
+import {
+  PANEL_ROUTE,
+  requirePanelAccess,
+} from "@/lib/panel-access";
+
+import { signOut } from "./actions";
 
 export const metadata: Metadata = { title: "Painel" };
 
-// Até o login entrar, o painel mostra a loja do seed.
-const DEMO_STORE_SLUG = "stack-burguer";
+// Sessão e loja vêm dos cookies, então só existem na hora da requisição.
+// Sem sessão, requirePanelAccess manda para o login.
+async function PanelWithAccess({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const access = await requirePanelAccess(PANEL_ROUTE);
 
-async function HeaderWithStore() {
-  const store = await findStoreBySlug(DEMO_STORE_SLUG);
+  if (access.status === "no-store") {
+    return (
+      <>
+        <PanelHeader store={null} onSignOut={signOut} />
+        <NoStoreNotice
+          email={access.user.email}
+          signOutAction={signOut}
+        />
+      </>
+    );
+  }
+
+  const store = await findStoreBySlug(access.store.slug);
   const headerStore: HeaderStore | null = store
     ? {
         slug: store.slug,
@@ -22,7 +46,18 @@ async function HeaderWithStore() {
         primaryColor: store.appearance.primaryColor,
       }
     : null;
-  return <PanelHeader store={headerStore} />;
+
+  return (
+    <>
+      <PanelHeader
+        store={headerStore}
+        onSignOut={signOut}
+      />
+      <main className="flex flex-1 flex-col">
+        {children}
+      </main>
+    </>
+  );
 }
 
 export default function PanelLayout({
@@ -31,11 +66,8 @@ export default function PanelLayout({
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <Suspense fallback={<PanelHeader store={null} />}>
-        <HeaderWithStore />
+        <PanelWithAccess>{children}</PanelWithAccess>
       </Suspense>
-      <main className="flex flex-1 flex-col">
-        {children}
-      </main>
       <Toaster position="bottom-center" />
     </div>
   );

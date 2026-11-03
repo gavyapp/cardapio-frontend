@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useTransition } from "react";
 import {
   Contrast,
   Copy,
@@ -33,9 +33,13 @@ const itemClass =
 
 export function StoreMenu({
   store,
+  onSignOut,
 }: {
   store: MenuStore | null;
+  onSignOut?: () => Promise<void>;
 }) {
+  const [signingOut, startSignOut] = useTransition();
+
   const menuUrl = () =>
     publicStoreUrl(
       store?.slug ?? "",
@@ -128,8 +132,15 @@ export function StoreMenu({
         <DropdownMenuSeparator className="my-0" />
 
         <div className="p-1.5">
-          {/* Sem ação até o login entrar (T17). */}
-          <DropdownMenuItem className={itemClass} disabled>
+          <DropdownMenuItem
+            className={itemClass}
+            disabled={!onSignOut || signingOut}
+            onClick={() =>
+              startSignOut(async () => {
+                await onSignOut?.();
+              })
+            }
+          >
             <LogOut />
             Sair
           </DropdownMenuItem>
