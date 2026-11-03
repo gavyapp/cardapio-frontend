@@ -24,10 +24,6 @@ const NEW_ORDERS_SAMPLE = 3;
 const MENU_ITEMS = [
   { label: "Produtos", href: "/painel/cardapio/produtos" },
   {
-    label: "Categorias",
-    href: "/painel/cardapio/categorias",
-  },
-  {
     label: "Complementos",
     href: "/painel/cardapio/complementos",
   },

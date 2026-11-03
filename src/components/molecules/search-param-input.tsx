@@ -1,0 +1,59 @@
+"use client";
+
+import { Search, X } from "lucide-react";
+import { useState } from "react";
+
+import { Input } from "@/components/atoms/input";
+import {
+  setSearchParam,
+  useSearchParamState,
+} from "@/lib/use-search-param-state";
+
+/**
+ * Campo de busca do cabeçalho da página. Grava o texto num parâmetro da URL
+ * que a lista da página lê para filtrar.
+ */
+export function SearchParamInput({
+  name,
+  placeholder,
+}: {
+  name: string;
+  placeholder: string;
+}) {
+  const [param] = useSearchParamState(name);
+  const [value, setValue] = useState(param ?? "");
+
+  function change(next: string) {
+    setValue(next);
+    setSearchParam(name, next.trim() ? next : null, {
+      replace: true,
+    });
+  }
+
+  return (
+    <div className="relative w-full text-muted-foreground sm:w-64">
+      <Search
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+      />
+      <Input
+        type="search"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        className="bg-card px-9 [&::-webkit-search-cancel-button]:hidden"
+        value={value}
+        onChange={(event) => change(event.target.value)}
+      />
+      {value ? (
+        <button
+          type="button"
+          aria-label="Limpar busca"
+          onClick={() => change("")}
+          className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md hover:bg-muted hover:text-foreground"
+        >
+          <X aria-hidden className="size-4" />
+        </button>
+      ) : null}
+    </div>
+  );
+}

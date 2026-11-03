@@ -409,6 +409,26 @@ export async function setProductAvailability(
   }
 }
 
+/** Liga ou desliga a sugestão no carrinho, direto da lista. */
+export async function setProductSuggested(
+  storeId: string,
+  productId: string,
+  isSuggested: boolean,
+): Promise<void> {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase
+    .from("products")
+    .update({ is_suggested: isSuggested })
+    .eq("id", productId)
+    .eq("store_id", storeId)
+    .is("deleted_at", null);
+  if (error) {
+    throw new Error(
+      `Erro ao alterar produto: ${error.message}`,
+    );
+  }
+}
+
 /** Ordem dos produtos de uma categoria: a posição na lista vira sort_order. */
 export async function reorderProducts(
   storeId: string,

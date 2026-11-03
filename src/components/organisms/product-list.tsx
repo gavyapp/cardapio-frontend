@@ -1,21 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import {
   useState,
   useTransition,
   type ReactNode,
 } from "react";
-import {
-  ChevronDown,
-  ImageIcon,
-  MoreHorizontal,
-  Plus,
-  Search,
-} from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import {
   DropdownMenu,
@@ -24,28 +16,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import { Input } from "@/components/atoms/input";
 import { Switch } from "@/components/atoms/switch";
 import { ConfirmDialog } from "@/components/molecules/confirm-dialog";
 import { SortableList } from "@/components/molecules/sortable-list";
 import {
+  CategoryList,
+  type CategoryActions,
+  type CategoryItem,
+} from "@/components/organisms/category-list";
+import type { ComplementGroupDraft } from "@/components/organisms/complement-group-editor";
+import type { ComplementGroupItem } from "@/components/organisms/complement-group-list";
+import {
   ProductEditor,
+  isBlockingGroup,
   type EditableProduct,
-  type EditorGroup,
   type ProductDraft,
 } from "@/components/organisms/product-editor";
 import type {
   ActionResult,
   ActionResultWith,
 } from "@/lib/action-result";
+import {
+  NEW_ITEM,
+  PRODUCT_PARAM,
+  SEARCH_PARAM,
+} from "@/lib/catalog-params";
 import { formatCurrency } from "@/lib/format";
+import { useSearchParamState } from "@/lib/use-search-param-state";
 import { cn } from "@/lib/utils";
-
-export type ProductListCategory = {
-  id: string;
-  name: string;
-  isAvailable: boolean;
-};
 
 export type ProductActions = {
   save: (
@@ -58,17 +56,23 @@ export type ProductActions = {
     productId: string,
     isAvailable: boolean,
   ) => Promise<ActionResult>;
+  setSuggested: (
+    productId: string,
+    isSuggested: boolean,
+  ) => Promise<ActionResult>;
   reorder: (
     categoryId: string,
     orderedIds: string[],
   ) => Promise<ActionResult>;
   remove: (productId: string) => Promise<ActionResult>;
+  saveGroup: (
+    draft: ComplementGroupDraft,
+  ) => Promise<ActionResultWith<string>>;
 };
 
-type EditorState =
-  | { mode: "edit"; product: EditableProduct }
-  | { mode: "new"; categoryId?: string }
-  | null;
+// Alça, foto, produto, preço, sugerir, disponível, menu.
+const ROW_GRID =
+  "grid grid-cols-[44px_40px_minmax(0,1fr)_44px_36px] items-center gap-x-3 sm:grid-cols-[44px_40px_minmax(0,1fr)_96px_136px_80px_36px] sm:gap-x-4";
 
 function normalize(text: string) {
   return text
@@ -77,13 +81,11 @@ function normalize(text: string) {
     .replace(/\p{Diacritic}/gu, "");
 }
 
-function countLabel(count: number) {
-  return count === 1 ? "1 produto" : `${count} produtos`;
-}
-
 /**
- * Produtos por categoria: busca, arrastar para reordenar dentro da
- * categoria, esgotar com um clique, editar, duplicar e excluir.
+ * Tela de produtos: cada categoria é um cartão (ativar, renomear, excluir,
+ * arrastar) com a tabela dos produtos dela. Na linha do produto dá para
+ * sugerir no carrinho, esgotar, editar, duplicar e excluir; clicar na linha
+ * abre o editor lateral. A busca do cabeçalho filtra por nome e descrição.
  */
 export function ProductList({
   storeId,
@@ -91,47 +93,46 @@ export function ProductList({
   products,
   groups,
   actions,
+  categoryActions,
 }: {
   storeId: string;
-  categories: ProductListCategory[];
+  categories: CategoryItem[];
   products: EditableProduct[];
-  groups: EditorGroup[];
+  groups: ComplementGroupItem[];
   actions: ProductActions;
+  categoryActions: CategoryActions;
 }) {
   const [items, setItems] = useState(products);
   const [source, setSource] = useState(products);
-  const [query, setQuery] = useState("");
-  const [collapsed, setCollapsed] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const [editor, setEditor] = useState<EditorState>(null);
   const [deleting, setDeleting] =
     useState<EditableProduct | null>(null);
-  // Cópia recém-criada: abre no editor assim que chega do servidor.
-  const [openWhenLoaded, setOpenWhenLoaded] = useState<
-    string | null
-  >(null);
+  // Categoria do "+ Adicionar produto" que abriu o editor.
+  const [newInCategory, setNewInCategory] = useState<
+    string | undefined
+  >(undefined);
+  const [editorParam, setEditorParam] =
+    useSearchParamState(PRODUCT_PARAM);
+  const [searchParam] = useSearchParamState(SEARCH_PARAM);
   const [, startTransition] = useTransition();
 
   if (source !== products) {
     setSource(products);
     setItems(products);
-    if (openWhenLoaded) {
-      const copy = products.find(
-        (product) => product.id === openWhenLoaded,
-      );
-      if (copy) {
-        setOpenWhenLoaded(null);
-        setEditor({ mode: "edit", product: copy });
-      }
-    }
   }
 
-  const groupNames = new Map(
-    groups.map((group) => [group.id, group.name]),
+  const editing =
+    items.find((product) => product.id === editorParam) ??
+    null;
+  const editorOpen = editorParam === NEW_ITEM || !!editing;
+  const groupsById = new Map(
+    groups.map((group) => [group.id, group]),
   );
-  const search = normalize(query.trim());
-  const searching = search.length > 0;
+  const search = normalize((searchParam ?? "").trim());
+
+  function openNew(categoryId?: string) {
+    setNewInCategory(categoryId);
+    setEditorParam(NEW_ITEM);
+  }
 
   function optimistic(
     next: EditableProduct[],
@@ -148,18 +149,18 @@ export function ProductList({
     });
   }
 
-  function toggleAvailability(
+  function patch(
     product: EditableProduct,
-    isAvailable: boolean,
+    change: Partial<EditableProduct>,
+    save: () => Promise<ActionResult>,
   ) {
     optimistic(
       items.map((item) =>
         item.id === product.id
-          ? { ...item, isAvailable }
+          ? { ...item, ...change }
           : item,
       ),
-      () =>
-        actions.setAvailability(product.id, isAvailable),
+      save,
     );
   }
 
@@ -179,7 +180,7 @@ export function ProductList({
   }
 
   function duplicate(product: EditableProduct) {
-    setEditor(null);
+    setEditorParam(null);
     startTransition(async () => {
       const result = await actions.duplicate(product.id);
       if (!result.ok) {
@@ -187,308 +188,295 @@ export function ProductList({
         return;
       }
       toast.success(`"${product.name}" duplicado`);
-      setOpenWhenLoaded(result.data);
+      // A cópia abre no editor assim que chega do servidor.
+      setEditorParam(result.data);
     });
-  }
-
-  function toggleCollapsed(categoryId: string) {
-    setCollapsed((current) => {
-      const next = new Set(current);
-      if (next.has(categoryId)) next.delete(categoryId);
-      else next.add(categoryId);
-      return next;
-    });
-  }
-
-  if (categories.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-xl border bg-card px-6 py-12 text-center">
-        <p className="text-[15px] text-muted-foreground">
-          Crie uma categoria antes de cadastrar produtos.
-        </p>
-        <Button
-          render={
-            <Link href="/painel/cardapio/categorias" />
-          }
-          nativeButton={false}
-        >
-          Ir para categorias
-        </Button>
-      </div>
-    );
   }
 
   function renderRow(
     product: EditableProduct,
-    dragHandle?: ReactNode,
+    dragHandle: ReactNode,
   ) {
-    const complementNames = product.groupIds
-      .map((id) => groupNames.get(id))
-      .filter(Boolean)
-      .join(", ");
+    const linkedGroups = product.groupIds.flatMap((id) => {
+      const group = groupsById.get(id);
+      return group ? [group] : [];
+    });
+    const blocking = linkedGroups.find(isBlockingGroup);
+    const open = () => setEditorParam(product.id);
+
     return (
-      <div className="flex min-h-18 items-center gap-2 py-2 pr-2 pl-1 sm:gap-3 sm:pr-4">
-        {dragHandle ?? <span className="w-2 shrink-0" />}
-        <button
-          type="button"
-          onClick={() =>
-            setEditor({ mode: "edit", product })
-          }
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+      <div
+        onClick={open}
+        className={cn(
+          ROW_GRID,
+          "min-h-14 cursor-pointer border-t py-2 pr-3 pl-1 hover:bg-muted/40 sm:pr-6",
+        )}
+      >
+        {dragHandle}
+        <span
+          className={cn(
+            "flex size-10 items-center justify-center overflow-hidden rounded-sm",
+            product.imageUrl
+              ? "bg-muted"
+              : "border border-dashed text-center text-xs leading-none text-muted-foreground",
+            !product.isAvailable && "opacity-60",
+          )}
         >
-          <span className="hidden size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-muted-foreground sm:flex">
-            {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={product.imageUrl}
-                alt=""
-                className="size-full object-cover"
-              />
-            ) : (
-              <ImageIcon aria-hidden className="size-4" />
-            )}
-          </span>
-          <span className="flex min-w-0 flex-col gap-0.5">
-            <span className="flex flex-wrap items-center gap-x-2">
-              <span
-                className={cn(
-                  "truncate text-[15px] font-semibold",
-                  !product.isAvailable &&
-                    "text-muted-foreground",
-                )}
-              >
-                {product.name}
-                {product.isAvailable ? "" : " · esgotado"}
-              </span>
-              {product.isSuggested ? (
-                <Badge variant="secondary">
-                  Sugerido no carrinho
-                </Badge>
-              ) : null}
-            </span>
-            <span className="truncate text-[13px] text-muted-foreground">
-              {complementNames
-                ? `Complementos: ${complementNames}`
-                : "Sem complementos"}
-            </span>
-            {product.badges.length > 0 ? (
-              <span className="truncate text-[13px] text-muted-foreground">
-                Selos: {product.badges.join(", ")}
+          {product.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={product.imageUrl}
+              alt=""
+              className="size-full object-cover"
+            />
+          ) : (
+            "sem foto"
+          )}
+        </span>
+        <div
+          className={cn(
+            "flex min-w-0 flex-col gap-1",
+            !product.isAvailable && "opacity-60",
+          )}
+        >
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              className="rounded-sm text-left text-[15px] font-medium outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+            >
+              {product.name}
+              {product.isAvailable ? null : (
+                <span className="font-normal text-muted-foreground">
+                  {" "}
+                  · esgotado
+                </span>
+              )}
+            </button>
+            {product.isSuggested ? (
+              <span className="rounded-sm bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground sm:hidden">
+                Sugerido
               </span>
             ) : null}
-            <span className="tabular text-[15px] font-medium sm:hidden">
-              {formatCurrency(product.price)}
-            </span>
           </span>
-        </button>
-        <span className="tabular hidden w-24 text-right text-[15px] font-medium sm:block">
+          <span className="truncate text-[13px] text-muted-foreground">
+            {linkedGroups.length
+              ? `Complementos: ${linkedGroups.map((group) => group.name).join(", ")}`
+              : "Sem complementos"}
+          </span>
+          {product.badges.length > 0 ? (
+            <span className="text-[13px] text-muted-foreground">
+              Selos: {product.badges.join(", ")}
+            </span>
+          ) : null}
+          {blocking ? (
+            <span className="text-[13px] leading-snug text-destructive">
+              Não pode ser pedido: &quot;{blocking.name}
+              &quot; está sem opções disponíveis
+            </span>
+          ) : null}
+          <span className="tabular text-[13px] sm:hidden">
+            {formatCurrency(product.price)}
+          </span>
+        </div>
+        <span className="tabular hidden text-right text-[15px] sm:block">
           {formatCurrency(product.price)}
         </span>
-        <Switch
-          checked={product.isAvailable}
-          onCheckedChange={(checked) =>
-            toggleAvailability(product, checked)
-          }
-          aria-label={
-            product.isAvailable
-              ? `Esgotar ${product.name}`
-              : `Disponibilizar ${product.name}`
-          }
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Mais ações de ${product.name}`}
-              />
+        <span
+          className="hidden h-11 items-center sm:flex"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Switch
+            checked={product.isSuggested}
+            onCheckedChange={(checked) =>
+              patch(product, { isSuggested: checked }, () =>
+                actions.setSuggested(product.id, checked),
+              )
             }
-          >
-            <MoreHorizontal aria-hidden />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() =>
-                setEditor({ mode: "edit", product })
+            aria-label={
+              product.isSuggested
+                ? `Parar de sugerir ${product.name} no carrinho`
+                : `Sugerir ${product.name} no carrinho`
+            }
+          />
+        </span>
+        <span
+          className="flex h-11 items-center"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Switch
+            checked={product.isAvailable}
+            onCheckedChange={(checked) =>
+              patch(product, { isAvailable: checked }, () =>
+                actions.setAvailability(
+                  product.id,
+                  checked,
+                ),
+              )
+            }
+            aria-label={
+              product.isAvailable
+                ? `Esgotar ${product.name}`
+                : `Disponibilizar ${product.name}`
+            }
+          />
+        </span>
+        <span onClick={(event) => event.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground"
+                  aria-label={`Mais ações de ${product.name}`}
+                />
               }
             >
-              Editar produto
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => duplicate(product)}
+              <MoreHorizontal aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-50"
             >
-              Duplicar
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => setDeleting(product)}
-            >
-              Excluir produto
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={open}>
+                Editar produto
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => duplicate(product)}
+              >
+                Duplicar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleting(product)}
+              >
+                Excluir produto
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       </div>
     );
   }
 
-  const sections = categories.map((category) => {
+  const tableHeader = (
+    <div
+      aria-hidden
+      className={cn(
+        ROW_GRID,
+        "hidden h-10 pr-6 pl-1 text-xs font-medium text-muted-foreground sm:grid",
+      )}
+    >
+      <span />
+      <span />
+      <span>Produto</span>
+      <span className="text-right">Preço</span>
+      <span>Sugerir no carrinho</span>
+      <span>Disponível</span>
+      <span />
+    </div>
+  );
+
+  function renderCategoryProducts(category: CategoryItem) {
     const inCategory = items.filter(
       (product) => product.categoryId === category.id,
     );
-    const visible = searching
-      ? inCategory.filter((product) =>
-          normalize(
-            `${product.name} ${product.description}`,
-          ).includes(search),
-        )
-      : inCategory;
-    return { category, inCategory, visible };
-  });
-  const noResults =
-    searching &&
-    sections.every((section) => !section.visible.length);
+    return (
+      <div>
+        {inCategory.length > 0 ? tableHeader : null}
+        <SortableList
+          items={inCategory}
+          onReorder={(next) => reorder(category.id, next)}
+          handleLabel={(product) => `Mover ${product.name}`}
+          renderItem={renderRow}
+        />
+        {inCategory.length === 0 ? (
+          <p className="px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
+            Nenhum produto nesta categoria.
+          </p>
+        ) : null}
+        <div className="border-t px-4 py-2 sm:px-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openNew(category.id)}
+          >
+            + Adicionar produto
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderSearchResults() {
+    const sections = categories
+      .map((category) => ({
+        category,
+        matches: items.filter(
+          (product) =>
+            product.categoryId === category.id &&
+            normalize(
+              `${product.name} ${product.description}`,
+            ).includes(search),
+        ),
+      }))
+      .filter((section) => section.matches.length > 0);
+
+    if (sections.length === 0) {
+      return (
+        <p className="rounded-lg border bg-card px-6 py-10 text-center text-[15px] text-muted-foreground">
+          Nenhum produto encontrado para &quot;
+          {(searchParam ?? "").trim()}&quot;.
+        </p>
+      );
+    }
+    return (
+      <div className="flex flex-col gap-4">
+        {sections.map(({ category, matches }) => (
+          <section
+            key={category.id}
+            aria-label={category.name}
+            className="rounded-lg border bg-card"
+          >
+            <h2 className="flex min-h-14 items-center border-b px-4 text-[15px] font-semibold sm:px-6">
+              {category.name}
+            </h2>
+            {tableHeader}
+            {matches.map((product) => (
+              <div key={product.id}>
+                {renderRow(product, <span />)}
+              </div>
+            ))}
+          </section>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-0 flex-1">
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            type="search"
-            aria-label="Buscar produto"
-            placeholder="Buscar produto"
-            className="pl-9"
-            value={query}
-            onChange={(event) =>
-              setQuery(event.target.value)
-            }
-          />
-        </div>
-        <Button onClick={() => setEditor({ mode: "new" })}>
-          <Plus aria-hidden />
-          Novo produto
-        </Button>
-      </div>
-
-      {noResults ? (
-        <p className="rounded-xl border bg-card px-6 py-10 text-center text-[15px] text-muted-foreground">
-          Nenhum produto encontrado para &quot;
-          {query.trim()}&quot;.
-        </p>
-      ) : null}
-
-      <div className="flex flex-col gap-3">
-        {sections.map(
-          ({ category, inCategory, visible }) => {
-            if (searching && visible.length === 0)
-              return null;
-            const isCollapsed =
-              !searching && collapsed.has(category.id);
-            return (
-              <section
-                key={category.id}
-                aria-labelledby={`category-${category.id}`}
-                className="overflow-hidden rounded-xl border bg-card"
-              >
-                <button
-                  type="button"
-                  aria-expanded={!isCollapsed}
-                  onClick={() =>
-                    toggleCollapsed(category.id)
-                  }
-                  className="flex min-h-14 w-full items-center gap-2 px-4 text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset"
-                >
-                  <ChevronDown
-                    aria-hidden
-                    className={cn(
-                      "size-4 shrink-0 text-muted-foreground transition-transform",
-                      isCollapsed && "-rotate-90",
-                    )}
-                  />
-                  <span
-                    id={`category-${category.id}`}
-                    className="text-[15px] font-semibold"
-                  >
-                    {category.name}
-                  </span>
-                  <span className="tabular text-[13px] text-muted-foreground">
-                    {countLabel(inCategory.length)}
-                    {category.isAvailable
-                      ? ""
-                      : " · categoria fora do cardápio"}
-                  </span>
-                </button>
-
-                {isCollapsed ? null : (
-                  <div className="border-t">
-                    {visible.length === 0 ? (
-                      <p className="px-4 py-4 text-[13px] text-muted-foreground">
-                        Nenhum produto nesta categoria.
-                      </p>
-                    ) : searching ? (
-                      <ul className="divide-y">
-                        {visible.map((product) => (
-                          <li key={product.id}>
-                            {renderRow(product)}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <SortableList
-                        items={visible}
-                        onReorder={(next) =>
-                          reorder(category.id, next)
-                        }
-                        handleLabel={(product) =>
-                          `Mover ${product.name}`
-                        }
-                        className="divide-y"
-                        renderItem={(product, dragHandle) =>
-                          renderRow(product, dragHandle)
-                        }
-                      />
-                    )}
-                    {searching ? null : (
-                      <div className="border-t p-2">
-                        <Button
-                          variant="ghost"
-                          onClick={() =>
-                            setEditor({
-                              mode: "new",
-                              categoryId: category.id,
-                            })
-                          }
-                        >
-                          <Plus aria-hidden />
-                          Adicionar produto em{" "}
-                          {category.name}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-            );
-          },
-        )}
-      </div>
+      {search ? (
+        renderSearchResults()
+      ) : (
+        <CategoryList
+          categories={categories}
+          actions={categoryActions}
+          renderContent={renderCategoryProducts}
+        />
+      )}
 
       <ProductEditor
-        open={editor !== null}
-        onOpenChange={(open) => !open && setEditor(null)}
-        product={
-          editor?.mode === "edit" ? editor.product : null
+        open={editorOpen}
+        onOpenChange={(open) =>
+          !open && setEditorParam(null)
         }
-        defaultCategoryId={
-          editor?.mode === "new"
-            ? editor.categoryId
-            : undefined
-        }
+        product={editing}
+        defaultCategoryId={newInCategory}
         storeId={storeId}
         categories={categories}
         groups={groups}
@@ -501,9 +489,11 @@ export function ProductList({
           }
           return result;
         }}
+        onCreateCategory={categoryActions.create}
+        onSaveGroup={actions.saveGroup}
         onDuplicate={duplicate}
         onDelete={(product) => {
-          setEditor(null);
+          setEditorParam(null);
           setDeleting(product);
         }}
       />

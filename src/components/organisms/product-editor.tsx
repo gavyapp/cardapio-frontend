@@ -1,43 +1,44 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import {
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import { Check, Plus, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/atoms/dialog";
 import { Input } from "@/components/atoms/input";
-import { Label } from "@/components/atoms/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/atoms/select";
-import { Separator } from "@/components/atoms/separator";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/atoms/sheet";
 import { Switch } from "@/components/atoms/switch";
 import { Textarea } from "@/components/atoms/textarea";
 import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
 import { ImagePicker } from "@/components/molecules/image-picker";
 import { SortableList } from "@/components/molecules/sortable-list";
+import {
+  ComplementGroupEditor,
+  type ComplementGroupDraft,
+} from "@/components/organisms/complement-group-editor";
+import type { ComplementGroupItem } from "@/components/organisms/complement-group-list";
 import type { ActionResultWith } from "@/lib/action-result";
+import { describeGroupRule } from "@/lib/complement-rules";
 import {
   formatAmountInput,
+  formatCurrency,
   parseAmountInput,
 } from "@/lib/format";
-import { PRODUCT_BADGES } from "@/lib/product-badges";
+import {
+  PRODUCT_BADGES,
+  PRODUCT_DESCRIPTION_LIMIT,
+} from "@/lib/product-fields";
 import { cn } from "@/lib/utils";
-
-const DESCRIPTION_LIMIT = 300;
 
 export type ProductDraft = {
   id?: string;
@@ -54,52 +55,85 @@ export type ProductDraft = {
 
 export type EditableProduct = ProductDraft & { id: string };
 
-export type EditorCategory = { id: string; name: string };
-
-export type EditorGroup = {
+export type EditorCategory = {
   id: string;
   name: string;
-  /** "Obrigatório · Escolha 1" */
-  rule: string;
-  /** "Mal passado, Ao ponto, Bem passado" */
-  optionNames: string;
-  /** Nenhuma opção disponível. */
-  hasNoActiveOption: boolean;
+  productCount: number;
 };
 
+const STEPS = [
+  "Produto",
+  "Categoria",
+  "Complementos",
+] as const;
+type Step = 0 | 1 | 2;
+
+type FieldErrors = {
+  name?: string;
+  price?: string;
+  category?: string;
+};
+
+/** "Mal passado · Bacon +R$ 5,00 · Cheddar (pausado)" */
+export function describeGroupOptions(
+  group: ComplementGroupItem,
+) {
+  if (group.options.length === 0) return "Sem opções";
+  return group.options
+    .map(
+      (option) =>
+        option.name +
+        (option.price > 0
+          ? ` +${formatCurrency(option.price)}`
+          : "") +
+        (option.isAvailable ? "" : " (pausado)"),
+    )
+    .join(" · ");
+}
+
+/** Grupo obrigatório sem opção disponível: o produto não pode ser pedido. */
+export function isBlockingGroup(
+  group: ComplementGroupItem,
+) {
+  return (
+    group.minSelect > 0 &&
+    !group.options.some((option) => option.isAvailable)
+  );
+}
+
+function productCountLabel(count: number) {
+  return count === 1 ? "1 produto" : `${count} produtos`;
+}
+
 /**
- * Criar ou editar produto: informações, foto, selos, categoria,
- * disponibilidade, sugestão no carrinho e grupos de complementos na ordem.
+ * Painel lateral para criar ou editar produto, em três abas: Produto
+ * (informações, foto, selos e sugestão no carrinho), Categoria e
+ * Complementos. Produto novo passa pelas abas em ordem, como um passo a
+ * passo; produto existente vai direto para qualquer aba.
  */
 export function ProductEditor({
   open,
   onOpenChange,
   product,
   defaultCategoryId,
-  storeId,
-  categories,
-  groups,
-  onSave,
-  onDuplicate,
-  onDelete,
+  ...formProps
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** null cria um produto novo. */
   product: EditableProduct | null;
   defaultCategoryId?: string;
-  storeId: string;
-  categories: EditorCategory[];
-  groups: EditorGroup[];
-  onSave: (
-    draft: ProductDraft,
-  ) => Promise<ActionResultWith<string>>;
-  onDuplicate?: (product: EditableProduct) => void;
-  onDelete?: (product: EditableProduct) => void;
-}) {
+} & Omit<
+  EditorFormProps,
+  "product" | "defaultCategoryId" | "onClose"
+>) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_1fr_auto] overflow-hidden sm:max-w-3xl">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-[640px]"
+      >
         {open ? (
           <EditorForm
             key={
@@ -108,19 +142,34 @@ export function ProductEditor({
             }
             product={product}
             defaultCategoryId={defaultCategoryId}
-            storeId={storeId}
-            categories={categories}
-            groups={groups}
-            onSave={onSave}
-            onDuplicate={onDuplicate}
-            onDelete={onDelete}
-            onDone={() => onOpenChange(false)}
+            onClose={() => onOpenChange(false)}
+            {...formProps}
           />
         ) : null}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
+
+type EditorFormProps = {
+  product: EditableProduct | null;
+  defaultCategoryId?: string;
+  storeId: string;
+  categories: EditorCategory[];
+  groups: ComplementGroupItem[];
+  onSave: (
+    draft: ProductDraft,
+  ) => Promise<ActionResultWith<string>>;
+  onCreateCategory: (
+    name: string,
+  ) => Promise<ActionResultWith<string>>;
+  onSaveGroup: (
+    draft: ComplementGroupDraft,
+  ) => Promise<ActionResultWith<string>>;
+  onDuplicate: (product: EditableProduct) => void;
+  onDelete: (product: EditableProduct) => void;
+  onClose: () => void;
+};
 
 function EditorForm({
   product,
@@ -129,22 +178,14 @@ function EditorForm({
   categories,
   groups,
   onSave,
+  onCreateCategory,
+  onSaveGroup,
   onDuplicate,
   onDelete,
-  onDone,
-}: {
-  product: EditableProduct | null;
-  defaultCategoryId?: string;
-  storeId: string;
-  categories: EditorCategory[];
-  groups: EditorGroup[];
-  onSave: (
-    draft: ProductDraft,
-  ) => Promise<ActionResultWith<string>>;
-  onDuplicate?: (product: EditableProduct) => void;
-  onDelete?: (product: EditableProduct) => void;
-  onDone: () => void;
-}) {
+  onClose,
+}: EditorFormProps) {
+  const isWizard = product === null;
+  const [step, setStep] = useState<Step>(0);
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(
     product?.description ?? "",
@@ -158,14 +199,14 @@ function EditorForm({
       categories[0]?.id ??
       "",
   );
+  const [hasPhoto, setHasPhoto] = useState(
+    product ? product.imageUrl !== null : true,
+  );
   const [imageUrl, setImageUrl] = useState(
     product?.imageUrl ?? null,
   );
   const [badges, setBadges] = useState<string[]>(
     product?.badges ?? [],
-  );
-  const [isAvailable, setIsAvailable] = useState(
-    product?.isAvailable ?? true,
   );
   const [isSuggested, setIsSuggested] = useState(
     product?.isSuggested ?? false,
@@ -173,14 +214,30 @@ function EditorForm({
   const [groupIds, setGroupIds] = useState<string[]>(
     product?.groupIds ?? [],
   );
+  // Categoria criada aqui aparece antes de a lista do servidor chegar.
+  const [createdCategories, setCreatedCategories] =
+    useState<EditorCategory[]>([]);
+  const [newCategory, setNewCategory] = useState("");
   const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState("");
+  const [groupEditor, setGroupEditor] = useState<
+    ComplementGroupItem | "new" | null
+  >(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const groupsById = useMemo(
-    () => new Map(groups.map((group) => [group.id, group])),
-    [groups],
+  const allCategories = [
+    ...categories,
+    ...createdCategories.filter(
+      (created) =>
+        !categories.some(
+          (category) => category.id === created.id,
+        ),
+    ),
+  ];
+  const groupsById = new Map(
+    groups.map((group) => [group.id, group]),
   );
   const linked = groupIds.flatMap((id) => {
     const group = groupsById.get(id);
@@ -189,463 +246,808 @@ function EditorForm({
   const normalizedQuery = query
     .trim()
     .toLocaleLowerCase("pt-BR");
-  const available = groups.filter(
+  const pickable = groups.filter(
     (group) =>
       !groupIds.includes(group.id) &&
       (!normalizedQuery ||
-        `${group.name} ${group.optionNames}`
+        [group.name, ...group.options.map((o) => o.name)]
+          .join(" ")
           .toLocaleLowerCase("pt-BR")
           .includes(normalizedQuery)),
   );
 
-  function toggleBadge(badge: string) {
-    setBadges((current) =>
-      current.includes(badge)
-        ? current.filter((item) => item !== badge)
-        : [...current, badge],
-    );
+  function goTo(next: Step) {
+    setStep(next);
+    setPicking(false);
+  }
+
+  /**
+   * Confere os campos até a aba indicada e leva para a primeira aba com
+   * erro. Devolve true se está tudo certo.
+   */
+  function validate(upTo: Step): boolean {
+    const found: FieldErrors = {};
+    if (!name.trim()) found.name = "Dê um nome ao produto.";
+    if (parseAmountInput(price) === null) {
+      found.price = "Informe um preço válido.";
+    }
+    if (upTo >= 1 && !categoryId) {
+      found.category =
+        "Escolha uma categoria para salvar o produto.";
+    }
+    setErrors(found);
+    if (found.name || found.price) {
+      goTo(0);
+      return false;
+    }
+    if (found.category) {
+      goTo(1);
+      return false;
+    }
+    return true;
   }
 
   function submit() {
     setError(null);
-    if (!name.trim()) {
-      setError("Dê um nome ao produto.");
-      return;
-    }
-    const parsedPrice = parseAmountInput(price);
-    if (parsedPrice === null) {
-      setError("Informe um preço válido.");
-      return;
-    }
-    if (!categoryId) {
-      setError("Escolha uma categoria para o produto.");
-      return;
-    }
+    if (!validate(1)) return;
     startTransition(async () => {
       const result = await onSave({
         id: product?.id,
         categoryId,
         name,
         description,
-        price: parsedPrice,
-        imageUrl,
+        price: parseAmountInput(price) ?? 0,
+        imageUrl: hasPhoto ? imageUrl : null,
         // Mantém a ordem da lista oficial, não a do clique.
         badges: PRODUCT_BADGES.filter((badge) =>
           badges.includes(badge),
         ),
-        isAvailable,
+        isAvailable: product?.isAvailable ?? true,
         isSuggested,
-        groupIds: linked.map((group) => group.id),
+        groupIds,
       });
-      if (result.ok) onDone();
+      if (result.ok) onClose();
       else setError(result.error);
+    });
+  }
+
+  function createCategory() {
+    const trimmed = newCategory.trim();
+    if (!trimmed) return;
+    startTransition(async () => {
+      const result = await onCreateCategory(trimmed);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      setCreatedCategories((current) => [
+        ...current,
+        { id: result.data, name: trimmed, productCount: 0 },
+      ]);
+      setCategoryId(result.data);
+      setNewCategory("");
+      setErrors((current) => ({
+        ...current,
+        category: undefined,
+      }));
+      toast.success(`Categoria "${trimmed}" criada`);
     });
   }
 
   return (
     <form
-      className="contents"
+      className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
-        submit();
+        if (isWizard && step < 2) {
+          if (validate(step)) goTo((step + 1) as Step);
+        } else {
+          submit();
+        }
       }}
     >
-      <DialogHeader className="pr-10">
-        <DialogTitle className="text-lg font-semibold">
-          {product ? "Editar produto" : "Novo produto"}
-        </DialogTitle>
-      </DialogHeader>
+      <header className="flex min-h-16 shrink-0 items-center gap-2 border-b py-2 pr-4 pl-6">
+        <SheetTitle className="mr-auto min-w-0 truncate text-lg font-semibold">
+          {product
+            ? `Editar produto · ${product.name}`
+            : "Novo produto"}
+        </SheetTitle>
+        <SheetDescription className="sr-only">
+          Informações, categoria e complementos do produto.
+        </SheetDescription>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Fechar"
+          onClick={onClose}
+        >
+          <X aria-hidden />
+        </Button>
+      </header>
 
-      <div className="-mx-4 flex min-h-0 flex-col gap-6 overflow-y-auto px-4 pb-2">
-        <section className="grid gap-4">
-          <Field id="product-name" label="Nome">
-            <Input
-              id="product-name"
-              value={name}
-              placeholder="Ex.: The Classic"
-              maxLength={80}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
-            />
-          </Field>
-          <div className="grid gap-2">
-            <Label htmlFor="product-description">
-              Descrição
-            </Label>
-            <Textarea
-              id="product-description"
-              value={description}
-              placeholder="Ingredientes ou detalhes do produto"
-              maxLength={DESCRIPTION_LIMIT}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
-            />
-            <div className="flex justify-between gap-4 text-[13px] text-muted-foreground">
-              <span>
-                Aparece em até 3 linhas no cardápio.
-              </span>
-              <span className="tabular">
-                {description.length}/{DESCRIPTION_LIMIT}
-              </span>
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="product-price" label="Preço">
-              <CurrencyInput
-                id="product-price"
-                value={price}
-                placeholder="0,00"
-                onChange={(event) =>
-                  setPrice(event.target.value)
-                }
-              />
-            </Field>
-            <div className="grid gap-2">
-              <Label htmlFor="product-category">
-                Categoria
-              </Label>
-              <Select
-                items={categories.map((category) => ({
-                  value: category.id,
-                  label: category.name,
-                }))}
-                value={categoryId || null}
-                onValueChange={(value) =>
-                  setCategoryId(value ?? "")
-                }
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-background p-4 sm:p-6 [&>*]:shrink-0">
+        <nav
+          aria-label="Etapas do produto"
+          className="flex shrink-0 gap-2 overflow-x-auto rounded-lg border bg-card px-2"
+        >
+          {STEPS.map((label, index) => {
+            const active = step === index;
+            const done = isWizard && index < step;
+            const reachable = !isWizard || index <= step;
+            return (
+              <button
+                key={label}
+                type="button"
+                disabled={!reachable}
+                aria-current={active ? "step" : undefined}
+                onClick={() => goTo(index as Step)}
+                className={cn(
+                  "flex h-11 shrink-0 items-center gap-2 px-2 text-[15px] whitespace-nowrap text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-foreground",
+                  active &&
+                    "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--color-foreground)]",
+                )}
               >
-                <SelectTrigger
-                  id="product-category"
-                  className="w-full"
-                >
-                  <SelectValue placeholder="Escolha a categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </section>
-
-        <Separator />
-
-        <section className="grid gap-4">
-          <div className="grid gap-2">
-            <p className="text-sm font-medium">
-              Foto{" "}
-              <span className="font-normal text-muted-foreground">
-                · opcional
-              </span>
-            </p>
-            <ImagePicker
-              storeId={storeId}
-              kind="product"
-              value={imageUrl}
-              onChange={setImageUrl}
-              label="Foto do produto"
-            />
-          </div>
-          <div className="grid gap-2">
-            <p className="text-sm font-medium">Selos</p>
-            <p className="-mt-1 text-[13px] text-muted-foreground">
-              Aparecem como etiquetas no card do produto.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PRODUCT_BADGES.map((badge) => {
-                const active = badges.includes(badge);
-                return (
-                  <Button
-                    key={badge}
-                    type="button"
-                    size="sm"
-                    variant={active ? "default" : "outline"}
-                    aria-pressed={active}
-                    onClick={() => toggleBadge(badge)}
-                  >
-                    {active ? (
-                      <Check aria-hidden />
-                    ) : (
-                      <Plus aria-hidden />
+                {isWizard ? (
+                  <span
+                    className={cn(
+                      "tabular flex size-6 items-center justify-center rounded-full border-[1.5px] text-xs font-semibold",
+                      active || done
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-card",
                     )}
-                    {badge}
-                  </Button>
+                  >
+                    {done ? (
+                      <Check
+                        aria-hidden
+                        className="size-3.5"
+                      />
+                    ) : (
+                      index + 1
+                    )}
+                  </span>
+                ) : null}
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {step === 0 ? (
+          <>
+            <EditorCard title="Informações do produto">
+              <div className="flex flex-col gap-6 p-4 sm:p-6">
+                <Field id="product-name" label="Nome">
+                  <Input
+                    id="product-name"
+                    value={name}
+                    placeholder="Ex.: The Classic"
+                    maxLength={80}
+                    aria-invalid={!!errors.name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      setErrors((current) => ({
+                        ...current,
+                        name: undefined,
+                      }));
+                    }}
+                  />
+                  <FieldError message={errors.name} />
+                </Field>
+                <Field
+                  id="product-description"
+                  label="Descrição"
+                >
+                  <Textarea
+                    id="product-description"
+                    value={description}
+                    placeholder="Ingredientes ou detalhes do produto"
+                    maxLength={PRODUCT_DESCRIPTION_LIMIT}
+                    onChange={(event) =>
+                      setDescription(event.target.value)
+                    }
+                  />
+                  <span className="flex justify-between gap-4 text-[13px] text-muted-foreground">
+                    <span>
+                      Aparece em até 3 linhas no cardápio.
+                    </span>
+                    <span className="tabular">
+                      {description.length}/
+                      {PRODUCT_DESCRIPTION_LIMIT}
+                    </span>
+                  </span>
+                </Field>
+                <div className="max-w-[200px]">
+                  <Field id="product-price" label="Preço">
+                    <CurrencyInput
+                      id="product-price"
+                      value={price}
+                      placeholder="0,00"
+                      aria-invalid={!!errors.price}
+                      onChange={(event) => {
+                        setPrice(event.target.value);
+                        setErrors((current) => ({
+                          ...current,
+                          price: undefined,
+                        }));
+                      }}
+                    />
+                    <FieldError message={errors.price} />
+                  </Field>
+                </div>
+              </div>
+            </EditorCard>
+
+            <EditorCard
+              title="Foto e selos"
+              description="Selos aparecem como etiquetas no card do produto."
+            >
+              <div className="flex flex-col gap-6 p-4 sm:p-6">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-medium">
+                    Foto{" "}
+                    <span className="font-normal text-muted-foreground">
+                      · opcional
+                    </span>
+                  </span>
+                  <Segmented
+                    label="Foto do produto"
+                    value={hasPhoto}
+                    options={[
+                      [true, "Com foto"],
+                      [false, "Sem foto"],
+                    ]}
+                    onChange={setHasPhoto}
+                  />
+                  {hasPhoto ? (
+                    <div className="pt-2">
+                      <ImagePicker
+                        storeId={storeId}
+                        kind="product"
+                        value={imageUrl}
+                        onChange={setImageUrl}
+                        label="Foto do produto"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-[13px] text-muted-foreground">
+                      O card do produto aparece sem imagem.
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-medium">
+                    Selos
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {PRODUCT_BADGES.map((badge) => {
+                      const active = badges.includes(badge);
+                      return (
+                        <Button
+                          key={badge}
+                          type="button"
+                          size="sm"
+                          variant={
+                            active ? "default" : "outline"
+                          }
+                          aria-pressed={active}
+                          onClick={() =>
+                            setBadges((current) =>
+                              active
+                                ? current.filter(
+                                    (item) =>
+                                      item !== badge,
+                                  )
+                                : [...current, badge],
+                            )
+                          }
+                        >
+                          {active ? (
+                            <Check aria-hidden />
+                          ) : (
+                            <Plus aria-hidden />
+                          )}
+                          {badge}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </EditorCard>
+
+            <div className="flex items-center gap-4 rounded-lg border bg-card px-4 py-3 sm:px-6">
+              <div className="flex flex-1 flex-col gap-1">
+                <label
+                  htmlFor="product-suggested"
+                  className="text-[15px] font-semibold"
+                >
+                  Sugerir no carrinho
+                </label>
+                <span className="text-[13px] text-muted-foreground">
+                  Aparece como sugestão quando o cliente
+                  revisa o pedido. Bom para bebidas e
+                  sobremesas.
+                </span>
+              </div>
+              <Switch
+                id="product-suggested"
+                checked={isSuggested}
+                onCheckedChange={setIsSuggested}
+              />
+            </div>
+          </>
+        ) : null}
+
+        {step === 1 ? (
+          <EditorCard
+            title="Categoria"
+            description="Em qual categoria o produto aparece?"
+          >
+            {errors.category ? (
+              <p
+                role="alert"
+                className="border-b bg-destructive-soft px-4 py-3 text-[13px] text-destructive sm:px-6"
+              >
+                {errors.category}
+              </p>
+            ) : null}
+            <div
+              role="radiogroup"
+              aria-label="Categoria do produto"
+              className="flex flex-col"
+            >
+              {allCategories.map((category) => {
+                const selected = category.id === categoryId;
+                // Sem contar o próprio produto.
+                const count =
+                  category.productCount -
+                  (product?.categoryId === category.id
+                    ? 1
+                    : 0);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => {
+                      setCategoryId(category.id);
+                      setErrors((current) => ({
+                        ...current,
+                        category: undefined,
+                      }));
+                    }}
+                    className={cn(
+                      "flex min-h-12 items-center gap-3 border-b px-4 text-left outline-none hover:bg-muted/50 focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset sm:px-6",
+                      selected && "bg-background",
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "size-5 shrink-0 rounded-full",
+                        selected
+                          ? "border-[6px] border-foreground"
+                          : "border-[1.5px] border-muted-foreground",
+                      )}
+                    />
+                    <span className="flex-1 text-[15px]">
+                      {category.name}
+                    </span>
+                    <span className="tabular text-[13px] text-muted-foreground">
+                      {productCountLabel(count)}
+                    </span>
+                  </button>
                 );
               })}
             </div>
-          </div>
-        </section>
-
-        <Separator />
-
-        <section className="grid gap-4">
-          <ToggleRow
-            id="product-available"
-            title="Disponível"
-            description="Desligado, o produto aparece como esgotado e não pode ser pedido."
-            checked={isAvailable}
-            onCheckedChange={setIsAvailable}
-          />
-          <ToggleRow
-            id="product-suggested"
-            title="Sugerir no carrinho"
-            description="Aparece como sugestão quando o cliente revisa o pedido. Bom para bebidas e sobremesas."
-            checked={isSuggested}
-            onCheckedChange={setIsSuggested}
-          />
-        </section>
-
-        <Separator />
-
-        <section className="grid gap-3">
-          <div>
-            <p className="text-sm font-medium">
-              Complementos
-            </p>
-            <p className="text-[13px] text-muted-foreground">
-              Escolhas do cliente, como ponto da carne ou
-              adicionais, na ordem em que ele vê.
-            </p>
-          </div>
-
-          {linked.length === 0 ? (
-            <p className="rounded-lg border border-dashed px-4 py-3 text-[13px] text-muted-foreground">
-              Sem complementos, o produto vai direto para o
-              carrinho.
-            </p>
-          ) : (
-            <SortableList
-              items={linked}
-              onReorder={(next) =>
-                setGroupIds(next.map((group) => group.id))
-              }
-              handleLabel={(group) => `Mover ${group.name}`}
-              className="flex flex-col gap-2"
-              itemClassName="rounded-lg"
-              renderItem={(group, dragHandle) => (
-                <div className="flex items-center gap-2 rounded-lg border py-2 pr-2 pl-1">
-                  {dragHandle}
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[15px] font-semibold">
-                      {group.name}
-                    </span>
-                    <span className="text-[13px] text-muted-foreground">
-                      {group.rule}
-                    </span>
-                    <span className="truncate text-[13px] text-muted-foreground">
-                      {group.optionNames}
-                    </span>
-                    {group.hasNoActiveOption ? (
-                      <span className="text-[13px] text-destructive">
-                        Nenhuma opção disponível neste
-                        grupo.
-                      </span>
-                    ) : null}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setGroupIds((current) =>
-                        current.filter(
-                          (id) => id !== group.id,
-                        ),
-                      )
-                    }
-                  >
-                    Desvincular
-                  </Button>
-                </div>
-              )}
-            />
-          )}
-
-          {picking ? (
-            <div className="grid gap-2 rounded-lg border p-3">
+            <div className="flex flex-col gap-2 px-4 py-4 sm:px-6 sm:pb-6">
+              <label
+                htmlFor="product-new-category"
+                className="text-[13px] font-medium"
+              >
+                Ou crie uma categoria nova
+              </label>
               <div className="flex gap-2">
                 <Input
-                  aria-label="Buscar grupo ou opção"
-                  placeholder="Buscar grupo ou opção"
-                  value={query}
+                  id="product-new-category"
+                  value={newCategory}
+                  placeholder="Ex.: Porções"
+                  maxLength={60}
                   onChange={(event) =>
-                    setQuery(event.target.value)
+                    setNewCategory(event.target.value)
                   }
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      createCategory();
+                    }
+                  }}
                 />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Fechar lista de grupos"
-                  onClick={() => {
-                    setPicking(false);
-                    setQuery("");
-                  }}
+                  variant="outline"
+                  disabled={!newCategory.trim() || pending}
+                  onClick={createCategory}
                 >
-                  <X aria-hidden />
+                  Criar
                 </Button>
               </div>
-              {available.length === 0 ? (
-                <p className="px-1 py-2 text-[13px] text-muted-foreground">
-                  {groups.length === 0
-                    ? "Nenhum grupo cadastrado ainda."
-                    : "Nenhum outro grupo encontrado."}
-                </p>
-              ) : (
-                <ul className="flex max-h-64 flex-col divide-y overflow-y-auto">
-                  {available.map((group) => (
-                    <li
-                      key={group.id}
-                      className="flex items-center gap-3 py-2"
-                    >
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate text-[15px] font-medium">
-                          {group.name}
+            </div>
+          </EditorCard>
+        ) : null}
+
+        {step === 2 ? (
+          <EditorCard
+            title="Complementos"
+            description="Escolhas do cliente, como ponto da carne, sabor ou adicionais. Na ordem em que o cliente vê."
+          >
+            {groupIds.length === 0 && !picking ? (
+              <div className="flex flex-col items-start gap-3 p-4 sm:p-6">
+                <span className="text-[13px] text-muted-foreground">
+                  Sem complementos, o produto vai direto
+                  para o carrinho.
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPicking(true)}
+                >
+                  Adicionar complementos
+                </Button>
+              </div>
+            ) : null}
+
+            {linked.length > 0 ? (
+              <>
+                <SortableList
+                  items={linked}
+                  onReorder={(reordered) =>
+                    setGroupIds(
+                      reordered.map((group) => group.id),
+                    )
+                  }
+                  handleLabel={(group) =>
+                    `Mover ${group.name}`
+                  }
+                  className="flex flex-col"
+                  itemClassName="border-b"
+                  renderItem={(group, dragHandle) => (
+                    <div className="flex gap-1 py-2 pr-4 pl-1 sm:pr-6">
+                      {dragHandle}
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <div className="flex min-h-11 flex-wrap items-center gap-1">
+                          <span className="mr-auto text-[15px] font-semibold">
+                            {group.name}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setGroupEditor(group)
+                            }
+                          >
+                            Editar grupo
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setGroupIds((current) =>
+                                current.filter(
+                                  (id) => id !== group.id,
+                                ),
+                              )
+                            }
+                          >
+                            Desvincular
+                          </Button>
+                        </div>
+                        <span className="text-[13px] text-muted-foreground">
+                          {describeGroupRule(
+                            group.minSelect,
+                            group.maxSelect,
+                          )}
                         </span>
-                        <span className="truncate text-[13px] text-muted-foreground">
-                          {group.rule} · {group.optionNames}
+                        <span className="text-[13px] text-muted-foreground">
+                          {describeGroupOptions(group)}
                         </span>
+                        {isBlockingGroup(group) ? (
+                          <span className="text-[13px] text-destructive">
+                            Todas as opções estão pausadas:
+                            o produto não vai poder ser
+                            pedido.
+                          </span>
+                        ) : null}
                       </div>
+                    </div>
+                  )}
+                />
+                <div className="flex flex-col gap-2 px-4 py-3 sm:px-6">
+                  <span className="text-xs text-muted-foreground">
+                    Arraste pela alça para reordenar.
+                  </span>
+                  {picking ? null : (
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        onClick={() => setPicking(true)}
+                      >
+                        Vincular grupo existente
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() =>
-                          setGroupIds((current) => [
-                            ...current,
-                            group.id,
-                          ])
+                          setGroupEditor("new")
                         }
                       >
-                        Vincular
+                        <Plus aria-hidden />
+                        Criar grupo novo
                       </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p className="px-1 text-[13px] text-muted-foreground">
-                Para criar ou mudar um grupo, use a tela{" "}
-                <Link
-                  href="/painel/cardapio/complementos"
-                  className="underline underline-offset-3 hover:text-foreground"
-                >
-                  Complementos
-                </Link>
-                .
-              </p>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-self-start"
-              onClick={() => setPicking(true)}
-            >
-              <Plus aria-hidden />
-              Vincular grupo
-            </Button>
-          )}
-        </section>
-      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : null}
 
-      <div className="grid gap-3">
+            {picking ? (
+              <div className="border-t">
+                <div className="flex items-center gap-2 border-b bg-muted px-4 py-3 sm:px-6">
+                  <Input
+                    aria-label="Buscar grupo ou opção"
+                    placeholder="Buscar grupo ou opção"
+                    className="bg-card"
+                    value={query}
+                    onChange={(event) =>
+                      setQuery(event.target.value)
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setPicking(false);
+                      setQuery("");
+                    }}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+                {pickable.length === 0 ? (
+                  <p className="border-b px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
+                    {normalizedQuery
+                      ? `Nenhum grupo encontrado para "${query.trim()}".`
+                      : "Todos os grupos já estão neste produto."}
+                  </p>
+                ) : (
+                  <ul className="flex flex-col">
+                    {pickable.map((group) => (
+                      <li
+                        key={group.id}
+                        className="flex items-start gap-3 border-b px-4 py-3 sm:px-6"
+                      >
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="text-[15px] font-semibold">
+                            {group.name}
+                          </span>
+                          <span className="text-[13px] text-muted-foreground">
+                            {describeGroupRule(
+                              group.minSelect,
+                              group.maxSelect,
+                            )}{" "}
+                            ·{" "}
+                            {group.usedBy.length === 0
+                              ? "sem produtos"
+                              : `usado em ${productCountLabel(group.usedBy.length)}`}
+                          </span>
+                          <span className="text-[13px] text-muted-foreground">
+                            {describeGroupOptions(group)}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setGroupIds((current) => [
+                              ...current,
+                              group.id,
+                            ])
+                          }
+                        >
+                          Vincular
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setGroupEditor("new")}
+                  className="flex min-h-12 w-full items-center px-4 text-[15px] font-medium outline-none hover:bg-muted/50 focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset sm:px-6"
+                >
+                  + Criar grupo novo
+                </button>
+              </div>
+            ) : null}
+          </EditorCard>
+        ) : null}
+
         {error ? (
           <p
             role="alert"
-            className="text-sm text-destructive"
+            className="text-[13px] text-destructive"
           >
             {error}
           </p>
         ) : null}
-        <DialogFooter className="sm:justify-between">
-          <div
-            className={cn(
-              "flex gap-2",
-              !product && "hidden sm:block",
-            )}
-          >
-            {product && onDelete ? (
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => onDelete(product)}
-              >
-                Excluir
-              </Button>
-            ) : null}
-            {product && onDuplicate ? (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onDuplicate(product)}
-              >
-                Duplicar
-              </Button>
-            ) : null}
-          </div>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row">
-            <DialogClose
-              render={
-                <Button type="button" variant="outline" />
-              }
-            >
-              Cancelar
-            </DialogClose>
-            <Button type="submit" disabled={pending}>
-              {pending
-                ? "Salvando…"
-                : product
-                  ? "Salvar produto"
-                  : "Criar produto"}
-            </Button>
-          </div>
-        </DialogFooter>
       </div>
+
+      <footer className="flex shrink-0 flex-wrap items-center gap-2 border-t px-4 py-4 sm:px-6">
+        {product ? (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onDelete(product)}
+            >
+              Excluir
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onDuplicate(product)}
+            >
+              Duplicar produto
+            </Button>
+          </>
+        ) : null}
+        <span className="flex-1" />
+        {isWizard && step > 0 ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => goTo((step - 1) as Step)}
+          >
+            Voltar
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+        )}
+        <Button type="submit" disabled={pending}>
+          {pending
+            ? "Salvando…"
+            : !isWizard
+              ? "Salvar"
+              : step < 2
+                ? "Continuar"
+                : "Salvar produto"}
+        </Button>
+      </footer>
+
+      <ComplementGroupEditor
+        open={groupEditor !== null}
+        onOpenChange={(isOpen) =>
+          !isOpen && setGroupEditor(null)
+        }
+        group={
+          groupEditor === "new" || groupEditor === null
+            ? null
+            : {
+                ...groupEditor,
+                usedByCount: groupEditor.usedBy.length,
+              }
+        }
+        onSave={async (draft) => {
+          const result = await onSaveGroup(draft);
+          if (result.ok) {
+            if (!draft.id) {
+              // Grupo criado daqui já entra no produto.
+              setGroupIds((current) => [
+                ...current,
+                result.data,
+              ]);
+              setPicking(false);
+            }
+            toast.success(
+              draft.id
+                ? "Grupo atualizado"
+                : "Grupo criado",
+            );
+          }
+          return result;
+        }}
+      />
     </form>
   );
 }
 
-function ToggleRow({
-  id,
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <span
+      role="alert"
+      className="text-[13px] text-destructive"
+    >
+      {message}
+    </span>
+  );
+}
+
+function EditorCard({
   title,
   description,
-  checked,
-  onCheckedChange,
+  children,
 }: {
-  id: string;
   title: string;
-  description: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
+  description?: string;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="grid gap-0.5">
-        <Label
-          htmlFor={id}
-          className="text-[15px] font-medium"
-        >
+    <section className="overflow-hidden rounded-lg border bg-card">
+      <header className="flex min-h-14 flex-col justify-center gap-1 border-b px-4 py-3 sm:px-6">
+        <h3 className="text-[15px] leading-tight font-semibold">
           {title}
-        </Label>
-        <p className="text-[13px] text-muted-foreground">
-          {description}
-        </p>
-      </div>
-      <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-      />
+        </h3>
+        {description ? (
+          <p className="text-[13px] text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function Segmented<T extends string | boolean>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: [T, string][];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="inline-flex self-start rounded-md border bg-muted p-0.5"
+    >
+      {options.map(([optionValue, optionLabel]) => {
+        const selected = optionValue === value;
+        return (
+          <button
+            key={optionLabel}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(optionValue)}
+            className={cn(
+              "h-8 rounded-[5px] px-3 text-[13px] font-medium text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-foreground",
+              selected &&
+                "bg-card text-foreground shadow-sm",
+            )}
+          >
+            {optionLabel}
+          </button>
+        );
+      })}
     </div>
   );
 }

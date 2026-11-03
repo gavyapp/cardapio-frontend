@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
@@ -17,8 +17,13 @@ import type {
   ActionResult,
   ActionResultWith,
 } from "@/lib/action-result";
+import {
+  GROUP_PARAM,
+  NEW_ITEM,
+} from "@/lib/catalog-params";
 import { describeGroupRule } from "@/lib/complement-rules";
 import { formatCurrency } from "@/lib/format";
+import { useSearchParamState } from "@/lib/use-search-param-state";
 import { cn } from "@/lib/utils";
 
 export type ComplementGroupItem = {
@@ -91,9 +96,18 @@ export function ComplementGroupList({
   const [showUsage, setShowUsage] = useState<Set<string>>(
     () => new Set(),
   );
-  const [editing, setEditing] = useState<
-    EditableComplementGroup | "new" | null
-  >(null);
+  // "?grupo=novo" ou "?grupo=<id>" abre o editor.
+  const [editingParam, setEditingParam] =
+    useSearchParamState(GROUP_PARAM);
+  const editingGroup = items.find(
+    (group) => group.id === editingParam,
+  );
+  const editing: EditableComplementGroup | "new" | null =
+    editingParam === NEW_ITEM
+      ? "new"
+      : editingGroup
+        ? toEditable(editingGroup)
+        : null;
   const [deleting, setDeleting] =
     useState<ComplementGroupItem | null>(null);
   const [, startTransition] = useTransition();
@@ -157,15 +171,14 @@ export function ComplementGroupList({
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button onClick={() => setEditing("new")}>
-          <Plus aria-hidden />
-          Novo grupo
-        </Button>
-      </div>
+      <p className="rounded-lg border bg-card px-4 py-3 text-[13px] text-muted-foreground sm:px-6">
+        Os grupos são compartilhados. O que mudar aqui vale
+        para todos os produtos que usam o grupo. Para ligar
+        um grupo a um produto, abra o produto.
+      </p>
 
       {items.length === 0 ? (
-        <div className="rounded-xl border bg-card px-6 py-12 text-center text-[15px] text-muted-foreground">
+        <div className="rounded-lg border bg-card px-6 py-12 text-center text-[15px] text-muted-foreground">
           Nenhum grupo ainda. Crie grupos como &quot;Ponto
           da carne&quot; ou &quot;Adicionais&quot; e ligue
           aos produtos.
@@ -181,14 +194,14 @@ export function ComplementGroupList({
             )
           }
           handleLabel={(group) => `Mover ${group.name}`}
-          className="flex flex-col gap-2"
-          itemClassName="rounded-xl"
+          className="flex flex-col gap-4"
+          itemClassName="rounded-lg"
           renderItem={(group, dragHandle) => {
             const isOpen = expanded.has(group.id);
             const warning = unavailableWarning(group);
             const usedCount = group.usedBy.length;
             return (
-              <div className="overflow-hidden rounded-xl border">
+              <div className="overflow-hidden rounded-lg border">
                 <div className="flex min-h-16 items-center gap-2 py-2 pr-2 pl-1 sm:pr-4">
                   {dragHandle}
                   <button
@@ -250,7 +263,7 @@ export function ComplementGroupList({
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      setEditing(toEditable(group))
+                      setEditingParam(group.id)
                     }
                   >
                     Editar
@@ -339,7 +352,9 @@ export function ComplementGroupList({
 
       <ComplementGroupEditor
         open={editing !== null}
-        onOpenChange={(open) => !open && setEditing(null)}
+        onOpenChange={(open) =>
+          !open && setEditingParam(null)
+        }
         group={editing === "new" ? null : editing}
         onSave={async (draft) => {
           const result = await actions.save(draft);

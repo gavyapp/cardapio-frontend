@@ -14,10 +14,14 @@ import {
   reorderProducts,
   saveProduct,
   setProductAvailability,
+  setProductSuggested,
 } from "@/lib/data/products";
 import { afterMenuChange } from "@/lib/menu-cache";
 import { requireStoreForAction } from "@/lib/panel-access";
-import { PRODUCT_BADGES } from "@/lib/product-badges";
+import {
+  PRODUCT_BADGES,
+  PRODUCT_DESCRIPTION_LIMIT,
+} from "@/lib/product-fields";
 
 const id = z.uuid();
 
@@ -34,7 +38,10 @@ const productSchema = z.object({
   description: z
     .string()
     .trim()
-    .max(300, "Use até 300 caracteres na descrição."),
+    .max(
+      PRODUCT_DESCRIPTION_LIMIT,
+      `Use até ${PRODUCT_DESCRIPTION_LIMIT} caracteres na descrição.`,
+    ),
   price: z
     .number({ message: "Informe um preço válido." })
     .min(0, "Informe um preço válido.")
@@ -107,6 +114,28 @@ export async function setProductAvailabilityAction(
       store.id,
       parsed.data.productId,
       parsed.data.isAvailable,
+    );
+    afterMenuChange(store.id);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: errorMessage(error) };
+  }
+}
+
+export async function setProductSuggestedAction(
+  productId: string,
+  isSuggested: boolean,
+): Promise<ActionResult> {
+  const parsed = z
+    .object({ productId: id, isSuggested: z.boolean() })
+    .safeParse({ productId, isSuggested });
+  if (!parsed.success) return validationError(parsed.error);
+  try {
+    const store = await requireStoreForAction();
+    await setProductSuggested(
+      store.id,
+      parsed.data.productId,
+      parsed.data.isSuggested,
     );
     afterMenuChange(store.id);
     return { ok: true };

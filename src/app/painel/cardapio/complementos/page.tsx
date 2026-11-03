@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { SearchParamButton } from "@/components/molecules/search-param-button";
 import { ComplementGroupList } from "@/components/organisms/complement-group-list";
 import {
   CatalogPageSkeleton,
   CatalogPageTemplate,
 } from "@/components/templates/catalog-page-template";
+import {
+  GROUP_PARAM,
+  NEW_ITEM,
+} from "@/lib/catalog-params";
 import { listComplementGroups } from "@/lib/data/complement-groups";
 import { requirePanelAccess } from "@/lib/panel-access";
 
@@ -27,13 +32,19 @@ async function ComplementGroups() {
   const groups = await listComplementGroups(
     access.store.id,
   );
-  const total = groups.length;
 
   return (
     <CatalogPageTemplate
       title="Complementos"
-      summary={total === 1 ? "1 grupo" : `${total} grupos`}
-      description="Os grupos são compartilhados. O que mudar aqui vale para todos os produtos que usam o grupo. Para ligar um grupo a um produto, abra o produto."
+      count={groups.length}
+      action={
+        <SearchParamButton
+          name={GROUP_PARAM}
+          value={NEW_ITEM}
+        >
+          Novo grupo
+        </SearchParamButton>
+      }
     >
       <ComplementGroupList
         groups={groups}
