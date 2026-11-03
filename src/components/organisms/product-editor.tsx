@@ -9,6 +9,7 @@ import {
 import { Check, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import {
@@ -30,10 +31,12 @@ import {
 } from "@/components/organisms/complement-group-editor";
 import type { ComplementGroupItem } from "@/components/organisms/complement-group-list";
 import type { ActionResultWith } from "@/lib/action-result";
-import { describeGroupRule } from "@/lib/complement-rules";
+import {
+  describeChoiceRule,
+  isRequiredGroup,
+} from "@/lib/complement-rules";
 import {
   formatAmountInput,
-  formatCurrency,
   parseAmountInput,
 } from "@/lib/format";
 import {
@@ -87,11 +90,69 @@ export function describeGroupOptions(
       (option) =>
         option.name +
         (option.price > 0
-          ? ` +${formatCurrency(option.price)}`
+          ? ` +${formatAmountInput(option.price)}`
           : "") +
         (option.isAvailable ? "" : " (pausado)"),
     )
     .join(" · ");
+}
+
+/** Nome, tipo, regra e opções de um grupo, como no protótipo. */
+function GroupSummary({
+  group,
+  usedByCount,
+}: {
+  group: ComplementGroupItem;
+  /** Mostra em quantos produtos o grupo está (lista para adicionar). */
+  usedByCount?: number;
+}) {
+  const required = isRequiredGroup(group.minSelect);
+  const details = [
+    describeChoiceRule(group.minSelect, group.maxSelect),
+    group.options.length === 1
+      ? "1 opção"
+      : `${group.options.length} opções`,
+  ];
+  if (usedByCount !== undefined) {
+    details.push(
+      usedByCount === 0
+        ? "sem produtos"
+        : `usado em ${productCountLabel(usedByCount)}`,
+    );
+  }
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5 leading-tight">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="text-[15px] font-semibold">
+          {group.name}
+        </span>
+        <Badge
+          variant={required ? "default" : "outline"}
+          className={cn(
+            "h-5 rounded-md px-1.5 text-[11px] font-semibold",
+            required
+              ? "bg-foreground text-background"
+              : "border-transparent bg-muted text-muted-foreground",
+          )}
+        >
+          {required ? "Obrigatório" : "Opcional"}
+        </Badge>
+      </div>
+      <span className="text-[13px]">
+        {details.join(" · ")}
+      </span>
+      <span className="line-clamp-2 text-[13px] text-muted-foreground">
+        {describeGroupOptions(group)}
+      </span>
+      {usedByCount === undefined &&
+      isBlockingGroup(group) ? (
+        <span className="text-[13px] text-destructive">
+          Todas as opções estão pausadas: o produto não vai
+          poder ser pedido.
+        </span>
+      ) : null}
+    </div>
+  );
 }
 
 /** Grupo obrigatório sem opção disponível: o produto não pode ser pedido. */
@@ -221,7 +282,6 @@ function EditorForm({
   const [createdCategories, setCreatedCategories] =
     useState<EditorCategory[]>([]);
   const [newCategory, setNewCategory] = useState("");
-  const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState("");
   const [groupEditor, setGroupEditor] = useState<
     ComplementGroupItem | "new" | null
@@ -262,7 +322,6 @@ function EditorForm({
 
   function goTo(next: Step) {
     setStep(next);
-    setPicking(false);
   }
 
   /**
@@ -686,28 +745,23 @@ function EditorForm({
         ) : null}
 
         {step === 2 ? (
-          <EditorCard
-            title="Complementos"
-            description="Escolhas do cliente, como ponto da carne, sabor ou adicionais. Na ordem em que o cliente vê."
-          >
-            {groupIds.length === 0 && !picking ? (
-              <div className="flex flex-col items-start gap-3 p-4 sm:p-6">
-                <span className="text-[13px] text-muted-foreground">
-                  Sem complementos, o produto vai direto
-                  para o carrinho.
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setPicking(true)}
-                >
-                  Adicionar complementos
-                </Button>
-              </div>
-            ) : null}
-
-            {linked.length > 0 ? (
-              <>
+          <>
+            <EditorCard
+              title={
+                <>
+                  Neste produto
+                  <span className="tabular ml-2 text-[13px] font-normal text-muted-foreground">
+                    {linked.length}
+                  </span>
+                </>
+              }
+              description={
+                linked.length > 0
+                  ? "O cliente vê nesta ordem. Arraste pela alça para mudar."
+                  : "Nenhum complemento ainda. Sem complementos, o produto vai direto para o carrinho."
+              }
+            >
+              {linked.length > 0 ? (
                 <SortableList
                   items={linked}
                   onReorder={(reordered) =>
@@ -719,96 +773,56 @@ function EditorForm({
                     `Mover ${group.name}`
                   }
                   className="flex flex-col"
-                  itemClassName="border-b"
+                  itemClassName="border-b last:border-b-0"
                   renderItem={(group, dragHandle) => (
-                    <div className="flex gap-1 py-2 pr-4 pl-1 sm:pr-6">
+                    <div className="flex items-start gap-1 py-3 pr-4 pl-1 sm:pr-6">
                       {dragHandle}
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
-                        <div className="flex min-h-11 flex-wrap items-center gap-1">
-                          <span className="mr-auto text-[15px] font-semibold">
-                            {group.name}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setGroupEditor(group)
-                            }
-                          >
-                            Editar grupo
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setGroupIds((current) =>
-                                current.filter(
-                                  (id) => id !== group.id,
-                                ),
-                              )
-                            }
-                          >
-                            Desvincular
-                          </Button>
-                        </div>
-                        <span className="text-[13px] text-muted-foreground">
-                          {describeGroupRule(
-                            group.minSelect,
-                            group.maxSelect,
-                          )}
-                        </span>
-                        <span className="text-[13px] text-muted-foreground">
-                          {describeGroupOptions(group)}
-                        </span>
-                        {isBlockingGroup(group) ? (
-                          <span className="text-[13px] text-destructive">
-                            Todas as opções estão pausadas:
-                            o produto não vai poder ser
-                            pedido.
-                          </span>
-                        ) : null}
+                      <span className="tabular mt-2.5 mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                        {linked.indexOf(group) + 1}
+                      </span>
+                      <GroupSummary group={group} />
+                      <div className="flex shrink-0 items-center gap-1 pt-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="bg-card"
+                          onClick={() =>
+                            setGroupEditor(group)
+                          }
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Tirar ${group.name} do produto`}
+                          onClick={() =>
+                            setGroupIds((current) =>
+                              current.filter(
+                                (id) => id !== group.id,
+                              ),
+                            )
+                          }
+                        >
+                          <X aria-hidden />
+                        </Button>
                       </div>
                     </div>
                   )}
                 />
-                <div className="flex flex-col gap-2 px-4 py-3 sm:px-6">
-                  <span className="text-xs text-muted-foreground">
-                    Arraste pela alça para reordenar.
-                  </span>
-                  {picking ? null : (
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setPicking(true)}
-                      >
-                        Vincular grupo existente
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() =>
-                          setGroupEditor("new")
-                        }
-                      >
-                        <Plus aria-hidden />
-                        Criar grupo novo
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : null}
+              ) : null}
+            </EditorCard>
 
-            {picking ? (
-              <div className="border-t">
-                <div className="flex items-center gap-2 border-b bg-muted px-4 py-3 sm:px-6">
+            <EditorCard
+              title="Adicionar complemento"
+              description="Use um grupo que você já criou ou crie um novo."
+              toolbar={
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     aria-label="Buscar grupo ou opção"
                     placeholder="Buscar grupo ou opção"
-                    className="bg-card"
                     value={query}
                     onChange={(event) =>
                       setQuery(event.target.value)
@@ -816,73 +830,55 @@ function EditorForm({
                   />
                   <Button
                     type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setPicking(false);
-                      setQuery("");
-                    }}
+                    className="h-11 shrink-0"
+                    onClick={() => setGroupEditor("new")}
                   >
-                    Fechar
+                    <Plus aria-hidden />
+                    Criar grupo novo
                   </Button>
                 </div>
-                {pickable.length === 0 ? (
-                  <p className="border-b px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
-                    {normalizedQuery
-                      ? `Nenhum grupo encontrado para "${query.trim()}".`
+              }
+            >
+              {pickable.length === 0 ? (
+                <p className="px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
+                  {normalizedQuery
+                    ? `Nenhum grupo encontrado para "${query.trim()}".`
+                    : groups.length === 0
+                      ? "Nenhum grupo criado ainda."
                       : "Todos os grupos já estão neste produto."}
-                  </p>
-                ) : (
-                  <ul className="flex flex-col">
-                    {pickable.map((group) => (
-                      <li
-                        key={group.id}
-                        className="flex items-start gap-3 border-b px-4 py-3 sm:px-6"
+                </p>
+              ) : (
+                <ul className="flex flex-col">
+                  {pickable.map((group) => (
+                    <li
+                      key={group.id}
+                      className="flex items-start gap-3 border-b px-4 py-3 last:border-b-0 sm:px-6"
+                    >
+                      <GroupSummary
+                        group={group}
+                        usedByCount={group.usedBy.length}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-1.5 shrink-0 bg-card"
+                        onClick={() =>
+                          setGroupIds((current) => [
+                            ...current,
+                            group.id,
+                          ])
+                        }
                       >
-                        <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
-                          <span className="text-[15px] font-semibold">
-                            {group.name}
-                          </span>
-                          <span className="text-[13px] text-muted-foreground">
-                            {describeGroupRule(
-                              group.minSelect,
-                              group.maxSelect,
-                            )}{" "}
-                            ·{" "}
-                            {group.usedBy.length === 0
-                              ? "sem produtos"
-                              : `usado em ${productCountLabel(group.usedBy.length)}`}
-                          </span>
-                          <span className="text-[13px] text-muted-foreground">
-                            {describeGroupOptions(group)}
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setGroupIds((current) => [
-                              ...current,
-                              group.id,
-                            ])
-                          }
-                        >
-                          Vincular
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setGroupEditor("new")}
-                  className="flex min-h-12 w-full items-center px-4 text-[15px] font-medium outline-none hover:bg-muted/50 focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset sm:px-6"
-                >
-                  + Criar grupo novo
-                </button>
-              </div>
-            ) : null}
-          </EditorCard>
+                        <Plus aria-hidden />
+                        Adicionar
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </EditorCard>
+          </>
         ) : null}
 
         {error ? (
@@ -966,7 +962,6 @@ function EditorForm({
                 ...current,
                 result.data,
               ]);
-              setPicking(false);
             }
             toast.success(
               draft.id
@@ -984,15 +979,18 @@ function EditorForm({
 function EditorCard({
   title,
   description,
+  toolbar,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   description?: string;
+  /** Controles logo abaixo da descrição, ainda no cabeçalho. */
+  toolbar?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="overflow-hidden rounded-lg border bg-card">
-      <header className="flex min-h-14 flex-col justify-center gap-1 border-b px-4 py-3 sm:px-6">
+      <header className="flex min-h-14 flex-col justify-center gap-1 border-b px-4 py-3 last:border-b-0 sm:px-6">
         <h3 className="text-[15px] leading-tight font-semibold">
           {title}
         </h3>
@@ -1000,6 +998,9 @@ function EditorCard({
           <p className="text-[13px] text-muted-foreground">
             {description}
           </p>
+        ) : null}
+        {toolbar ? (
+          <div className="pt-2">{toolbar}</div>
         ) : null}
       </header>
       {children}
