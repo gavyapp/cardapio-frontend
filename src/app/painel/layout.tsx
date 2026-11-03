@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import {
   PanelHeader,
   type HeaderStore,
-} from "./_components/panel-header";
+} from "@/components/organisms/panel-header";
+import { Toaster } from "@/components/atoms/sonner";
 import { findStoreBySlug } from "@/lib/data/store";
 
 export const metadata: Metadata = { title: "Painel" };
@@ -16,6 +17,7 @@ async function HeaderWithStore() {
   const store = await findStoreBySlug(DEMO_STORE_SLUG);
   const headerStore: HeaderStore | null = store
     ? {
+        slug: store.slug,
         name: store.name,
         primaryColor: store.appearance.primaryColor,
       }
@@ -34,6 +36,7 @@ export default function PanelLayout({
       <main className="flex flex-1 flex-col">
         {children}
       </main>
+      <Toaster position="bottom-center" />
     </div>
   );
 }

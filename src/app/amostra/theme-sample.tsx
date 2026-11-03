@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/atoms/badge";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Label } from "@/components/atoms/label";
 import { contrastRatio, textColorOn } from "@/lib/color";
 import { formatCurrency } from "@/lib/format";
 import { themeStyle } from "@/lib/store-theme";
