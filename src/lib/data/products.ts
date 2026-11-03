@@ -327,7 +327,9 @@ async function isImageInUse(
 
 /**
  * Copia o produto (com os grupos na mesma ordem) logo como "Nome (cópia)",
- * no fim da mesma categoria. A cópia usa a mesma foto. Devolve o id novo.
+ * no fim da mesma categoria. A cópia usa a mesma foto e nasce disponível e
+ * sem sugestão no carrinho, mesmo que o original esteja esgotado ou
+ * sugerido. Devolve o id novo.
  */
 export async function duplicateProduct(
   storeId: string,
@@ -338,7 +340,6 @@ export async function duplicateProduct(
     .from("products")
     .select(
       `category_id, name, description, price, image_url, badges,
-       is_available, is_suggested,
        product_complement_groups(complement_group_id, sort_order)`,
     )
     .eq("id", productId)
@@ -364,8 +365,8 @@ export async function duplicateProduct(
       price: original.price,
       image_url: original.image_url,
       badges: original.badges,
-      is_available: original.is_available,
-      is_suggested: original.is_suggested,
+      is_available: true,
+      is_suggested: false,
       sort_order: await nextSortOrder(
         storeId,
         original.category_id,
