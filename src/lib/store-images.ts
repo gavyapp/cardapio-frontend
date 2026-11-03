@@ -47,18 +47,26 @@ const PUBLIC_PATH_MARKER = `/storage/v1/object/public/${STORE_IMAGES_BUCKET}/`;
 
 /**
  * Caminho do arquivo no bucket a partir da URL pública, ou null se a URL não
- * for do bucket da loja (por exemplo, uma imagem externa do seed).
+ * for do bucket no nosso Supabase (por exemplo, uma imagem externa do seed).
  */
 export function storeImagePathFromUrl(
   url: string | null | undefined,
 ): string | null {
   if (!url) return null;
-  let pathname: string;
+  let parsed: URL;
   try {
-    pathname = new URL(url).pathname;
+    parsed = new URL(url);
   } catch {
     return null;
   }
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (
+    supabaseUrl &&
+    parsed.origin !== new URL(supabaseUrl).origin
+  ) {
+    return null;
+  }
+  const pathname = parsed.pathname;
   const index = pathname.indexOf(PUBLIC_PATH_MARKER);
   if (index === -1) return null;
   const path = decodeURIComponent(
