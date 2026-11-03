@@ -282,6 +282,9 @@ function EditorForm({
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
+        // Aberto de dentro do editor de produto, o envio subiria pela árvore
+        // do React (o portal do Sheet não corta isso) e salvaria o produto.
+        event.stopPropagation();
         submit();
       }}
     >
