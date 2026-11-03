@@ -1,0 +1,96 @@
+# Aplica no banco as migrations que entraram na main (supabase db push).
+# Os testes do banco (testes-do-banco.yml) continuam sendo o filtro antes
+# do merge; aqui só se aplica o que já foi revisado e testado no PR.
+#
+# Roda só as migrations que ainda não estão no histórico do banco
+# (supabase_migrations.schema_migrations). O seed nunca roda por aqui.
+#
+# Secrets (Settings > Secrets and variables > Actions), connection string
+# do Session pooler (porta 5432) com a senha percent-encoded:
+#   SUPABASE_DEV_DB_URL   projeto de dev
+#   SUPABASE_PROD_DB_URL  projeto de produção (quando existir)
+#
+# Produção fica desligada até a variável APPLY_MIGRATIONS_TO_PROD valer
+# "true". O job usa o environment "producao", que deve exigir aprovação
+# manual (Settings > Environments > producao > Required reviewers).
+name: Aplicar migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+# Um push por vez, na ordem dos merges; nunca cancela um push no meio.
+concurrency:
+  group: aplicar-migrations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    name: Aplicar no dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          # Mesma versão do devDependency em package.json
+          version: 2.122.0
+
+      - name: Conferir secret
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DEV_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Secret SUPABASE_DEV_DB_URL não configurada."
+            exit 1
+          fi
+
+      - name: Migrations pendentes
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DEV_DB_URL }}
+        run: supabase db push --db-url "$DB_URL" --dry-run
+
+      - name: Aplicar migrations
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DEV_DB_URL }}
+        run: supabase db push --db-url "$DB_URL" --yes
+
+  producao:
+    name: Aplicar em produção
+    needs: dev
+    if: vars.APPLY_MIGRATIONS_TO_PROD == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+
+      - name: Conferir secret
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Secret SUPABASE_PROD_DB_URL não configurada."
+            exit 1
+          fi
+
+      - name: Migrations pendentes
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: supabase db push --db-url "$DB_URL" --dry-run
+
+      - name: Aplicar migrations
+        env:
+          DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+        run: supabase db push --db-url "$DB_URL" --yes
