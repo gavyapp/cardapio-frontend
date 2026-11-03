@@ -1,39 +1,38 @@
 import type { ReactNode } from "react";
 
 /**
- * Páginas do catálogo no painel (produtos, categorias, complementos): título
- * com resumo e ação principal à direita, explicação curta e o conteúdo.
+ * Páginas do catálogo no painel (produtos e complementos): título com a
+ * contagem ao lado, ação principal à direita e o conteúdo na largura toda.
  */
 export function CatalogPageTemplate({
   title,
-  summary,
+  count,
   description,
   action,
   children,
 }: {
   title: string;
-  summary?: ReactNode;
+  /** Aparece entre parênteses ao lado do título. */
+  count?: number;
   description?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 sm:p-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {title}
-          </h1>
-          {summary ? (
-            <p className="tabular text-[15px] text-muted-foreground">
-              {summary}
-            </p>
-          ) : null}
-        </div>
+    <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
+      <header className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <h1 className="flex min-w-0 items-baseline gap-2 text-2xl leading-tight font-semibold">
+          {title}
+          {count === undefined ? null : (
+            <span className="tabular font-normal text-muted-foreground">
+              ({count})
+            </span>
+          )}
+        </h1>
         {action}
       </header>
       {description ? (
-        <p className="max-w-2xl text-[13px] text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           {description}
         </p>
       ) : null}
@@ -49,15 +48,15 @@ export function CatalogPageSkeleton({
   title: string;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 sm:p-6">
-      <h1 className="text-2xl font-semibold tracking-tight">
+    <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
+      <h1 className="flex min-h-11 items-center text-2xl leading-tight font-semibold">
         {title}
       </h1>
-      <div className="flex flex-col gap-2" aria-hidden>
+      <div className="flex flex-col gap-4" aria-hidden>
         {[0, 1, 2].map((index) => (
           <div
             key={index}
-            className="h-16 animate-pulse rounded-xl bg-muted"
+            className="h-16 animate-pulse rounded-lg border bg-card"
           />
         ))}
       </div>
