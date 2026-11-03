@@ -199,6 +199,10 @@
      volta a mostrar. */
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
+  [role="switch"]:not([aria-disabled="true"]),
+  [role="radio"],
+  [role="checkbox"],
+  [role="tab"],
   [role="menuitem"],
   [role="option"],
   label[for] {
