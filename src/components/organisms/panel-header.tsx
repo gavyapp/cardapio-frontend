@@ -1,4 +1,5 @@
 import { Clock } from "@/components/atoms/clock";
+import { PLATFORM_NAME } from "@/components/atoms/platform-mark";
 import { PanelNav } from "@/components/organisms/panel-nav";
 import {
   StoreMenu,
@@ -7,9 +8,6 @@ import {
 import { Badge } from "@/components/atoms/badge";
 
 export type HeaderStore = MenuStore;
-
-const PLATFORM_NAME =
-  process.env.NEXT_PUBLIC_PLATFORM_NAME ?? "Gavy";
 
 export function PanelHeader({
   store,
