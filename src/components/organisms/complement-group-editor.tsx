@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/atoms/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/atoms/sheet";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Switch } from "@/components/atoms/switch";
@@ -98,8 +95,12 @@ export function ComplementGroupEditor({
   ) => Promise<ActionResultWith<string>>;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_1fr_auto] overflow-hidden sm:max-w-xl">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-[560px]"
+      >
         {open ? (
           <EditorForm
             key={group?.id ?? "new"}
@@ -108,8 +109,8 @@ export function ComplementGroupEditor({
             onDone={() => onOpenChange(false)}
           />
         ) : null}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -192,26 +193,37 @@ function EditorForm({
 
   return (
     <form
-      className="contents"
+      className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
         submit();
       }}
     >
-      <DialogHeader className="pr-10">
-        <DialogTitle className="text-lg font-semibold">
-          {group
-            ? "Editar grupo"
-            : "Novo grupo de complementos"}
-        </DialogTitle>
-        <DialogDescription>
-          {group && group.usedByCount > 0
-            ? `Usado em ${group.usedByCount === 1 ? "1 produto" : `${group.usedByCount} produtos`}. O que mudar aqui vale para todos.`
-            : "Escolhas do cliente, como ponto da carne, sabor ou adicionais."}
-        </DialogDescription>
-      </DialogHeader>
+      <header className="flex min-h-16 shrink-0 items-start gap-2 border-b py-3 pr-4 pl-6">
+        <div className="mr-auto flex min-w-0 flex-col gap-1 pt-1">
+          <SheetTitle className="text-lg font-semibold">
+            {group
+              ? "Editar grupo"
+              : "Novo grupo de complementos"}
+          </SheetTitle>
+          <SheetDescription className="text-[13px]">
+            {group && group.usedByCount > 0
+              ? `Usado em ${group.usedByCount === 1 ? "1 produto" : `${group.usedByCount} produtos`}. O que mudar aqui vale para todos.`
+              : "Escolhas do cliente, como ponto da carne, sabor ou adicionais."}
+          </SheetDescription>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Fechar"
+          onClick={onDone}
+        >
+          <X aria-hidden />
+        </Button>
+      </header>
 
-      <div className="-mx-4 flex min-h-0 flex-col gap-6 overflow-y-auto px-4 pb-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 [&>*]:shrink-0">
         <Field id="group-name" label="Nome do grupo">
           <Input
             id="group-name"
@@ -365,7 +377,7 @@ function EditorForm({
         </div>
       </div>
 
-      <div className="grid gap-3">
+      <footer className="flex shrink-0 flex-col gap-3 border-t px-4 py-4 sm:px-6">
         {error ? (
           <p
             role="alert"
@@ -374,14 +386,14 @@ function EditorForm({
             {error}
           </p>
         ) : null}
-        <DialogFooter>
-          <DialogClose
-            render={
-              <Button type="button" variant="outline" />
-            }
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onDone}
           >
             Cancelar
-          </DialogClose>
+          </Button>
           <Button type="submit" disabled={pending}>
             {pending
               ? "Salvando…"
@@ -389,8 +401,8 @@ function EditorForm({
                 ? "Salvar grupo"
                 : "Criar grupo"}
           </Button>
-        </DialogFooter>
-      </div>
+        </div>
+      </footer>
     </form>
   );
 }

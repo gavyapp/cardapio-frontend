@@ -223,7 +223,7 @@ export function ComplementGroupList({
                         !isOpen && "-rotate-90",
                       )}
                     />
-                    <span className="flex min-w-0 flex-col">
+                    <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
                       <span className="truncate text-[15px] font-semibold">
                         {group.name}
                       </span>
