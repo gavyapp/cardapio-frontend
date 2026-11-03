@@ -59,6 +59,7 @@ type OptionRow = {
 
 type GroupErrors = {
   name?: string;
+  maxSelect?: string;
   /** Lista sem nenhuma linha de opção. */
   options?: string;
   rows?: Record<string, { name?: string; price?: string }>;
@@ -163,9 +164,15 @@ function EditorForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   const filledRows = rows.filter((row) => row.name.trim());
-  const activeCount = filledRows.filter(
+  // Opção já salva com o nome apagado (sendo editada) ainda conta no aviso
+  // de "todas pausadas"; só a linha nova e vazia fica de fora.
+  const optionRows = rows.filter(
+    (row) => row.name.trim() || row.complementId,
+  );
+  const activeCount = optionRows.filter(
     (row) => row.isAvailable,
   ).length;
+  const allowRepeat = group?.allowRepeat ?? false;
 
   function updateRow(
     rowId: string,
@@ -221,11 +228,21 @@ function EditorForm({
         found.options = "Adicione pelo menos 1 opção.";
       }
     }
+    if (
+      !allowRepeat &&
+      filledRows.length > 0 &&
+      maxSelect > filledRows.length
+    ) {
+      found.maxSelect = `O máximo passa do número de opções (${filledRows.length}). Diminua o máximo ou adicione opções.`;
+    }
     if (Object.keys(rowErrors).length > 0)
       found.rows = rowErrors;
     setErrors(found);
     const valid =
-      !found.name && !found.options && !found.rows;
+      !found.name &&
+      !found.maxSelect &&
+      !found.options &&
+      !found.rows;
     if (!valid) focusFirstInvalid(formRef.current);
     return valid;
   }
@@ -250,7 +267,7 @@ function EditorForm({
         minSelect,
         maxSelect,
         // Sem controle na tela por enquanto; mantém o que já estava.
-        allowRepeat: group?.allowRepeat ?? false,
+        allowRepeat,
         options,
       });
       if (result.ok) onDone();
@@ -356,11 +373,17 @@ function EditorForm({
             value={maxSelect}
             min={1}
             max={50}
+            invalid={!!errors.maxSelect}
             onChange={(value) => {
               setMaxSelect(value);
+              setErrors((current) => ({
+                ...current,
+                maxSelect: undefined,
+              }));
               setError(null);
             }}
           />
+          <FieldError message={errors.maxSelect} />
           <p className="text-[13px] text-muted-foreground">
             O cliente vê: &quot;
             {describeChoiceRule(minSelect, maxSelect)}&quot;
@@ -466,7 +489,7 @@ function EditorForm({
             Adicionar opção
           </Button>
           <FieldError message={errors.options} />
-          {filledRows.length > 0 && activeCount === 0 ? (
+          {optionRows.length > 0 && activeCount === 0 ? (
             <p className="rounded-lg bg-destructive-soft px-4 py-3 text-[13px] text-destructive">
               Todas as opções estão pausadas.
               {minSelect > 0
