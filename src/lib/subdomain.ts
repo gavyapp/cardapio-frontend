@@ -67,3 +67,26 @@ export function rewritePathFor(
     return null;
   return `${prefix}${pathname === "/" ? "" : pathname}`;
 }
+
+/**
+ * URL pública do cardápio de uma loja, a partir da origem atual do navegador.
+ * Em host com subdomínio (domínio raiz ou localhost) usa <slug>.<host>;
+ * em qualquer outro (ex.: preview da Vercel) usa o caminho /<slug>.
+ */
+export function publicStoreUrl(
+  slug: string,
+  origin: string,
+): string {
+  const url = new URL(origin);
+  const base =
+    url.hostname === "localhost"
+      ? "localhost"
+      : rootDomain();
+  const hostname = url.hostname.replace(/^www\./, "");
+  const supportsSubdomain =
+    base &&
+    (hostname === base || hostname.endsWith(`.${base}`));
+  if (!supportsSubdomain) return `${url.origin}/${slug}`;
+  const port = url.port ? `:${url.port}` : "";
+  return `${url.protocol}//${slug}.${base}${port}`;
+}

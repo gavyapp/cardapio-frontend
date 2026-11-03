@@ -1,25 +1,15 @@
-import { Menu } from "lucide-react";
+import { Clock } from "@/components/atoms/clock";
+import { PanelNav } from "@/components/organisms/panel-nav";
+import {
+  StoreMenu,
+  type MenuStore,
+} from "@/components/organisms/store-menu";
+import { Badge } from "@/components/atoms/badge";
 
-import { Clock } from "./clock";
-import { PanelNav } from "./panel-nav";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-
-export type HeaderStore = {
-  name: string;
-  primaryColor: string;
-};
+export type HeaderStore = MenuStore;
 
 const PLATFORM_NAME =
   process.env.NEXT_PUBLIC_PLATFORM_NAME ?? "Gavy";
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export function PanelHeader({
   store,
@@ -52,29 +42,9 @@ export function PanelHeader({
             Aberta
           </Badge>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-4">
             <Clock className="tabular hidden text-[15px] sm:block" />
-            {store ? (
-              <span
-                aria-label={store.name}
-                className="flex size-8 items-center justify-center rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: store.primaryColor,
-                  color: "var(--primary-foreground)",
-                }}
-              >
-                {initials(store.name)}
-              </span>
-            ) : null}
-            {/* Ainda sem ação; o conteúdo do menu vem depois. */}
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Menu"
-              className="text-background hover:bg-background/10 hover:text-background"
-            >
-              <Menu />
-            </Button>
+            <StoreMenu store={store} />
           </div>
         </div>
       </div>

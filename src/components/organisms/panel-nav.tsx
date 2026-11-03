@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/atoms/dropdown-menu";
 
 // Contagem fixa de exemplo até os pedidos entrarem.
 const NEW_ORDERS_SAMPLE = 3;
