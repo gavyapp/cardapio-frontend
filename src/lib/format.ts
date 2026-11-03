@@ -36,9 +36,31 @@ export function formatPhone(phone: string): string {
   return digits;
 }
 
-/** 6.5 → "6,50", para preencher campo de valor (sem "R$"). */
+const amount = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/** 6.5 → "6,50"; 1234.5 → "1.234,50". Campo de valor, sem "R$". */
 export function formatAmountInput(value: number): string {
-  return value.toFixed(2).replace(".", ",");
+  return amount.format(value);
+}
+
+/** Maior valor que o campo aceita: 99.999,99. */
+const MAX_AMOUNT_DIGITS = 7;
+
+/**
+ * Máscara do campo de valor enquanto digita: os números entram pelos
+ * centavos, como em maquininha. "5" → "0,05"; "2990" → "29,90";
+ * "123450" → "1.234,50". Sem número, devolve "".
+ */
+export function maskAmountInput(typed: string): string {
+  const digits = typed
+    .replace(/\D/g, "")
+    .replace(/^0+/, "")
+    .slice(0, MAX_AMOUNT_DIGITS);
+  if (!digits) return "";
+  return formatAmountInput(Number(digits) / 100);
 }
 
 /**
