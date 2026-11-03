@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
@@ -15,11 +15,13 @@ import { Label } from "@/components/atoms/label";
 import { Switch } from "@/components/atoms/switch";
 import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
+import { FieldError } from "@/components/molecules/field-error";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { cn } from "@/lib/utils";
 import { SortableList } from "@/components/molecules/sortable-list";
 import type { ActionResultWith } from "@/lib/action-result";
 import { describeChoiceRule } from "@/lib/complement-rules";
+import { focusFirstInvalid } from "@/lib/focus-first-invalid";
 import {
   formatAmountInput,
   parseAmountInput,
@@ -53,6 +55,13 @@ type OptionRow = {
   name: string;
   price: string;
   isAvailable: boolean;
+};
+
+type GroupErrors = {
+  name?: string;
+  /** Lista sem nenhuma linha de opção. */
+  options?: string;
+  rows?: Record<string, { name?: string; price?: string }>;
 };
 
 function toRows(
@@ -148,8 +157,10 @@ function EditorForm({
   const [rows, setRows] = useState<OptionRow[]>(() =>
     toRows(group),
   );
+  const [errors, setErrors] = useState<GroupErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const filledRows = rows.filter((row) => row.name.trim());
   const activeCount = filledRows.filter(
@@ -165,27 +176,73 @@ function EditorForm({
         row.id === rowId ? { ...row, ...changes } : row,
       ),
     );
+    setErrors((current) => {
+      const rowErrors = current.rows?.[rowId];
+      if (!rowErrors) return current;
+      const next = { ...rowErrors };
+      if ("name" in changes) delete next.name;
+      if ("price" in changes) delete next.price;
+      return {
+        ...current,
+        rows: { ...current.rows, [rowId]: next },
+      };
+    });
     setError(null);
   }
 
-  function submit() {
-    const options: ComplementGroupDraft["options"] = [];
-    for (const row of filledRows) {
-      // Opção sem preço é grátis.
-      const price = row.price.trim()
-        ? parseAmountInput(row.price)
-        : 0;
-      if (price === null) {
-        setError(`Preço inválido em "${row.name.trim()}".`);
-        return;
+  /**
+   * Marca os campos com erro antes de enviar. Linha toda vazia é ignorada;
+   * linha com preço e sem nome, não. Devolve true se está tudo certo.
+   */
+  function validate(): boolean {
+    const found: GroupErrors = {};
+    const rowErrors: NonNullable<GroupErrors["rows"]> = {};
+    if (!name.trim()) found.name = "Dê um nome ao grupo.";
+    for (const row of rows) {
+      if (!row.name.trim()) {
+        if (row.price.trim()) {
+          rowErrors[row.id] = {
+            name: "Dê um nome à opção ou remova a linha.",
+          };
+        }
+      } else if (
+        row.price.trim() &&
+        parseAmountInput(row.price) === null
+      ) {
+        rowErrors[row.id] = { price: "Preço inválido." };
       }
-      options.push({
+    }
+    if (filledRows.length === 0) {
+      if (rows[0]) {
+        rowErrors[rows[0].id] ??= {
+          name: "Adicione pelo menos 1 opção.",
+        };
+      } else {
+        found.options = "Adicione pelo menos 1 opção.";
+      }
+    }
+    if (Object.keys(rowErrors).length > 0)
+      found.rows = rowErrors;
+    setErrors(found);
+    const valid =
+      !found.name && !found.options && !found.rows;
+    if (!valid) focusFirstInvalid(formRef.current);
+    return valid;
+  }
+
+  function submit() {
+    setError(null);
+    if (!validate()) return;
+    const options: ComplementGroupDraft["options"] =
+      filledRows.map((row) => ({
         id: row.complementId,
         name: row.name.trim(),
-        price,
+        // Opção sem preço é grátis.
+        price: row.price.trim()
+          ? (parseAmountInput(row.price) ?? 0)
+          : 0,
         isAvailable: row.isAvailable,
-      });
-    }
+      }));
     startTransition(async () => {
       const result = await onSave({
         id: group?.id,
@@ -203,6 +260,8 @@ function EditorForm({
 
   return (
     <form
+      ref={formRef}
+      noValidate
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
@@ -240,11 +299,17 @@ function EditorForm({
             value={name}
             placeholder="Ex.: Ponto da carne"
             maxLength={60}
+            aria-invalid={!!errors.name}
             onChange={(event) => {
               setName(event.target.value);
+              setErrors((current) => ({
+                ...current,
+                name: undefined,
+              }));
               setError(null);
             }}
           />
+          <FieldError message={errors.name} />
         </Field>
 
         <div className="grid gap-2">
@@ -311,76 +376,96 @@ function EditorForm({
               `Mover ${row.name.trim() || "opção"}`
             }
             className="flex flex-col gap-2"
-            renderItem={(row, dragHandle) => (
-              <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[auto_1fr_140px_auto_auto]">
-                {dragHandle}
-                <Input
-                  aria-label="Nome da opção"
-                  placeholder="Ex.: Bacon"
-                  value={row.name}
-                  maxLength={60}
-                  onChange={(event) =>
-                    updateRow(row.id, {
-                      name: event.target.value,
-                    })
-                  }
-                />
-                <div className="col-start-2 row-start-2 sm:col-start-auto sm:row-start-auto">
-                  <CurrencyInput
-                    aria-label={`Preço adicional de ${row.name.trim() || "opção"}`}
-                    value={row.price}
-                    placeholder="Grátis"
-                    onChange={(event) =>
-                      updateRow(row.id, {
-                        price: event.target.value,
-                      })
-                    }
-                  />
+            renderItem={(row, dragHandle) => {
+              const rowErrors = errors.rows?.[row.id];
+              return (
+                <div className="grid gap-1">
+                  <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[auto_1fr_140px_auto_auto]">
+                    {dragHandle}
+                    <Input
+                      aria-label="Nome da opção"
+                      placeholder="Ex.: Bacon"
+                      value={row.name}
+                      maxLength={60}
+                      aria-invalid={!!rowErrors?.name}
+                      onChange={(event) =>
+                        updateRow(row.id, {
+                          name: event.target.value,
+                        })
+                      }
+                    />
+                    <div className="col-start-2 row-start-2 sm:col-start-auto sm:row-start-auto">
+                      <CurrencyInput
+                        aria-label={`Preço adicional de ${row.name.trim() || "opção"}`}
+                        value={row.price}
+                        placeholder="Grátis"
+                        aria-invalid={!!rowErrors?.price}
+                        onChange={(event) =>
+                          updateRow(row.id, {
+                            price: event.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <Switch
+                      className="col-start-3 row-start-2 justify-self-center sm:col-start-auto sm:row-start-auto"
+                      checked={row.isAvailable}
+                      onCheckedChange={(checked) =>
+                        updateRow(row.id, {
+                          isAvailable: checked,
+                        })
+                      }
+                      aria-label={
+                        row.isAvailable
+                          ? `Pausar ${row.name.trim() || "opção"}`
+                          : `Voltar ${row.name.trim() || "opção"}`
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="col-start-3 row-start-1 sm:col-start-auto sm:row-start-auto"
+                      aria-label={`Remover ${row.name.trim() || "opção"}`}
+                      onClick={() =>
+                        setRows((current) =>
+                          current.filter(
+                            (r) => r.id !== row.id,
+                          ),
+                        )
+                      }
+                    >
+                      <Trash2 aria-hidden />
+                    </Button>
+                  </div>
+                  {rowErrors?.name || rowErrors?.price ? (
+                    <p
+                      role="alert"
+                      className="pl-[52px] text-[13px] text-destructive"
+                    >
+                      {rowErrors.name ?? rowErrors.price}
+                    </p>
+                  ) : null}
                 </div>
-                <Switch
-                  className="col-start-3 row-start-2 justify-self-center sm:col-start-auto sm:row-start-auto"
-                  checked={row.isAvailable}
-                  onCheckedChange={(checked) =>
-                    updateRow(row.id, {
-                      isAvailable: checked,
-                    })
-                  }
-                  aria-label={
-                    row.isAvailable
-                      ? `Pausar ${row.name.trim() || "opção"}`
-                      : `Voltar ${row.name.trim() || "opção"}`
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="col-start-3 row-start-1 sm:col-start-auto sm:row-start-auto"
-                  aria-label={`Remover ${row.name.trim() || "opção"}`}
-                  onClick={() =>
-                    setRows((current) =>
-                      current.filter(
-                        (r) => r.id !== row.id,
-                      ),
-                    )
-                  }
-                >
-                  <Trash2 aria-hidden />
-                </Button>
-              </div>
-            )}
+              );
+            }}
           />
           <Button
             type="button"
             variant="ghost"
             className="justify-self-start"
-            onClick={() =>
-              setRows((current) => [...current, newRow()])
-            }
+            onClick={() => {
+              setRows((current) => [...current, newRow()]);
+              setErrors((current) => ({
+                ...current,
+                options: undefined,
+              }));
+            }}
           >
             <Plus aria-hidden />
             Adicionar opção
           </Button>
+          <FieldError message={errors.options} />
           {filledRows.length > 0 && activeCount === 0 ? (
             <p className="rounded-lg bg-destructive-soft px-4 py-3 text-[13px] text-destructive">
               Todas as opções estão pausadas.
