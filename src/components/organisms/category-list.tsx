@@ -134,7 +134,7 @@ export function CategoryList({
     isOpen: boolean,
   ) {
     const title = (
-      <span className="flex min-w-0 flex-col gap-1">
+      <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
         <span
           className={cn(
             "truncate text-[15px] font-semibold",
