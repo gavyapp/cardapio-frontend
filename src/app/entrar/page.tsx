@@ -8,27 +8,34 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { buscarUsuarioDoPainel } from "@/lib/data/acesso-ao-painel";
-import { destinoDepoisDoLogin } from "@/lib/painel/acesso";
+} from "@/components/atoms/card";
+import { LoginForm } from "@/components/organisms/login-form";
+import { findPanelUser } from "@/lib/data/panel-auth";
+import { pathAfterLogin } from "@/lib/panel-access";
 
-import { FormularioDeLogin } from "./formulario-de-login";
+import { signIn } from "./actions";
 
-export const metadata: Metadata = { title: "Entrar no painel" };
+export const metadata: Metadata = {
+  title: "Entrar no painel",
+};
 
 // Página provisória para testar o login. O visual final vem depois.
-export default function PaginaDeLogin({ searchParams }: PageProps<"/entrar">) {
+export default function LoginPage({
+  searchParams,
+}: PageProps<"/entrar">) {
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Entrar no painel</CardTitle>
-          <CardDescription>Use o e-mail e a senha da sua loja.</CardDescription>
+          <CardDescription>
+            Use o e-mail e a senha da sua loja.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* A sessão e o "proximo" só existem na hora da requisição. */}
           <Suspense>
-            <ConteudoDoLogin searchParams={searchParams} />
+            <LoginContent searchParams={searchParams} />
           </Suspense>
         </CardContent>
       </Card>
@@ -36,11 +43,17 @@ export default function PaginaDeLogin({ searchParams }: PageProps<"/entrar">) {
   );
 }
 
-async function ConteudoDoLogin({ searchParams }: Pick<PageProps<"/entrar">, "searchParams">) {
-  const destino = destinoDepoisDoLogin((await searchParams).proximo);
+async function LoginContent({
+  searchParams,
+}: Pick<PageProps<"/entrar">, "searchParams">) {
+  const redirectTo = pathAfterLogin(
+    (await searchParams).proximo,
+  );
 
   // Quem já está logado não precisa ver o formulário.
-  if (await buscarUsuarioDoPainel()) redirect(destino);
+  if (await findPanelUser()) redirect(redirectTo);
 
-  return <FormularioDeLogin destino={destino} />;
+  return (
+    <LoginForm action={signIn} redirectTo={redirectTo} />
+  );
 }

@@ -13,8 +13,10 @@ const PLATFORM_NAME =
 
 export function PanelHeader({
   store,
+  onSignOut,
 }: {
   store: HeaderStore | null;
+  onSignOut?: () => Promise<void>;
 }) {
   return (
     <header className="bg-card">
@@ -44,7 +46,10 @@ export function PanelHeader({
 
           <div className="ml-auto flex items-center gap-4">
             <Clock className="tabular hidden text-[15px] sm:block" />
-            <StoreMenu store={store} />
+            <StoreMenu
+              store={store}
+              onSignOut={onSignOut}
+            />
           </div>
         </div>
       </div>
