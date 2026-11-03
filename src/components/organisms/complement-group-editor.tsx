@@ -99,7 +99,7 @@ export function ComplementGroupEditor({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_1fr_auto] overflow-hidden sm:max-w-2xl">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_1fr_auto] overflow-hidden sm:max-w-xl">
         {open ? (
           <EditorForm
             key={group?.id ?? "new"}
