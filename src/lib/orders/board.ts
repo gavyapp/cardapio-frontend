@@ -107,7 +107,7 @@ export function isLate(
   );
 }
 
-/** "Espera média 4 min", ou null sem pedidos. */
+/** "Espera média 4min", ou null sem pedidos. */
 export function columnAverage(
   column: BoardColumn,
   orders: readonly BoardOrder[],
@@ -122,7 +122,7 @@ export function columnAverage(
   return `${column.averageLabel} ${formatDuration(Math.round(total / orders.length))}`;
 }
 
-/** Tempo desde o pedido no card: "agora", "7 min" ou "1h 50min". */
+/** Tempo desde o pedido no card: "agora", "7min" ou "1h 50min". */
 export function elapsedLabel(
   order: BoardOrder,
   now: number,
