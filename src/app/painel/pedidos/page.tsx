@@ -23,7 +23,6 @@ export default function OrdersPage() {
           <SearchParamInput
             name={ORDER_SEARCH_PARAM}
             placeholder="Nome, nº ou telefone"
-            className="sm:w-[270px]"
           />
         </Suspense>
       }
