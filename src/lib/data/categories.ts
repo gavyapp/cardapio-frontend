@@ -6,6 +6,8 @@ import "server-only";
 import { UserFacingError } from "@/lib/action-result";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+import { reorderRows } from "./reorder";
+
 export type PanelCategory = {
   id: string;
   name: string;
@@ -112,27 +114,11 @@ export async function updateCategory(
   }
 }
 
-/** Grava a ordem: a posição de cada id na lista vira o sort_order. */
 export async function reorderCategories(
   storeId: string,
   orderedIds: string[],
 ): Promise<void> {
-  const supabase = await createServerSupabase();
-  const results = await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase
-        .from("categories")
-        .update({ sort_order: index })
-        .eq("id", id)
-        .eq("store_id", storeId),
-    ),
-  );
-  const failed = results.find((result) => result.error);
-  if (failed?.error) {
-    throw new Error(
-      `Erro ao reordenar categorias: ${failed.error.message}`,
-    );
-  }
+  await reorderRows("categories", storeId, orderedIds);
 }
 
 /**

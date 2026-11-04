@@ -10,6 +10,7 @@ import {
   Tag,
 } from "lucide-react";
 
+import type { CatalogCounts } from "@/lib/data/catalog-counts";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -22,10 +23,16 @@ import {
 const NEW_ORDERS_SAMPLE = 3;
 
 const MENU_ITEMS = [
-  { label: "Produtos", href: "/painel/cardapio/produtos" },
+  {
+    label: "Produtos",
+    href: "/painel/cardapio/produtos",
+    count: (counts: CatalogCounts) => counts.products,
+  },
   {
     label: "Complementos",
     href: "/painel/cardapio/complementos",
+    count: (counts: CatalogCounts) =>
+      counts.complementGroups,
   },
 ];
 
@@ -38,7 +45,11 @@ function isActive(pathname: string, href: string) {
   );
 }
 
-export function PanelNav() {
+export function PanelNav({
+  catalogCounts,
+}: {
+  catalogCounts?: CatalogCounts;
+}) {
   const pathname = usePathname();
 
   return (
@@ -72,22 +83,45 @@ export function PanelNav() {
               )}
               className={cn(
                 tabClass,
-                "cursor-pointer outline-none",
+                "group/menu cursor-pointer outline-none",
               )}
             >
               <BookOpen />
               Cardápio
-              <ChevronDown className="size-4! text-muted-foreground" />
+              <ChevronDown className="size-4! text-muted-foreground transition-transform group-data-popup-open/menu:rotate-180" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {MENU_ITEMS.map((item) => (
-                <DropdownMenuItem
-                  key={item.href}
-                  render={<Link href={item.href} />}
-                >
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent
+              align="start"
+              className="w-60 px-0 py-1"
+            >
+              {MENU_ITEMS.map((item) => {
+                const current = isActive(
+                  pathname,
+                  item.href,
+                );
+                return (
+                  <DropdownMenuItem
+                    key={item.href}
+                    render={<Link href={item.href} />}
+                    aria-current={
+                      current ? "page" : undefined
+                    }
+                    className={cn(
+                      "h-11 cursor-pointer gap-3 rounded-none px-4 text-[15px]",
+                      current && "bg-muted font-semibold",
+                    )}
+                  >
+                    <span className="flex-1">
+                      {item.label}
+                    </span>
+                    {catalogCounts ? (
+                      <span className="tabular text-[13px] font-normal text-muted-foreground">
+                        {item.count(catalogCounts)}
+                      </span>
+                    ) : null}
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </li>

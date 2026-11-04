@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import {
@@ -17,35 +17,21 @@ import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
 import { FieldError } from "@/components/molecules/field-error";
 import { NumberStepper } from "@/components/molecules/number-stepper";
-import { cn } from "@/lib/utils";
+import { SegmentedControl } from "@/components/molecules/segmented-control";
 import { SortableList } from "@/components/molecules/sortable-list";
 import type { ActionResultWith } from "@/lib/action-result";
+import type {
+  ComplementGroupDraft,
+  EditableComplementGroup,
+} from "@/lib/catalog-types";
 import { describeChoiceRule } from "@/lib/complement-rules";
 import { focusFirstInvalid } from "@/lib/focus-first-invalid";
 import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
-
-export type ComplementGroupDraft = {
-  id?: string;
-  name: string;
-  minSelect: number;
-  maxSelect: number;
-  allowRepeat: boolean;
-  options: {
-    id?: string;
-    name: string;
-    price: number;
-    isAvailable: boolean;
-  }[];
-};
-
-export type EditableComplementGroup =
-  ComplementGroupDraft & {
-    id: string;
-    usedByCount: number;
-  };
+import { useExitSnapshot } from "@/lib/use-exit-snapshot";
+import { cn } from "@/lib/utils";
 
 type OptionRow = {
   /** Chave da linha na tela; opção nova ganha uma provisória. */
@@ -99,6 +85,7 @@ export function ComplementGroupEditor({
   onOpenChange,
   group,
   onSave,
+  nested = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -107,20 +94,42 @@ export function ComplementGroupEditor({
   onSave: (
     draft: ComplementGroupDraft,
   ) => Promise<ActionResultWith<string>>;
+  /**
+   * Aberto de dentro do editor de produto: cobre o painel do produto como
+   * uma página seguinte, sem escurecer de novo o fundo, e volta pela seta.
+   */
+  nested?: boolean;
 }) {
+  const snapshot = useExitSnapshot(open, group);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={snapshot.onOpenChangeComplete}
+    >
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-[560px]"
+        overlayClassName={
+          nested
+            ? "bg-transparent supports-backdrop-filter:backdrop-blur-none"
+            : undefined
+        }
+        className={cn(
+          "gap-0 data-[side=right]:w-full",
+          nested
+            ? "data-[side=right]:sm:max-w-[640px]"
+            : "data-[side=right]:sm:max-w-[560px]",
+        )}
       >
-        {open ? (
+        {snapshot.isMounted ? (
           <EditorForm
-            key={group?.id ?? "new"}
-            group={group}
+            key={snapshot.value?.id ?? "new"}
+            group={snapshot.value}
             onSave={onSave}
             onDone={() => onOpenChange(false)}
+            nested={nested}
           />
         ) : null}
       </SheetContent>
@@ -132,12 +141,14 @@ function EditorForm({
   group,
   onSave,
   onDone,
+  nested,
 }: {
   group: EditableComplementGroup | null;
   onSave: (
     draft: ComplementGroupDraft,
   ) => Promise<ActionResultWith<string>>;
   onDone: () => void;
+  nested: boolean;
 }) {
   const [name, setName] = useState(group?.name ?? "");
   const [isRequired, setIsRequired] = useState(
@@ -288,7 +299,24 @@ function EditorForm({
         submit();
       }}
     >
-      <header className="flex min-h-16 shrink-0 items-start gap-2 border-b py-3 pr-4 pl-6">
+      <header
+        className={cn(
+          "flex min-h-16 shrink-0 items-start gap-2 border-b py-3 pr-4",
+          nested ? "pl-3" : "pl-6",
+        )}
+      >
+        {nested ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Voltar para o produto"
+            title="Voltar para o produto"
+            onClick={onDone}
+          >
+            <ArrowLeft aria-hidden />
+          </Button>
+        ) : null}
         <div className="mr-auto flex min-w-0 flex-col gap-1 pt-1">
           <SheetTitle className="text-lg font-semibold">
             {group
@@ -301,15 +329,17 @@ function EditorForm({
               : "Escolhas do cliente, como ponto da carne, sabor ou adicionais."}
           </SheetDescription>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Fechar"
-          onClick={onDone}
-        >
-          <X aria-hidden />
-        </Button>
+        {nested ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Fechar"
+            onClick={onDone}
+          >
+            <X aria-hidden />
+          </Button>
+        )}
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 [&>*]:shrink-0">
@@ -336,37 +366,19 @@ function EditorForm({
           <Label id="group-required-label">
             O cliente precisa escolher?
           </Label>
-          <div
-            role="radiogroup"
-            aria-labelledby="group-required-label"
-            className="flex w-fit overflow-hidden rounded-md border"
-          >
-            {(
-              [
-                [true, "Obrigatório"],
-                [false, "Opcional"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={label}
-                type="button"
-                role="radio"
-                aria-checked={isRequired === value}
-                onClick={() => {
-                  setIsRequired(value);
-                  setError(null);
-                }}
-                className={cn(
-                  "h-11 px-4 text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset",
-                  isRequired === value
-                    ? "bg-foreground font-semibold text-background"
-                    : "bg-card hover:bg-muted",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            variant="solid"
+            labelledBy="group-required-label"
+            value={isRequired}
+            options={[
+              [true, "Obrigatório"],
+              [false, "Opcional"],
+            ]}
+            onChange={(value) => {
+              setIsRequired(value);
+              setError(null);
+            }}
+          />
         </div>
 
         <div className="grid gap-2">

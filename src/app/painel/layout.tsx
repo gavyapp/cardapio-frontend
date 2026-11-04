@@ -7,6 +7,7 @@ import {
 } from "@/components/organisms/panel-header";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
 import { Toaster } from "@/components/atoms/sonner";
+import { countCatalog } from "@/lib/data/catalog-counts";
 import { findStoreBySlug } from "@/lib/data/store";
 import {
   PANEL_ROUTE,
@@ -36,7 +37,10 @@ async function PanelWithAccess({
     );
   }
 
-  const store = await findStoreBySlug(access.store.slug);
+  const [store, catalogCounts] = await Promise.all([
+    findStoreBySlug(access.store.slug),
+    countCatalog(access.store.id),
+  ]);
   const headerStore: HeaderStore | null = store
     ? {
         slug: store.slug,
@@ -49,6 +53,7 @@ async function PanelWithAccess({
     <>
       <PanelHeader
         store={headerStore}
+        catalogCounts={catalogCounts}
         onSignOut={signOut}
       />
       <main className="flex flex-1 flex-col">

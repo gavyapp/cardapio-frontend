@@ -19,9 +19,14 @@ export function useSearchParamState(
   ];
 }
 
+/**
+ * replace troca a entrada atual do histórico em vez de criar outra (para a
+ * busca, que muda a cada tecla).
+ */
 export function setSearchParam(
   name: string,
   value: string | null,
+  { replace = false }: { replace?: boolean } = {},
 ) {
   const params = new URLSearchParams(
     window.location.search,
@@ -29,11 +34,9 @@ export function setSearchParam(
   if (value === null) params.delete(name);
   else params.set(name, value);
   const query = params.toString();
-  window.history.pushState(
-    null,
-    "",
-    query
-      ? `${window.location.pathname}?${query}`
-      : window.location.pathname,
-  );
+  const url = query
+    ? `${window.location.pathname}?${query}`
+    : window.location.pathname;
+  if (replace) window.history.replaceState(null, "", url);
+  else window.history.pushState(null, "", url);
 }

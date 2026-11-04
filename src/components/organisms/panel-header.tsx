@@ -6,14 +6,18 @@ import {
   type MenuStore,
 } from "@/components/organisms/store-menu";
 import { Badge } from "@/components/atoms/badge";
+import type { CatalogCounts } from "@/lib/data/catalog-counts";
 
 export type HeaderStore = MenuStore;
 
 export function PanelHeader({
   store,
+  catalogCounts,
   onSignOut,
 }: {
   store: HeaderStore | null;
+  /** Números ao lado de Produtos e Complementos no menu Cardápio. */
+  catalogCounts?: CatalogCounts;
   onSignOut?: () => Promise<void>;
 }) {
   return (
@@ -51,7 +55,7 @@ export function PanelHeader({
           </div>
         </div>
       </div>
-      <PanelNav />
+      <PanelNav catalogCounts={catalogCounts} />
     </header>
   );
 }

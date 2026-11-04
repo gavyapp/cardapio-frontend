@@ -1,11 +1,11 @@
 -- Quais funções a API expõe e para quem: internas ficam no schema private,
--- as do painel só para usuário logado, create_order e get_order_by_token
--- públicas.
+-- as do painel (pedidos e salvar do catálogo) só para usuário logado,
+-- create_order e get_order_by_token públicas.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(8);
+select plan(9);
 
 -- Dado: schema com as migrations aplicadas
 select hasnt_function('public', 'is_store_member', 'is_store_member no schema public → não existe');
@@ -17,6 +17,9 @@ select ok(not has_function_privilege('anon', 'public.mark_order_read(uuid)', 'ex
   'anônimo chama mark_order_read → sem permissão');
 select ok(not has_function_privilege('anon', 'private.is_store_member(uuid)', 'execute'),
   'anônimo chama is_store_member → sem permissão');
+select ok(not has_function_privilege('anon', 'public.save_product(uuid, uuid, text, numeric, text[], boolean, boolean, uuid[], text, text, uuid)', 'execute')
+      and not has_function_privilege('anon', 'public.save_complement_group(uuid, text, integer, integer, boolean, jsonb, uuid)', 'execute'),
+  'anônimo chama save_product e save_complement_group → sem permissão');
 select ok(has_function_privilege('anon', 'public.create_order(uuid, public.order_mode, text, text, public.payment_method, jsonb, jsonb, numeric, text)', 'execute')
       and has_function_privilege('anon', 'public.get_order_by_token(text)', 'execute'),
   'anônimo chama create_order e get_order_by_token → permitido');
