@@ -3,8 +3,8 @@
 // loja) e store_id em todas as consultas.
 import "server-only";
 
-import { UserFacingError } from "@/lib/action-result";
-import { storeImagePathFromUrl } from "@/lib/store-images";
+import { UserFacingError } from "@/lib/panel/action-result";
+import { storeImagePathFromUrl } from "@/lib/store/images";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 import { reorderRows } from "./reorder";

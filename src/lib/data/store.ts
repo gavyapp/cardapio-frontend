@@ -2,7 +2,7 @@
 import "server-only";
 
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { StoreAppearance } from "@/lib/store-theme";
+import type { StoreAppearance } from "@/lib/store/theme";
 
 import { readStoreAppearance } from "./store-settings";
 

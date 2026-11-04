@@ -12,10 +12,10 @@ import { SortableList } from "@/components/molecules/sortable-list";
 import type {
   ActionResult,
   ActionResultWith,
-} from "@/lib/action-result";
-import type { CategoryItem } from "@/lib/catalog-types";
+} from "@/lib/panel/action-result";
+import type { CategoryItem } from "@/lib/catalog/types";
 import { pluralize } from "@/lib/format";
-import { useOptimisticList } from "@/lib/use-optimistic-list";
+import { useOptimisticList } from "@/lib/hooks/use-optimistic-list";
 import { cn } from "@/lib/utils";
 
 export type CategoryActions = {

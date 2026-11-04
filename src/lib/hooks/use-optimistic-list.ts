@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/panel/action-result";
 
 /**
  * Lista que muda na tela antes da resposta do servidor e volta ao estado

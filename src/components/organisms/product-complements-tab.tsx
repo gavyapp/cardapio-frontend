@@ -7,13 +7,13 @@ import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { EditorCard } from "@/components/molecules/editor-card";
 import { SortableList } from "@/components/molecules/sortable-list";
-import type { ComplementGroupItem } from "@/lib/catalog-types";
+import type { ComplementGroupItem } from "@/lib/catalog/types";
 import {
   describeChoiceRule,
   describeGroupOptions,
   isBlockingGroup,
   isRequiredGroup,
-} from "@/lib/complement-rules";
+} from "@/lib/catalog/complement-rules";
 import { normalizeSearch, pluralize } from "@/lib/format";
 
 /**

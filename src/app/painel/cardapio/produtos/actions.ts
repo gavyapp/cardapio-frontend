@@ -7,7 +7,7 @@ import {
   validationError,
   type ActionResult,
   type ActionResultWith,
-} from "@/lib/action-result";
+} from "@/lib/panel/action-result";
 import {
   deleteProduct,
   duplicateProduct,
@@ -16,12 +16,12 @@ import {
   setProductAvailability,
   setProductSuggested,
 } from "@/lib/data/products";
-import { afterMenuChange } from "@/lib/menu-cache";
-import { requireStoreForAction } from "@/lib/panel-access";
+import { afterMenuChange } from "@/lib/catalog/menu-cache";
+import { requireStoreForAction } from "@/lib/panel/access";
 import {
   PRODUCT_BADGES,
   PRODUCT_DESCRIPTION_LIMIT,
-} from "@/lib/product-fields";
+} from "@/lib/catalog/product-fields";
 
 const id = z.uuid();
 

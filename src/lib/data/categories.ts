@@ -3,7 +3,7 @@
 // as consultas mesmo assim, para um id de outra loja nunca bater.
 import "server-only";
 
-import { UserFacingError } from "@/lib/action-result";
+import { UserFacingError } from "@/lib/panel/action-result";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 import { reorderRows } from "./reorder";

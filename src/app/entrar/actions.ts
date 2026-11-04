@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import type { LoginState } from "@/components/organisms/login-form";
 import { signInToPanel } from "@/lib/data/panel-auth";
-import { pathAfterLogin } from "@/lib/panel-access";
+import { pathAfterLogin } from "@/lib/panel/access";
 
 const loginSchema = z.object({
   email: z.email("Informe um e-mail válido."),

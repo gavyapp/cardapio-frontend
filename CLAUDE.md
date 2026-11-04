@@ -10,7 +10,9 @@ Testes do banco: pgTAP em `supabase/tests/database/`, um arquivo por assunto, ce
 
 Nome de arquivo e comentário dizem o assunto, nunca o código da task (T04, B3...). Código de task só no PR, na branch e no commit.
 
-Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo (`formatPhone`, `store-theme.ts`). Texto de interface, comentários, commits e PRs em pt-BR.
+Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo (`formatPhone`, `complement-rules.ts`). Texto de interface, comentários, commits e PRs em pt-BR.
+
+`src/lib` organizado por assunto, com nome curto porque a pasta dá o contexto (`catalog/types.ts`, `store/theme.ts`): `catalog`, `store`, `panel`, `hooks`, `routing` e, a cada fluxo novo, uma pasta dele (ex.: `orders`). Na raiz ficam só `data/`, `supabase/`, `format.ts`, `utils.ts` e `database.types.ts`.
 
 Componentes em Atomic Design, em `src/components`: `atoms` (primitivos do shadcn e peças indivisíveis), `molecules` (composições pequenas, como campo com rótulo), `organisms` (seções, cabeçalhos, menus), `templates` (esqueleto de página). Rotas em `src/app` só ligam dados ao template; nada de UI reutilizável dentro de `src/app`. O `shadcn add` grava em `atoms` (alias `ui` do `components.json`).
 

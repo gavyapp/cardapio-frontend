@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { EditorCard } from "@/components/molecules/editor-card";
-import type { ActionResultWith } from "@/lib/action-result";
-import type { CategoryItem } from "@/lib/catalog-types";
+import type { ActionResultWith } from "@/lib/panel/action-result";
+import type { CategoryItem } from "@/lib/catalog/types";
 import { pluralize } from "@/lib/format";
 import { cn } from "@/lib/utils";
 

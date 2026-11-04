@@ -12,11 +12,11 @@ import {
   NEW_ITEM,
   PRODUCT_PARAM,
   SEARCH_PARAM,
-} from "@/lib/catalog-params";
+} from "@/lib/catalog/params";
 import { listPanelCategories } from "@/lib/data/categories";
 import { listComplementGroups } from "@/lib/data/complement-groups";
 import { listPanelProducts } from "@/lib/data/products";
-import { requirePanelAccess } from "@/lib/panel-access";
+import { requirePanelAccess } from "@/lib/panel/access";
 
 import { saveComplementGroupAction } from "../complementos/actions";
 import {

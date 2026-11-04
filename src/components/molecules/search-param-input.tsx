@@ -7,7 +7,7 @@ import { Input } from "@/components/atoms/input";
 import {
   setSearchParam,
   useSearchParamState,
-} from "@/lib/use-search-param-state";
+} from "@/lib/hooks/use-search-param-state";
 
 /**
  * Campo de busca do cabeçalho da página. Grava o texto num parâmetro da URL

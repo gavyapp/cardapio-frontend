@@ -4,7 +4,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { UserFacingError } from "@/lib/action-result";
+import { UserFacingError } from "@/lib/panel/action-result";
 
 import {
   findPanelUser,

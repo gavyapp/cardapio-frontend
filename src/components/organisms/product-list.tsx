@@ -27,26 +27,26 @@ import { ProductEditor } from "@/components/organisms/product-editor";
 import type {
   ActionResult,
   ActionResultWith,
-} from "@/lib/action-result";
+} from "@/lib/panel/action-result";
 import type {
   CategoryItem,
   ComplementGroupDraft,
   ComplementGroupItem,
   EditableProduct,
   ProductDraft,
-} from "@/lib/catalog-types";
-import { isBlockingGroup } from "@/lib/complement-rules";
+} from "@/lib/catalog/types";
+import { isBlockingGroup } from "@/lib/catalog/complement-rules";
 import {
   NEW_ITEM,
   PRODUCT_PARAM,
   SEARCH_PARAM,
-} from "@/lib/catalog-params";
+} from "@/lib/catalog/params";
 import {
   formatCurrency,
   normalizeSearch,
 } from "@/lib/format";
-import { useOptimisticList } from "@/lib/use-optimistic-list";
-import { useSearchParamState } from "@/lib/use-search-param-state";
+import { useOptimisticList } from "@/lib/hooks/use-optimistic-list";
+import { useSearchParamState } from "@/lib/hooks/use-search-param-state";
 import { cn } from "@/lib/utils";
 
 export type ProductActions = {

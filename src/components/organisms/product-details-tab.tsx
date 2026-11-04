@@ -15,7 +15,7 @@ import { SegmentedControl } from "@/components/molecules/segmented-control";
 import {
   PRODUCT_BADGES,
   PRODUCT_DESCRIPTION_LIMIT,
-} from "@/lib/product-fields";
+} from "@/lib/catalog/product-fields";
 
 export type ProductDetailsValues = {
   name: string;

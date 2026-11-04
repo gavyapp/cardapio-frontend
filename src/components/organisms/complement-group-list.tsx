@@ -12,20 +12,20 @@ import { ComplementGroupEditor } from "@/components/organisms/complement-group-e
 import type {
   ActionResult,
   ActionResultWith,
-} from "@/lib/action-result";
+} from "@/lib/panel/action-result";
 import type {
   ComplementGroupDraft,
   ComplementGroupItem,
   EditableComplementGroup,
-} from "@/lib/catalog-types";
+} from "@/lib/catalog/types";
 import {
   GROUP_PARAM,
   NEW_ITEM,
-} from "@/lib/catalog-params";
-import { describeGroupRule } from "@/lib/complement-rules";
+} from "@/lib/catalog/params";
+import { describeGroupRule } from "@/lib/catalog/complement-rules";
 import { formatCurrency, pluralize } from "@/lib/format";
-import { useOptimisticList } from "@/lib/use-optimistic-list";
-import { useSearchParamState } from "@/lib/use-search-param-state";
+import { useOptimisticList } from "@/lib/hooks/use-optimistic-list";
+import { useSearchParamState } from "@/lib/hooks/use-search-param-state";
 import { cn } from "@/lib/utils";
 
 export type ComplementGroupActions = {
