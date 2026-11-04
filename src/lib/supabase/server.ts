@@ -5,12 +5,17 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import type { Database } from "@/lib/database.types";
 
 import { publishableKey, supabaseUrl } from "./env";
 
 export async function createServerSupabase() {
+  // A sessão é de cada requisição e o Auth confere a validade do token com
+  // Date.now(). Sem isto, a pré-renderização (prefetch com cookies) para em
+  // "Next.js encountered the unstable value Date.now()".
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl(), publishableKey(), {

@@ -4,6 +4,8 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { UserFacingError } from "@/lib/action-result";
+
 import {
   findPanelUser,
   findUserStore,
@@ -66,4 +68,22 @@ export async function requirePanelAccess(
   const store = await findUserStore(user.id);
   if (!store) return { status: "no-store", user };
   return { status: "with-store", user, store };
+}
+
+/**
+ * Loja do usuário logado, para Server Actions do painel. A loja sai sempre da
+ * sessão, nunca do que o navegador mandou; o RLS confere de novo no banco.
+ */
+export async function requireStoreForAction(): Promise<PanelStore> {
+  const user = await findPanelUser();
+  if (!user) {
+    throw new UserFacingError(
+      "Sessão expirada. Entre de novo.",
+    );
+  }
+  const store = await findUserStore(user.id);
+  if (!store) {
+    throw new UserFacingError("Conta sem loja vinculada.");
+  }
+  return store;
 }

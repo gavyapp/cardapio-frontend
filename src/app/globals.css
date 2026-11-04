@@ -195,6 +195,19 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* O Tailwind 4 tirou o cursor de mão dos botões; tudo que é clicável
+     volta a mostrar. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="switch"]:not([aria-disabled="true"]),
+  [role="radio"],
+  [role="checkbox"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  label[for] {
+    cursor: pointer;
+  }
   /* Preço, número de pedido e horário alinham em coluna. */
   .tabular {
     font-variant-numeric: tabular-nums;
