@@ -3,6 +3,7 @@
 import { Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
+import { cn } from "@/lib/utils";
 
 /** Campo numérico com − e +, como no protótipo ("30 min"). */
 export function NumberStepper({
@@ -13,6 +14,7 @@ export function NumberStepper({
   max = Number.POSITIVE_INFINITY,
   unit,
   label,
+  invalid = false,
 }: {
   value: number;
   onChange: (value: number) => void;
@@ -21,12 +23,18 @@ export function NumberStepper({
   max?: number;
   unit?: string;
   label: string;
+  /** Borda vermelha de campo com erro. */
+  invalid?: boolean;
 }) {
   return (
     <div
       role="group"
       aria-label={label}
-      className="inline-flex h-11 w-fit items-center rounded-lg border"
+      className={cn(
+        "inline-flex h-11 w-fit items-center rounded-lg border",
+        invalid &&
+          "border-destructive ring-3 ring-destructive/20",
+      )}
     >
       <Button
         variant="ghost"
