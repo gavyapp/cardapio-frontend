@@ -99,8 +99,22 @@ export function ComplementGroupEditor({
    */
   nested?: boolean;
 }) {
+  // O formulário continua na tela enquanto o painel sai, para a animação
+  // de saída não mostrar um painel vazio (o pai já limpou o grupo).
+  const [isMounted, setIsMounted] = useState(open);
+  const [lastGroup, setLastGroup] = useState(group);
+  if (open && !isMounted) setIsMounted(true);
+  if (open && lastGroup !== group) setLastGroup(group);
+  const shownGroup = open ? group : lastGroup;
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) setIsMounted(false);
+      }}
+    >
       <SheetContent
         side="right"
         showCloseButton={false}
@@ -112,14 +126,16 @@ export function ComplementGroupEditor({
         className={cn(
           "gap-0 data-[side=right]:w-full",
           nested
-            ? "data-[side=right]:sm:max-w-[640px]"
+            ? // Entra e sai deslizando inteiro pela direita, como uma
+              // página seguinte do painel do produto.
+              "duration-300 data-ending-style:opacity-100 data-starting-style:opacity-100 data-[side=right]:data-ending-style:translate-x-full data-[side=right]:data-starting-style:translate-x-full data-[side=right]:sm:max-w-[640px]"
             : "data-[side=right]:sm:max-w-[560px]",
         )}
       >
-        {open ? (
+        {isMounted ? (
           <EditorForm
-            key={group?.id ?? "new"}
-            group={group}
+            key={shownGroup?.id ?? "new"}
+            group={shownGroup}
             onSave={onSave}
             onDone={() => onOpenChange(false)}
             nested={nested}
