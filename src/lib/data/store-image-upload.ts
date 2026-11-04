@@ -1,14 +1,14 @@
 // Envio de imagem da loja direto do navegador para o Storage. O arquivo não
 // passa pelo servidor do Next; o RLS do bucket confere se quem está logado é
 // membro da loja dona da pasta.
-import { resizeImageToWebp } from "@/lib/image-resize";
+import { resizeImageToWebp } from "@/lib/store/image-resize";
 import {
   MAX_IMAGE_BYTES,
   STORE_IMAGES_BUCKET,
   buildStoreImagePath,
   isAcceptedImageType,
   type StoreImageKind,
-} from "@/lib/store-images";
+} from "@/lib/store/images";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 
 export type UploadStoreImageResult =

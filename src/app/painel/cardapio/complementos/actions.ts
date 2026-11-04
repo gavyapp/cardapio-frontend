@@ -7,15 +7,15 @@ import {
   validationError,
   type ActionResult,
   type ActionResultWith,
-} from "@/lib/action-result";
+} from "@/lib/panel/action-result";
 import {
   deleteComplementGroup,
   reorderComplementGroups,
   saveComplementGroup,
   setComplementAvailability,
 } from "@/lib/data/complement-groups";
-import { afterMenuChange } from "@/lib/menu-cache";
-import { requireStoreForAction } from "@/lib/panel-access";
+import { afterMenuChange } from "@/lib/catalog/menu-cache";
+import { requireStoreForAction } from "@/lib/panel/access";
 
 const id = z.uuid();
 

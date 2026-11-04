@@ -19,18 +19,18 @@ import { FieldError } from "@/components/molecules/field-error";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { SegmentedControl } from "@/components/molecules/segmented-control";
 import { SortableList } from "@/components/molecules/sortable-list";
-import type { ActionResultWith } from "@/lib/action-result";
+import type { ActionResultWith } from "@/lib/panel/action-result";
 import type {
   ComplementGroupDraft,
   EditableComplementGroup,
-} from "@/lib/catalog-types";
-import { describeChoiceRule } from "@/lib/complement-rules";
-import { focusFirstInvalid } from "@/lib/focus-first-invalid";
+} from "@/lib/catalog/types";
+import { describeChoiceRule } from "@/lib/catalog/complement-rules";
+import { focusFirstInvalid } from "@/lib/panel/focus-first-invalid";
 import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
-import { useExitSnapshot } from "@/lib/use-exit-snapshot";
+import { useExitSnapshot } from "@/lib/hooks/use-exit-snapshot";
 import { cn } from "@/lib/utils";
 
 type OptionRow = {

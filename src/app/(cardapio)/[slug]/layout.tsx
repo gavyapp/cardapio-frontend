@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { findStoreBySlug } from "@/lib/data/store";
-import { themeStyle } from "@/lib/store-theme";
+import { themeStyle } from "@/lib/store/theme";
 
 type Params = Promise<{ slug: string }>;
 

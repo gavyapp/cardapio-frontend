@@ -15,7 +15,7 @@ import {
 import {
   DEFAULT_APPEARANCE,
   type StoreAppearance,
-} from "@/lib/store-theme";
+} from "@/lib/store/theme";
 
 const amountInReais = z.number().finite().nonnegative();
 

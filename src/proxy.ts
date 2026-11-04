@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { rewritePathFor } from "@/lib/subdomain";
+import { rewritePathFor } from "@/lib/routing/subdomain";
 import { refreshSession } from "@/lib/supabase/session";
 
 // Em toda requisição: traduz subdomínio em caminho (loja ou painel) e

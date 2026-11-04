@@ -7,15 +7,15 @@ import {
   type ActionResult,
   type ActionResultWith,
   validationError,
-} from "@/lib/action-result";
+} from "@/lib/panel/action-result";
 import {
   createCategory,
   deleteCategory,
   reorderCategories,
   updateCategory,
 } from "@/lib/data/categories";
-import { afterMenuChange } from "@/lib/menu-cache";
-import { requireStoreForAction } from "@/lib/panel-access";
+import { afterMenuChange } from "@/lib/catalog/menu-cache";
+import { requireStoreForAction } from "@/lib/panel/access";
 
 const categoryName = z
   .string()

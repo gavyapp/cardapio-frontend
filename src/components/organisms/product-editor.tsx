@@ -26,20 +26,20 @@ import {
   ProductDetailsTab,
   type ProductDetailsValues,
 } from "@/components/organisms/product-details-tab";
-import type { ActionResultWith } from "@/lib/action-result";
+import type { ActionResultWith } from "@/lib/panel/action-result";
 import type {
   ComplementGroupDraft,
   ComplementGroupItem,
   EditableProduct,
   ProductDraft,
-} from "@/lib/catalog-types";
-import { focusFirstInvalid } from "@/lib/focus-first-invalid";
+} from "@/lib/catalog/types";
+import { focusFirstInvalid } from "@/lib/panel/focus-first-invalid";
 import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
-import { PRODUCT_BADGES } from "@/lib/product-fields";
-import { useExitSnapshot } from "@/lib/use-exit-snapshot";
+import { PRODUCT_BADGES } from "@/lib/catalog/product-fields";
+import { useExitSnapshot } from "@/lib/hooks/use-exit-snapshot";
 import { cn } from "@/lib/utils";
 
 const STEPS = [

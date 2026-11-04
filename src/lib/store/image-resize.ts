@@ -1,7 +1,7 @@
 // Redução de imagem no navegador antes do envio: o lado maior fica com até
 // MAX_IMAGE_SIDE px e o arquivo sai em WebP. Foto de celular (4 MB, 4000 px)
 // vira algumas centenas de KB, dentro do limite do bucket.
-import { MAX_IMAGE_SIDE } from "@/lib/store-images";
+import { MAX_IMAGE_SIDE } from "@/lib/store/images";
 
 const WEBP_QUALITY = 0.85;
 

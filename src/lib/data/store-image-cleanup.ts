@@ -5,7 +5,7 @@ import "server-only";
 import {
   STORE_IMAGES_BUCKET,
   storeImagePathFromUrl,
-} from "@/lib/store-images";
+} from "@/lib/store/images";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 /**

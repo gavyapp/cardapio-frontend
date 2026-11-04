@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { StoreAvatar } from "@/components/atoms/store-avatar";
-import { publicStoreUrl } from "@/lib/subdomain";
+import { publicStoreUrl } from "@/lib/routing/subdomain";
 
 export type MenuStore = {
   slug: string;

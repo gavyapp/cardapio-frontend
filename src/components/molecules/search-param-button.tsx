@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/atoms/button";
-import { setSearchParam } from "@/lib/use-search-param-state";
+import { setSearchParam } from "@/lib/hooks/use-search-param-state";
 
 /**
  * Botão "Novo …" do cabeçalho da página: grava o parâmetro na URL e a lista

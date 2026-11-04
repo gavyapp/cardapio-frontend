@@ -8,7 +8,7 @@ import { uploadStoreImage } from "@/lib/data/store-image-upload";
 import {
   ACCEPTED_IMAGE_TYPES,
   type StoreImageKind,
-} from "@/lib/store-images";
+} from "@/lib/store/images";
 import { cn } from "@/lib/utils";
 
 /**

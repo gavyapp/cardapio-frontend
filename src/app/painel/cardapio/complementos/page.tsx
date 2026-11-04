@@ -10,9 +10,9 @@ import {
 import {
   GROUP_PARAM,
   NEW_ITEM,
-} from "@/lib/catalog-params";
+} from "@/lib/catalog/params";
 import { listComplementGroups } from "@/lib/data/complement-groups";
-import { requirePanelAccess } from "@/lib/panel-access";
+import { requirePanelAccess } from "@/lib/panel/access";
 
 import {
   deleteComplementGroupAction,

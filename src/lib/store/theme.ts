@@ -3,7 +3,10 @@
 // --primary sem saber de onde a cor veio.
 import type { CSSProperties } from "react";
 
-import { textColorOn, normalizeHex } from "@/lib/color";
+import {
+  textColorOn,
+  normalizeHex,
+} from "@/lib/store/color";
 
 export type StoreFont =
   "moderna" | "classica" | "arredondada" | "elegante";

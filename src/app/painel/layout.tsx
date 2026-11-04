@@ -12,7 +12,7 @@ import { findStoreBySlug } from "@/lib/data/store";
 import {
   PANEL_ROUTE,
   requirePanelAccess,
-} from "@/lib/panel-access";
+} from "@/lib/panel/access";
 
 import { signOut } from "./actions";
 

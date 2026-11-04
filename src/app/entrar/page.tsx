@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/organisms/login-form";
 import { PanelAccessTemplate } from "@/components/templates/panel-access-template";
 import { findPanelUser } from "@/lib/data/panel-auth";
-import { pathAfterLogin } from "@/lib/panel-access";
+import { pathAfterLogin } from "@/lib/panel/access";
 
 import { signIn } from "./actions";
 
