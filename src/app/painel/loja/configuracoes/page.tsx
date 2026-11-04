@@ -9,6 +9,8 @@ import {
 } from "@/components/organisms/store-settings-sections";
 import { SectionedSettingsTemplate } from "@/components/templates/sectioned-settings-template";
 
+import { saveOrderAlertsAction } from "./actions";
+
 export const metadata: Metadata = {
   title: "Configurações da loja",
 };
@@ -52,7 +54,6 @@ const SAMPLE = {
       enabled: true,
     },
   ],
-  alerts: { lateAfterMinutes: 30, newOrderSound: true },
 };
 
 export default function StoreSettingsPage() {
@@ -80,7 +81,7 @@ export default function StoreSettingsPage() {
       />
       <AlertsSection
         id={SECTIONS[4].id}
-        values={SAMPLE.alerts}
+        save={saveOrderAlertsAction}
       />
     </SectionedSettingsTemplate>
   );

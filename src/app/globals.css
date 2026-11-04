@@ -71,6 +71,18 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --shadow-elevated: var(--shadow-elevated);
+  /* Pulso sutil do contador de pedidos novos no menu. */
+  --animate-soft-pulse: soft-pulse 1.4s ease-in-out infinite;
+
+  @keyframes soft-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
 }
 
 :root {

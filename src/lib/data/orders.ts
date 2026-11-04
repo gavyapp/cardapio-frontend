@@ -12,6 +12,11 @@ import type {
 } from "@/lib/orders/status";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+import {
+  fetchBoard,
+  type BoardSnapshot,
+} from "./order-board";
+
 /** O pedido como ficou depois da mudança. */
 export type OrderStatusSnapshot = {
   id: string;
@@ -114,4 +119,16 @@ function refusalCode(
     default:
       return null;
   }
+}
+
+/**
+ * Quadro da loja para a primeira tela, com a hora da leitura (os tempos da
+ * primeira tela partem dela).
+ */
+export async function loadBoard(
+  storeId: string,
+): Promise<BoardSnapshot & { fetchedAt: number }> {
+  const supabase = await createServerSupabase();
+  const board = await fetchBoard(supabase, storeId);
+  return { ...board, fetchedAt: Date.now() };
 }

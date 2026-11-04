@@ -12,15 +12,14 @@ import {
 
 import type { CatalogCounts } from "@/lib/data/catalog-counts";
 import { cn } from "@/lib/utils";
+import { CountChip } from "@/components/atoms/count-chip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-
-// Contagem fixa de exemplo até os pedidos entrarem.
-const NEW_ORDERS_SAMPLE = 3;
+import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
 
 const MENU_ITEMS = [
   {
@@ -51,6 +50,7 @@ export function PanelNav({
   catalogCounts?: CatalogCounts;
 }) {
   const pathname = usePathname();
+  const newOrders = useLiveOrdersContext()?.newCount ?? 0;
 
   return (
     <nav
@@ -69,9 +69,14 @@ export function PanelNav({
           >
             <ClipboardList />
             Pedidos
-            <span className="tabular rounded-md bg-warning-soft px-1.5 py-0.5 text-xs font-medium text-warning-foreground">
-              {NEW_ORDERS_SAMPLE}
-            </span>
+            {newOrders > 0 ? (
+              <CountChip
+                count={newOrders}
+                hot
+                pulse
+                label="novos"
+              />
+            ) : null}
           </Link>
         </li>
         <li>

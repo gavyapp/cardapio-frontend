@@ -96,3 +96,16 @@ export function normalizeSearch(text: string): string {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "");
 }
+
+/**
+ * Duração em minutos para a tela, sempre compacta e com a unidade colada ao
+ * número: 45 → "45min"; 60 → "1h"; 110 → "1h 50min". Assim "45min" e
+ * "1h 50min" seguem o mesmo padrão e cabem nos cards do quadro.
+ */
+export function formatDuration(minutes: number): string {
+  const total = Math.max(0, Math.floor(minutes));
+  if (total < 60) return `${total}min`;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  return rest === 0 ? `${hours}h` : `${hours}h ${rest}min`;
+}

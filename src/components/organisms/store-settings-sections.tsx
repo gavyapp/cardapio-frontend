@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
@@ -12,10 +13,20 @@ import { Field } from "@/components/molecules/field";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { SectionCard } from "@/components/molecules/section-card";
 import { SettingRow } from "@/components/molecules/setting-row";
+import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import {
+  playOrderChime,
+  unlockAudio,
+} from "@/lib/orders/alarm";
+import {
+  DEFAULT_ORDER_ALERTS,
+  type OrderAlerts,
+} from "@/lib/orders/board";
+import type { ActionResult } from "@/lib/panel/action-result";
 import { cn } from "@/lib/utils";
 
-// Seções das configurações da loja. Estáticas por enquanto: recebem os
-// valores por props e ainda não gravam nada.
+// Seções das configurações da loja. Estáticas por enquanto (recebem os
+// valores por props e ainda não gravam nada), menos a de avisos de pedidos.
 
 export type StoreDataValues = {
   name: string;
@@ -209,27 +220,58 @@ export function PaymentSection({
   );
 }
 
-export type AlertValues = {
-  lateAfterMinutes: number;
-  newOrderSound: boolean;
-};
+export type SaveOrderAlertsAction = (
+  alerts: OrderAlerts,
+) => Promise<ActionResult>;
 
+/** Espera depois do último toque no − e + antes de salvar. */
+const SAVE_DELAY_MS = 600;
+
+/**
+ * Avisos do quadro de pedidos. Diferente das outras seções, já grava de
+ * verdade e salva sozinha a cada mudança; o painel aberto aplica na hora.
+ */
 export function AlertsSection({
   id,
-  values,
+  save,
 }: {
   id: string;
-  values: AlertValues;
+  save: SaveOrderAlertsAction;
 }) {
-  const [minutes, setMinutes] = useState(
-    values.lateAfterMinutes,
-  );
+  const live = useLiveOrdersContext();
+  const initial = live?.alerts ?? DEFAULT_ORDER_ALERTS;
+  const [alerts, setAlerts] = useState(initial);
+  const timer = useRef<number | undefined>(undefined);
+
+  async function persist(next: OrderAlerts) {
+    const result = await save(next);
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
+    }
+    live?.setAlerts(next);
+    toast.success("Avisos salvos");
+  }
+
+  function change(next: OrderAlerts, delay = 0) {
+    setAlerts(next);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(
+      () => void persist(next),
+      delay,
+    );
+  }
+
+  async function testSound() {
+    if (await unlockAudio()) playOrderChime();
+    else toast.error("O navegador não liberou o som.");
+  }
 
   return (
     <SectionCard
       id={id}
       title="Pedidos e avisos"
-      description="Como o painel chama sua atenção durante o expediente."
+      description="Como o painel chama sua atenção durante o expediente. Salva assim que você muda."
     >
       <div className="divide-y px-6">
         <SettingRow
@@ -238,10 +280,16 @@ export function AlertsSection({
         >
           <NumberStepper
             label="Minutos até o pedido ficar atrasado"
-            value={minutes}
-            onChange={setMinutes}
+            value={alerts.lateAfterMinutes}
+            onChange={(lateAfterMinutes) =>
+              change(
+                { ...alerts, lateAfterMinutes },
+                SAVE_DELAY_MS,
+              )
+            }
             step={5}
             min={5}
+            max={180}
             unit="min"
           />
         </SettingRow>
@@ -251,9 +299,17 @@ export function AlertsSection({
         >
           <Switch
             aria-label="Aviso de pedido novo"
-            defaultChecked={values.newOrderSound}
+            checked={alerts.sound}
+            onCheckedChange={(sound) =>
+              change({ ...alerts, sound })
+            }
           />
-          <Button variant="ghost">Testar som</Button>
+          <Button
+            variant="ghost"
+            onClick={() => void testSound()}
+          >
+            Testar som
+          </Button>
         </SettingRow>
       </div>
     </SectionCard>

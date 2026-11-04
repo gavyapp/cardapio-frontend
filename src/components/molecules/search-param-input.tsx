@@ -22,6 +22,14 @@ export function SearchParamInput({
 }) {
   const [param] = useSearchParamState(name);
   const [value, setValue] = useState(param ?? "");
+  const [lastParam, setLastParam] = useState(param);
+
+  // A busca pode ser limpa por fora (botão "Limpar busca" da lista).
+  if (param !== lastParam) {
+    setLastParam(param);
+    const typed = value.trim() ? value : null;
+    if (param !== typed) setValue(param ?? "");
+  }
 
   function change(next: string) {
     setValue(next);
