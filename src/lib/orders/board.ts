@@ -10,6 +10,7 @@ export type BoardOrder = {
   id: string;
   number: number;
   customerName: string;
+  customerPhone: string;
   mode: Enums<"order_mode">;
   paymentMethod: Enums<"payment_method">;
   total: number;
@@ -33,30 +34,45 @@ export type BoardColumnId = "new" | "preparing" | "ready";
 
 export type BoardColumn = {
   id: BoardColumnId;
-  label: string;
+  title: string;
+  /** Rótulo curto da aba no celular. */
+  tab: string;
   statuses: readonly OrderStatus[];
   /** Texto antes da média de tempo na etapa. */
   averageLabel: string;
+  emptyTitle: string;
+  emptyText: string;
 };
 
 export const BOARD_COLUMNS: readonly BoardColumn[] = [
   {
     id: "new",
-    label: "Novos",
+    title: "Novos",
+    tab: "Novos",
     statuses: ["RECEBIDO"],
     averageLabel: "Espera média",
+    emptyTitle: "Nenhum pedido novo",
+    emptyText:
+      "Pedidos que chegarem aparecem aqui, com aviso sonoro.",
   },
   {
     id: "preparing",
-    label: "Em preparo",
+    title: "Em preparo",
+    tab: "Em preparo",
     statuses: ["EM_PREPARO"],
     averageLabel: "Média na etapa",
+    emptyTitle: "Nada em preparo",
+    emptyText: "Pedidos aceitos aparecem aqui.",
   },
   {
     id: "ready",
-    label: "Prontos",
+    title: "Pronto / Em rota",
+    tab: "Pronto/Em rota",
     statuses: ["PRONTO", "A_CAMINHO"],
     averageLabel: "Média na etapa",
+    emptyTitle: "Nada pronto ou em rota",
+    emptyText:
+      "Pedidos prontos para retirada e saídos para entrega aparecem aqui.",
   },
 ];
 
@@ -88,60 +104,81 @@ export function isLate(
   );
 }
 
-/** Tempo médio na etapa dos pedidos da coluna, ou null sem pedidos. */
-export function averageMinutesInStage(
+/** "Espera média 4 min", ou null sem pedidos. */
+export function columnAverage(
+  column: BoardColumn,
   orders: readonly BoardOrder[],
   now: number,
-): number | null {
+): string | null {
   if (orders.length === 0) return null;
   const total = orders.reduce(
     (sum, order) =>
       sum + minutesSince(order.stageStartedAt, now),
     0,
   );
-  return Math.round(total / orders.length);
+  return `${column.averageLabel} ${Math.round(total / orders.length)} min`;
 }
 
-/** "7 min"; a partir de uma hora, "1 h 05". */
-export function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const rest = String(minutes % 60).padStart(2, "0");
-  return `${hours} h ${rest}`;
+/** Tempo desde o pedido no card: "agora" ou "7 min". */
+export function elapsedLabel(
+  order: BoardOrder,
+  now: number,
+): string {
+  const minutes = minutesSince(order.createdAt, now);
+  return minutes < 1 ? "agora" : `${minutes} min`;
 }
 
-/** Busca por número ("12", "#12") ou nome do cliente. */
+/** Busca por nome do cliente, número do pedido ou telefone. */
 export function matchesOrderSearch(
   order: BoardOrder,
   query: string,
 ): boolean {
-  const text = normalizeSearch(query).replace(/^#/, "");
+  const text = normalizeSearch(query);
   if (!text) return true;
-  if (/^\d+$/.test(text)) {
-    return String(order.number).startsWith(text);
-  }
-  return normalizeSearch(order.customerName).includes(text);
+  if (normalizeSearch(order.customerName).includes(text))
+    return true;
+  const digits = text.replace(/\D/g, "");
+  return (
+    digits.length > 0 &&
+    (String(order.number).includes(digits) ||
+      order.customerPhone
+        .replace(/\D/g, "")
+        .includes(digits))
+  );
 }
 
-/** Pedidos de cada coluna, do mais antigo para o mais novo. */
+/**
+ * Pedidos de cada coluna. Novos vão do mais antigo ao mais novo; nas outras,
+ * os atrasados vêm primeiro.
+ */
 export function groupByColumn(
   orders: readonly BoardOrder[],
+  lateAfterMinutes: number,
+  now: number,
 ): Record<BoardColumnId, BoardOrder[]> {
-  const groups: Record<BoardColumnId, BoardOrder[]> = {
-    new: [],
-    preparing: [],
-    ready: [],
+  const byAge = [...orders].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt),
+  );
+  const lateFirst = [...byAge].sort(
+    (a, b) =>
+      Number(isLate(b, lateAfterMinutes, now)) -
+      Number(isLate(a, lateAfterMinutes, now)),
+  );
+  const inColumn = (
+    list: BoardOrder[],
+    column: BoardColumnId,
+  ) =>
+    list.filter((order) =>
+      BOARD_COLUMNS.find(
+        (c) => c.id === column,
+      )!.statuses.includes(order.status),
+    );
+
+  return {
+    new: inColumn(byAge, "new"),
+    preparing: inColumn(lateFirst, "preparing"),
+    ready: inColumn(lateFirst, "ready"),
   };
-  for (const column of BOARD_COLUMNS) {
-    groups[column.id] = orders
-      .filter((order) =>
-        column.statuses.includes(order.status),
-      )
-      .sort((a, b) =>
-        a.createdAt.localeCompare(b.createdAt),
-      );
-  }
-  return groups;
 }
 
 /** Quantos pedidos esperam ser aceitos. */
@@ -175,10 +212,7 @@ export function nextStep(
             status: "A_CAMINHO",
             label: "Saiu para entrega",
           }
-        : {
-            status: "PRONTO",
-            label: "Pronto para retirada",
-          };
+        : { status: "PRONTO", label: "Pronto" };
     case "PRONTO":
       return delivery
         ? {
@@ -198,18 +232,38 @@ export function stageCaption(
   order: BoardOrder,
   now: number,
 ): string | null {
-  const minutes = formatMinutes(
-    minutesSince(order.stageStartedAt, now),
-  );
+  const minutes = minutesSince(order.stageStartedAt, now);
   switch (order.status) {
     case "EM_PREPARO":
-      return `Aceito há ${minutes}`;
+      return `Aceito há ${minutes} min`;
     case "PRONTO":
-      return `Pronto há ${minutes}`;
+      return `Pronto há ${minutes} min`;
     case "A_CAMINHO":
-      return `Saiu há ${minutes}`;
+      return `Saiu há ${minutes} min`;
     default:
       return null;
+  }
+}
+
+/** Cor da faixa à esquerda do card. */
+export type OrderTone =
+  "late" | "new" | "preparing" | "ready" | "out";
+
+export function orderTone(
+  order: BoardOrder,
+  lateAfterMinutes: number,
+  now: number,
+): OrderTone {
+  if (isLate(order, lateAfterMinutes, now)) return "late";
+  switch (order.status) {
+    case "RECEBIDO":
+      return "new";
+    case "EM_PREPARO":
+      return "preparing";
+    case "PRONTO":
+      return "ready";
+    default:
+      return "out";
   }
 }
 
@@ -229,6 +283,20 @@ export const PAYMENT_LABELS: Record<
   CARTAO: "Cartão",
   PIX: "Pix",
 };
+
+/** Fuso das lojas; o "hoje" do título começa à meia-noite daqui. */
+const STORE_UTC_OFFSET = "-03:00";
+
+/**
+ * Início do dia de hoje no horário de Brasília, em ISO. O Brasil não tem
+ * horário de verão desde 2019, então o deslocamento é fixo.
+ */
+export function startOfStoreDay(now: number): string {
+  const day = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  }).format(now);
+  return `${day}T00:00:00${STORE_UTC_OFFSET}`;
+}
 
 /** Parâmetros da URL do quadro. */
 export const ORDER_SEARCH_PARAM = "busca";

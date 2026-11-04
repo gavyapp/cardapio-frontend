@@ -10,7 +10,7 @@ import { NoStoreNotice } from "@/components/organisms/no-store-notice";
 import { Toaster } from "@/components/atoms/sonner";
 import { countCatalog } from "@/lib/data/catalog-counts";
 import { findOrderAlerts } from "@/lib/data/order-alerts";
-import { listOpenOrders } from "@/lib/data/orders";
+import { loadBoard } from "@/lib/data/orders";
 import { findStoreBySlug } from "@/lib/data/store";
 import {
   PANEL_ROUTE,
@@ -40,11 +40,11 @@ async function PanelWithAccess({
     );
   }
 
-  const [store, catalogCounts, openOrders, orderAlerts] =
+  const [store, catalogCounts, board, orderAlerts] =
     await Promise.all([
       findStoreBySlug(access.store.slug),
       countCatalog(access.store.id),
-      listOpenOrders(access.store.id),
+      loadBoard(access.store.id),
       findOrderAlerts(access.store.id),
     ]);
   const headerStore: HeaderStore | null = store
@@ -59,9 +59,9 @@ async function PanelWithAccess({
   return (
     <LiveOrdersProvider
       storeId={access.store.id}
-      initialOrders={openOrders.orders}
+      initialBoard={board}
       initialAlerts={orderAlerts}
-      renderedAt={openOrders.fetchedAt}
+      renderedAt={board.fetchedAt}
     >
       <PanelHeader
         store={headerStore}

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { SearchParamInput } from "@/components/molecules/search-param-input";
 import {
-  OpenOrdersTitle,
+  TodayOrdersTitle,
   OrderBoard,
 } from "@/components/organisms/order-board";
 import { OrderBoardTemplate } from "@/components/templates/order-board-template";
@@ -17,12 +17,13 @@ export const metadata: Metadata = { title: "Pedidos" };
 export default function OrdersPage() {
   return (
     <OrderBoardTemplate
-      title={<OpenOrdersTitle />}
+      title={<TodayOrdersTitle />}
       action={
         <Suspense>
           <SearchParamInput
             name={ORDER_SEARCH_PARAM}
-            placeholder="Buscar por número ou cliente"
+            placeholder="Nome, nº ou telefone"
+            className="sm:w-[270px]"
           />
         </Suspense>
       }

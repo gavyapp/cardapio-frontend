@@ -8,8 +8,9 @@ import {
 } from "react";
 
 import {
-  listOpenOrdersInBrowser,
+  fetchBoardInBrowser,
   subscribeToStoreOrders,
+  type BoardSnapshot,
 } from "@/lib/data/order-board";
 import type { BoardOrder } from "@/lib/orders/board";
 
@@ -22,6 +23,8 @@ const CLOCK_TICK_MS = 30_000;
 
 export type LiveOrdersState = {
   orders: BoardOrder[];
+  /** Pedidos recebidos hoje, em qualquer status. */
+  todayCount: number;
   /** Canal do Realtime conectado. */
   connected: boolean;
   /** Hora usada para os tempos na tela (atualiza a cada 30 s). */
@@ -37,15 +40,15 @@ export type LiveOrdersState = {
  */
 export function useLiveOrders({
   storeId,
-  initialOrders,
+  initialBoard,
   renderedAt,
 }: {
   storeId: string;
-  initialOrders: BoardOrder[];
+  initialBoard: BoardSnapshot;
   /** Hora da renderização no servidor, para a primeira tela bater. */
   renderedAt: number;
 }): LiveOrdersState {
-  const [orders, setOrders] = useState(initialOrders);
+  const [board, setBoard] = useState(initialBoard);
   const [connected, setConnected] = useState(true);
   const [now, setNow] = useState(renderedAt);
   const lastRequest = useRef(0);
@@ -54,10 +57,10 @@ export function useLiveOrders({
   const reload = useCallback(async () => {
     const request = ++lastRequest.current;
     try {
-      const next = await listOpenOrdersInBrowser(storeId);
+      const next = await fetchBoardInBrowser(storeId);
       // Só a resposta mais recente vale.
       if (request === lastRequest.current) {
-        setOrders(next);
+        setBoard(next);
         setNow(Date.now());
       }
     } catch (error) {
@@ -124,5 +127,11 @@ export function useLiveOrders({
     };
   }, []);
 
-  return { orders, connected, now, refresh };
+  return {
+    orders: board.orders,
+    todayCount: board.todayCount,
+    connected,
+    now,
+    refresh,
+  };
 }

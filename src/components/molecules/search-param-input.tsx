@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Input } from "@/components/atoms/input";
+import { cn } from "@/lib/utils";
 import {
   setSearchParam,
   useSearchParamState,
@@ -16,12 +17,23 @@ import {
 export function SearchParamInput({
   name,
   placeholder,
+  className,
 }: {
   name: string;
   placeholder: string;
+  /** Ajuste de largura da página. */
+  className?: string;
 }) {
   const [param] = useSearchParamState(name);
   const [value, setValue] = useState(param ?? "");
+  const [lastParam, setLastParam] = useState(param);
+
+  // A busca pode ser limpa por fora (botão "Limpar busca" da lista).
+  if (param !== lastParam) {
+    setLastParam(param);
+    const typed = value.trim() ? value : null;
+    if (param !== typed) setValue(param ?? "");
+  }
 
   function change(next: string) {
     setValue(next);
@@ -31,7 +43,12 @@ export function SearchParamInput({
   }
 
   return (
-    <div className="relative w-full text-muted-foreground sm:w-64">
+    <div
+      className={cn(
+        "relative w-full text-muted-foreground sm:w-64",
+        className,
+      )}
+    >
       <Search
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"

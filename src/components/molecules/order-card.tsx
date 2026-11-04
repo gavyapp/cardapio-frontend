@@ -1,26 +1,35 @@
 "use client";
 
-import { Bike, Clock, ShoppingBag } from "lucide-react";
+import { Clock } from "lucide-react";
 
-import { Badge } from "@/components/atoms/badge";
-import { Button } from "@/components/atoms/button";
+import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { formatCurrency, pluralize } from "@/lib/format";
 import {
   MODE_LABELS,
   PAYMENT_LABELS,
-  formatMinutes,
+  elapsedLabel,
   isLate,
-  minutesSince,
   nextStep,
+  orderTone,
   stageCaption,
   type BoardOrder,
+  type OrderTone,
 } from "@/lib/orders/board";
 import { cn } from "@/lib/utils";
 
+const TONE_STRIPE: Record<OrderTone, string> = {
+  late: "border-l-destructive",
+  new: "border-l-warning",
+  preparing: "border-l-[#8a9099]",
+  ready: "border-l-success",
+  out: "border-l-foreground",
+};
+
 /**
- * Card do quadro: número, cliente, modo, itens, pagamento, total e o tempo
- * desde o pedido (vermelho quando atrasado). Tocar abre o detalhe; o botão
- * leva o pedido ao passo seguinte.
+ * Card do quadro, como no protótipo: número, cliente e tempo desde o pedido
+ * (vermelho com relógio quando atrasado); modo, itens, pagamento e total;
+ * há quanto tempo está na etapa; e o botão do passo seguinte. Tocar no card
+ * abre o detalhe.
  */
 export function OrderCard({
   order,
@@ -44,94 +53,107 @@ export function OrderCard({
   const isNew = order.status === "RECEBIDO";
   const step = nextStep(order);
   const caption = stageCaption(order, now);
-  const ModeIcon =
-    order.mode === "ENTREGA" ? Bike : ShoppingBag;
 
   return (
     <article
       aria-label={`Pedido ${order.number}`}
+      onClick={onOpen}
       className={cn(
-        "flex flex-col gap-3 rounded-lg border border-l-4 bg-card p-4",
-        late
-          ? "border-l-destructive"
-          : isNew
-            ? "border-l-warning"
-            : "border-l-muted-foreground/40",
+        "flex shrink-0 cursor-pointer flex-col rounded-[4px] border border-l-4 bg-card",
+        TONE_STRIPE[
+          orderTone(order, lateAfterMinutes, now)
+        ],
         selected && "ring-2 ring-foreground",
       )}
     >
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-label={`Abrir pedido ${order.number} de ${order.customerName}`}
-        className="flex flex-col gap-1.5 rounded-md text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
-      >
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="min-w-0 truncate text-[15px]">
-            <span className="tabular font-semibold">
+      <div className="flex flex-col gap-2 p-3">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpen();
+          }}
+          aria-label={`Abrir pedido ${order.number} de ${order.customerName}`}
+          className="flex flex-col gap-2 rounded-[4px] text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+        >
+          <span className="flex min-w-0 items-center gap-2 text-[15px]">
+            <span className="tabular shrink-0 font-semibold">
               #{order.number}
-            </span>{" "}
-            {order.customerName}
+            </span>
+            <span className="min-w-0 truncate font-medium">
+              {order.customerName}
+            </span>
+            <span
+              className={cn(
+                "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-[13px] whitespace-nowrap",
+                late && "font-semibold text-destructive",
+              )}
+            >
+              {late ? (
+                <Clock
+                  aria-hidden
+                  className="size-3.5"
+                  strokeWidth={2.4}
+                />
+              ) : null}
+              {elapsedLabel(order, now)}
+              {late ? (
+                <span className="sr-only"> (atrasado)</span>
+              ) : null}
+            </span>
           </span>
-          <span
-            className={cn(
-              "tabular flex shrink-0 items-center gap-1 text-[13px]",
-              late
-                ? "font-semibold text-destructive"
-                : "text-muted-foreground",
-            )}
-          >
-            {late ? (
-              <Clock aria-hidden className="size-3.5" />
-            ) : null}
-            {formatMinutes(
-              minutesSince(order.createdAt, now),
-            )}
-            {late ? (
-              <span className="sr-only"> (atrasado)</span>
-            ) : null}
-          </span>
-        </span>
-        <span className="flex items-center justify-between gap-3 text-[13px] text-muted-foreground">
-          <span className="flex min-w-0 flex-wrap items-center gap-x-1.5">
-            <ModeIcon aria-hidden className="size-3.5" />
-            <span className="text-foreground">
+          <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1 font-medium text-foreground">
+              <OrderModeIcon
+                mode={order.mode}
+                className="shrink-0"
+              />
               {MODE_LABELS[order.mode]}
             </span>
             <span aria-hidden>·</span>
-            {pluralize(order.itemCount, "item", "itens")}
+            <span>
+              {pluralize(order.itemCount, "item", "itens")}
+            </span>
             <span aria-hidden>·</span>
-            {PAYMENT_LABELS[order.paymentMethod]}
+            <span>
+              {PAYMENT_LABELS[order.paymentMethod]}
+            </span>
+            <span className="ml-auto text-[15px] font-semibold whitespace-nowrap text-foreground">
+              {formatCurrency(order.total)}
+            </span>
           </span>
-          <span className="tabular shrink-0 text-[15px] font-semibold text-foreground">
-            {formatCurrency(order.total)}
-          </span>
-        </span>
-        {caption ||
-        order.isPaid ||
-        order.status === "A_CAMINHO" ? (
-          <span className="flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
-            {caption}
-            {order.status === "A_CAMINHO" ? (
-              <Badge variant="secondary">
-                Saiu para entrega
-              </Badge>
-            ) : null}
-            {order.isPaid ? (
-              <Badge variant="success">Pago</Badge>
-            ) : null}
-          </span>
+          {caption ? (
+            <span
+              className={cn(
+                "tabular text-[13px]",
+                order.status === "PRONTO"
+                  ? "text-success"
+                  : "text-muted-foreground",
+              )}
+            >
+              {caption}
+            </span>
+          ) : null}
+        </button>
+        {step ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={(event) => {
+              event.stopPropagation();
+              onAdvance();
+            }}
+            className={cn(
+              "flex h-11 min-w-0 items-center justify-center rounded-[4px] px-3 text-[13px] font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
+              isNew
+                ? "bg-foreground text-background"
+                : "border bg-card text-foreground",
+            )}
+          >
+            {pending ? "Salvando…" : step.label}
+          </button>
         ) : null}
-      </button>
-      {step ? (
-        <Button
-          variant={isNew ? "default" : "outline"}
-          disabled={pending}
-          onClick={onAdvance}
-        >
-          {pending ? "Salvando…" : step.label}
-        </Button>
-      ) : null}
+      </div>
     </article>
   );
 }

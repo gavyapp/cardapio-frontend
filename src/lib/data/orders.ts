@@ -6,14 +6,16 @@ import "server-only";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import type { Tables } from "@/lib/database.types";
-import type { BoardOrder } from "@/lib/orders/board";
 import type {
   OrderStatus,
   OrderStatusErrorCode,
 } from "@/lib/orders/status";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-import { fetchOpenOrders } from "./order-board";
+import {
+  fetchBoard,
+  type BoardSnapshot,
+} from "./order-board";
 
 /** O pedido como ficou depois da mudança. */
 export type OrderStatusSnapshot = {
@@ -120,13 +122,13 @@ function refusalCode(
 }
 
 /**
- * Pedidos em aberto da loja, para a primeira tela do quadro, com a hora da
- * leitura (os tempos da primeira tela partem dela).
+ * Quadro da loja para a primeira tela, com a hora da leitura (os tempos da
+ * primeira tela partem dela).
  */
-export async function listOpenOrders(
+export async function loadBoard(
   storeId: string,
-): Promise<{ orders: BoardOrder[]; fetchedAt: number }> {
+): Promise<BoardSnapshot & { fetchedAt: number }> {
   const supabase = await createServerSupabase();
-  const orders = await fetchOpenOrders(supabase, storeId);
-  return { orders, fetchedAt: Date.now() };
+  const board = await fetchBoard(supabase, storeId);
+  return { ...board, fetchedAt: Date.now() };
 }

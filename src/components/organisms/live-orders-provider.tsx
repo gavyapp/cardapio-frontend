@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
+import type { BoardSnapshot } from "@/lib/data/order-board";
 import { useLiveOrders } from "@/lib/hooks/use-live-orders";
 import { useOrderAlarm } from "@/lib/hooks/use-order-alarm";
 import {
@@ -19,6 +20,7 @@ import {
 
 type LiveOrders = {
   orders: BoardOrder[];
+  todayCount: number;
   newCount: number;
   connected: boolean;
   now: number;
@@ -44,20 +46,20 @@ export function useLiveOrdersContext(): LiveOrders | null {
  */
 export function LiveOrdersProvider({
   storeId,
-  initialOrders,
+  initialBoard,
   initialAlerts,
   renderedAt,
   children,
 }: {
   storeId: string;
-  initialOrders: BoardOrder[];
+  initialBoard: BoardSnapshot;
   initialAlerts: OrderAlerts;
   renderedAt: number;
   children: ReactNode;
 }) {
   const live = useLiveOrders({
     storeId,
-    initialOrders,
+    initialBoard,
     renderedAt,
   });
   const [alerts, setAlerts] = useState(initialAlerts);
