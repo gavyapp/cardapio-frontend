@@ -83,203 +83,84 @@ export async function listPanelProducts(
 }
 
 /**
- * Categoria e grupos precisam ser da própria loja e não excluídos. O RLS
- * confere só o store_id da linha gravada, não o de quem ela aponta.
+ * Grava o produto e os grupos ligados pela função save_product, numa
+ * transação só: se qualquer parte falha, nada fica gravado. A função confere
+ * que categoria e grupos são da loja e põe produto novo, ou que mudou de
+ * categoria, no fim da categoria. Devolve o id.
  */
-async function assertSameStore(
+async function writeProduct(
   storeId: string,
-  categoryId: string,
-  groupIds: string[],
-): Promise<void> {
+  input: ProductInput,
+): Promise<string> {
   const supabase = await createServerSupabase();
-  const { count: categoryCount } = await supabase
-    .from("categories")
-    .select("id", { count: "exact", head: true })
-    .eq("id", categoryId)
-    .eq("store_id", storeId)
-    .is("deleted_at", null);
-  if (!categoryCount) {
-    throw new UserFacingError(
-      "Escolha uma categoria da loja.",
-    );
-  }
-
-  const uniqueGroups = new Set(groupIds);
-  if (uniqueGroups.size !== groupIds.length) {
-    throw new UserFacingError(
-      "Grupo de complementos repetido.",
-    );
-  }
-  if (groupIds.length === 0) return;
-  const { count: groupCount } = await supabase
-    .from("complement_groups")
-    .select("id", { count: "exact", head: true })
-    .in("id", groupIds)
-    .eq("store_id", storeId)
-    .is("deleted_at", null);
-  if (groupCount !== groupIds.length) {
-    throw new UserFacingError(
-      "Um dos grupos de complementos não existe mais. Recarregue a página.",
-    );
-  }
-}
-
-async function nextSortOrder(
-  storeId: string,
-  categoryId: string,
-): Promise<number> {
-  const supabase = await createServerSupabase();
-  const { data } = await supabase
-    .from("products")
-    .select("sort_order")
-    .eq("store_id", storeId)
-    .eq("category_id", categoryId)
-    .is("deleted_at", null)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data?.sort_order ?? -1) + 1;
-}
-
-/** Troca os grupos ligados ao produto pela lista, nessa ordem. */
-async function replaceProductGroups(
-  storeId: string,
-  productId: string,
-  groupIds: string[],
-): Promise<void> {
-  const supabase = await createServerSupabase();
-  const { error: deleteError } = await supabase
-    .from("product_complement_groups")
-    .delete()
-    .eq("store_id", storeId)
-    .eq("product_id", productId);
-  if (deleteError) {
-    throw new Error(
-      `Erro ao salvar complementos do produto: ${deleteError.message}`,
-    );
-  }
-  if (groupIds.length === 0) return;
-
-  const { error } = await supabase
-    .from("product_complement_groups")
-    .insert(
-      groupIds.map((groupId, index) => ({
-        store_id: storeId,
-        product_id: productId,
-        complement_group_id: groupId,
-        sort_order: index,
-      })),
-    );
+  const { data, error } = await supabase.rpc(
+    "save_product",
+    {
+      p_store_id: storeId,
+      p_product_id: input.id,
+      p_category_id: input.categoryId,
+      p_name: input.name,
+      p_description: input.description || undefined,
+      p_price: input.price,
+      p_image_url: input.imageUrl ?? undefined,
+      p_badges: input.badges,
+      p_is_available: input.isAvailable,
+      p_is_suggested: input.isSuggested,
+      p_group_ids: input.groupIds,
+    },
+  );
   if (error) {
+    // P0001: recusa da regra (categoria ou grupo de outra loja, produto que
+    // não existe mais), com mensagem pronta para a tela.
+    if (error.code === "P0001") {
+      throw new UserFacingError(error.message);
+    }
     throw new Error(
-      `Erro ao salvar complementos do produto: ${error.message}`,
+      `Erro ao salvar produto: ${error.message}`,
     );
   }
+  return data;
 }
 
 /**
- * Cria ou atualiza o produto e os grupos ligados. Produto novo, ou que
- * mudou de categoria, vai para o fim da categoria. Se a foto mudou, apaga a
- * anterior, a não ser que outro produto (uma cópia) ainda use a mesma.
- * Devolve o id.
+ * Cria ou atualiza o produto e os grupos ligados. Se a foto mudou, apaga a
+ * anterior depois de salvar, a não ser que outro produto (uma cópia) ainda
+ * use a mesma. Devolve o id.
  */
 export async function saveProduct(
   storeId: string,
   input: ProductInput,
 ): Promise<string> {
-  const supabase = await createServerSupabase();
-  const fields = {
-    category_id: input.categoryId,
-    name: input.name,
-    description: input.description || null,
-    price: input.price,
-    image_url: input.imageUrl,
-    badges: input.badges,
-    is_available: input.isAvailable,
-    is_suggested: input.isSuggested,
-  };
-
-  await assertSameStore(
-    storeId,
-    input.categoryId,
-    input.groupIds,
-  );
-
-  let productId = input.id;
   let previousImage: string | null = null;
-
-  if (productId) {
-    const { data: current, error: readError } =
-      await supabase
-        .from("products")
-        .select("category_id, image_url")
-        .eq("id", productId)
-        .eq("store_id", storeId)
-        .is("deleted_at", null)
-        .maybeSingle();
-    if (readError) {
+  if (input.id) {
+    const supabase = await createServerSupabase();
+    const { data: current, error } = await supabase
+      .from("products")
+      .select("image_url")
+      .eq("id", input.id)
+      .eq("store_id", storeId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (error) {
       throw new Error(
-        `Erro ao carregar produto: ${readError.message}`,
+        `Erro ao carregar produto: ${error.message}`,
       );
     }
     if (!current) {
       throw new UserFacingError("Produto não encontrado.");
     }
     previousImage = current.image_url;
-    assertImageFromStore(
-      storeId,
-      input.imageUrl,
-      previousImage,
-    );
-
-    const movedCategory =
-      current.category_id !== input.categoryId;
-    const { error } = await supabase
-      .from("products")
-      .update({
-        ...fields,
-        ...(movedCategory && {
-          sort_order: await nextSortOrder(
-            storeId,
-            input.categoryId,
-          ),
-        }),
-      })
-      .eq("id", productId)
-      .eq("store_id", storeId);
-    if (error) {
-      throw new Error(
-        `Erro ao salvar produto: ${error.message}`,
-      );
-    }
-  } else {
-    assertImageFromStore(storeId, input.imageUrl, null);
-    const { data, error } = await supabase
-      .from("products")
-      .insert({
-        ...fields,
-        store_id: storeId,
-        sort_order: await nextSortOrder(
-          storeId,
-          input.categoryId,
-        ),
-      })
-      .select("id")
-      .single();
-    if (error) {
-      throw new Error(
-        `Erro ao criar produto: ${error.message}`,
-      );
-    }
-    productId = data.id;
   }
-
-  await replaceProductGroups(
+  assertImageFromStore(
     storeId,
-    productId,
-    input.groupIds,
+    input.imageUrl,
+    previousImage,
   );
 
+  const productId = await writeProduct(storeId, input);
+
+  // O arquivo fica no Storage, fora da transação do banco: só sai depois
+  // que o produto já aponta para a foto nova.
   if (
     previousImage &&
     previousImage !== input.imageUrl &&
@@ -341,7 +222,8 @@ export async function duplicateProduct(
     .from("products")
     .select(
       `category_id, name, description, price, image_url, badges,
-       product_complement_groups(complement_group_id, sort_order)`,
+       product_complement_groups(complement_group_id, sort_order,
+         complement_groups(deleted_at))`,
     )
     .eq("id", productId)
     .eq("store_id", storeId)
@@ -356,39 +238,23 @@ export async function duplicateProduct(
     throw new UserFacingError("Produto não encontrado.");
   }
 
-  const { data: copy, error: insertError } = await supabase
-    .from("products")
-    .insert({
-      store_id: storeId,
-      category_id: original.category_id,
-      name: `${original.name} (cópia)`.slice(0, 80),
-      description: original.description,
-      price: original.price,
-      image_url: original.image_url,
-      badges: original.badges,
-      is_available: true,
-      is_suggested: false,
-      sort_order: await nextSortOrder(
-        storeId,
-        original.category_id,
-      ),
-    })
-    .select("id")
-    .single();
-  if (insertError) {
-    throw new Error(
-      `Erro ao duplicar produto: ${insertError.message}`,
-    );
-  }
-
-  await replaceProductGroups(
-    storeId,
-    copy.id,
-    [...original.product_complement_groups]
+  return writeProduct(storeId, {
+    categoryId: original.category_id,
+    name: `${original.name} (cópia)`.slice(0, 80),
+    description: original.description ?? "",
+    price: Number(original.price),
+    imageUrl: original.image_url,
+    badges: original.badges,
+    isAvailable: true,
+    isSuggested: false,
+    groupIds: [...original.product_complement_groups]
+      .filter(
+        (link) =>
+          link.complement_groups?.deleted_at === null,
+      )
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((link) => link.complement_group_id),
-  );
-  return copy.id;
+  });
 }
 
 /** Esgota ou volta o produto, direto da lista. */

@@ -142,10 +142,10 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "complements_complement_group_id_fkey"
-            columns: ["complement_group_id"]
+            columns: ["store_id", "complement_group_id"]
             isOneToOne: false
             referencedRelation: "complement_groups"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id", "id"]
           },
           {
             foreignKeyName: "complements_store_id_fkey"
@@ -495,17 +495,17 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_complement_groups_complement_group_id_fkey"
-            columns: ["complement_group_id"]
+            columns: ["store_id", "complement_group_id"]
             isOneToOne: false
             referencedRelation: "complement_groups"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id", "id"]
           },
           {
             foreignKeyName: "product_complement_groups_product_id_fkey"
-            columns: ["product_id"]
+            columns: ["store_id", "product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id", "id"]
           },
           {
             foreignKeyName: "product_complement_groups_store_id_fkey"
@@ -568,10 +568,10 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
+            columns: ["store_id", "category_id"]
             isOneToOne: false
             referencedRelation: "categories"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id", "id"]
           },
           {
             foreignKeyName: "products_store_id_fkey"
@@ -876,6 +876,34 @@ export type Database = {
       }
       mark_order_read: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: { p_store_id: string }; Returns: number }
+      save_complement_group: {
+        Args: {
+          p_allow_repeat: boolean
+          p_group_id?: string
+          p_max_select: number
+          p_min_select: number
+          p_name: string
+          p_options: Json
+          p_store_id: string
+        }
+        Returns: string
+      }
+      save_product: {
+        Args: {
+          p_badges: string[]
+          p_category_id: string
+          p_description?: string
+          p_group_ids: string[]
+          p_image_url?: string
+          p_is_available: boolean
+          p_is_suggested: boolean
+          p_name: string
+          p_price: number
+          p_product_id?: string
+          p_store_id: string
+        }
+        Returns: string
+      }
       update_order_status: {
         Args: {
           p_is_paid?: boolean

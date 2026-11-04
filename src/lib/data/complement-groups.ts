@@ -102,137 +102,44 @@ export async function listComplementGroups(
 }
 
 /**
- * Cria ou atualiza o grupo com as opções. Opção que saiu da lista é
- * excluída (lógica: pedidos antigos guardam nome e preço por conta própria).
- * Devolve o id do grupo.
+ * Cria ou atualiza o grupo com as opções pela função save_complement_group,
+ * numa transação só: se qualquer parte falha, nada fica gravado. Opção que
+ * saiu da lista é excluída (lógica: pedidos antigos guardam nome e preço
+ * por conta própria). Devolve o id do grupo.
  */
 export async function saveComplementGroup(
   storeId: string,
   input: ComplementGroupInput,
 ): Promise<string> {
   const supabase = await createServerSupabase();
-  const fields = {
-    name: input.name,
-    min_select: input.minSelect,
-    max_select: input.maxSelect,
-    allow_repeat: input.allowRepeat,
-  };
-
-  let groupId = input.id;
-  if (groupId) {
-    const { error, count } = await supabase
-      .from("complement_groups")
-      .update(fields, { count: "exact" })
-      .eq("id", groupId)
-      .eq("store_id", storeId)
-      .is("deleted_at", null);
-    if (error) {
-      throw new Error(
-        `Erro ao salvar grupo: ${error.message}`,
-      );
-    }
-    if (count === 0) {
-      throw new UserFacingError("Grupo não encontrado.");
-    }
-  } else {
-    const { data: last } = await supabase
-      .from("complement_groups")
-      .select("sort_order")
-      .eq("store_id", storeId)
-      .is("deleted_at", null)
-      .order("sort_order", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const { data, error } = await supabase
-      .from("complement_groups")
-      .insert({
-        ...fields,
-        store_id: storeId,
-        sort_order: (last?.sort_order ?? -1) + 1,
-      })
-      .select("id")
-      .single();
-    if (error) {
-      throw new Error(
-        `Erro ao criar grupo: ${error.message}`,
-      );
-    }
-    groupId = data.id;
-  }
-
-  await saveOptions(storeId, groupId, input.options);
-  return groupId;
-}
-
-async function saveOptions(
-  storeId: string,
-  groupId: string,
-  options: ComplementGroupInput["options"],
-): Promise<void> {
-  const supabase = await createServerSupabase();
-  const { data: current, error: readError } = await supabase
-    .from("complements")
-    .select("id")
-    .eq("store_id", storeId)
-    .eq("complement_group_id", groupId)
-    .is("deleted_at", null);
-  if (readError) {
-    throw new Error(
-      `Erro ao carregar opções: ${readError.message}`,
-    );
-  }
-
-  const currentIds = new Set(current.map((row) => row.id));
-  const keptIds = new Set(
-    options.flatMap((option) =>
-      option.id && currentIds.has(option.id)
-        ? [option.id]
-        : [],
-    ),
+  const { data, error } = await supabase.rpc(
+    "save_complement_group",
+    {
+      p_store_id: storeId,
+      p_group_id: input.id,
+      p_name: input.name,
+      p_min_select: input.minSelect,
+      p_max_select: input.maxSelect,
+      p_allow_repeat: input.allowRepeat,
+      p_options: input.options.map((option) => ({
+        id: option.id,
+        name: option.name,
+        price: option.price,
+        is_available: option.isAvailable,
+      })),
+    },
   );
-  const removed = [...currentIds].filter(
-    (id) => !keptIds.has(id),
-  );
-
-  const writes = [];
-  if (removed.length > 0) {
-    writes.push(
-      supabase
-        .from("complements")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("store_id", storeId)
-        .in("id", removed),
-    );
-  }
-  options.forEach((option, index) => {
-    const fields = {
-      name: option.name,
-      price: option.price,
-      is_available: option.isAvailable,
-      sort_order: index,
-    };
-    writes.push(
-      option.id && keptIds.has(option.id)
-        ? supabase
-            .from("complements")
-            .update(fields)
-            .eq("id", option.id)
-            .eq("store_id", storeId)
-        : supabase.from("complements").insert({
-            ...fields,
-            store_id: storeId,
-            complement_group_id: groupId,
-          }),
-    );
-  });
-
-  const results = await Promise.all(writes);
-  const failed = results.find((result) => result.error);
-  if (failed?.error) {
+  if (error) {
+    // P0001: recusa da regra (grupo que não existe mais), com mensagem
+    // pronta para a tela.
+    if (error.code === "P0001") {
+      throw new UserFacingError(error.message);
+    }
     throw new Error(
-      `Erro ao salvar opções: ${failed.error.message}`,
+      `Erro ao salvar grupo: ${error.message}`,
     );
   }
+  return data;
 }
 
 /** Pausa ou volta uma opção, direto da lista. */
