@@ -26,7 +26,7 @@ npm run db:types      # gera src/lib/database.types.ts a partir do banco linkado
 
 O código acessa o banco só por `src/lib/data/` (ver `docs/adr/0003-camada-de-dados.md`).
 
-Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR; passo a passo em `docs/adr/0001-banco-so-muda-por-migration.md`. Testes do banco em `supabase/tests/database/` (`npx supabase test db`); padrão em `docs/adr/0002-testes-do-banco.md`. O GitHub Actions roda esses testes em todo PR que mexe em `supabase/` (workflow "Testes do banco").
+Migrations ficam em `supabase/migrations/`. Mudança no banco só entra por migration em PR; passo a passo em `docs/adr/0001-banco-so-muda-por-migration.md`. Testes do banco em `supabase/tests/database/` (`npx supabase test db`); padrão em `docs/adr/0002-testes-do-banco.md`. O GitHub Actions roda esses testes em todo PR que mexe em `supabase/` (workflow "Testes do banco") e, depois do merge, aplica as migrations novas no dev (workflow "Aplicar migrations", secret `SUPABASE_DEV_DB_URL`).
 
 A primeira (`20261031013000_schema_base.sql`) versiona o schema que já existia no projeto de dev, criado pelo dashboard. Lá ela não deve rodar de novo, só ser marcada como aplicada (uma vez):
 
