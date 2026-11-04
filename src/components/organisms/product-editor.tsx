@@ -1,6 +1,11 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,6 +39,7 @@ import {
   parseAmountInput,
 } from "@/lib/format";
 import { PRODUCT_BADGES } from "@/lib/product-fields";
+import { useExitSnapshot } from "@/lib/use-exit-snapshot";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -76,21 +82,35 @@ export function ProductEditor({
   EditorFormProps,
   "product" | "defaultCategoryId" | "onClose"
 >) {
+  const shown = useExitSnapshot(
+    open,
+    useMemo(
+      () => ({ product, defaultCategoryId }),
+      [product, defaultCategoryId],
+    ),
+  );
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={shown.onOpenChangeComplete}
+    >
       <SheetContent
         side="right"
         showCloseButton={false}
         className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-[640px]"
       >
-        {open ? (
+        {shown.isMounted ? (
           <EditorForm
             key={
-              product?.id ??
-              `new-${defaultCategoryId ?? ""}`
+              shown.value.product?.id ??
+              `new-${shown.value.defaultCategoryId ?? ""}`
             }
-            product={product}
-            defaultCategoryId={defaultCategoryId}
+            product={shown.value.product}
+            defaultCategoryId={
+              shown.value.defaultCategoryId
+            }
             onClose={() => onOpenChange(false)}
             {...formProps}
           />

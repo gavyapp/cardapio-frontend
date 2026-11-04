@@ -30,6 +30,7 @@ import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
+import { useExitSnapshot } from "@/lib/use-exit-snapshot";
 import { cn } from "@/lib/utils";
 
 type OptionRow = {
@@ -99,21 +100,13 @@ export function ComplementGroupEditor({
    */
   nested?: boolean;
 }) {
-  // O formulário continua na tela enquanto o painel sai, para a animação
-  // de saída não mostrar um painel vazio (o pai já limpou o grupo).
-  const [isMounted, setIsMounted] = useState(open);
-  const [lastGroup, setLastGroup] = useState(group);
-  if (open && !isMounted) setIsMounted(true);
-  if (open && lastGroup !== group) setLastGroup(group);
-  const shownGroup = open ? group : lastGroup;
+  const snapshot = useExitSnapshot(open, group);
 
   return (
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
-      onOpenChangeComplete={(isOpen) => {
-        if (!isOpen) setIsMounted(false);
-      }}
+      onOpenChangeComplete={snapshot.onOpenChangeComplete}
     >
       <SheetContent
         side="right"
@@ -126,16 +119,14 @@ export function ComplementGroupEditor({
         className={cn(
           "gap-0 data-[side=right]:w-full",
           nested
-            ? // Entra e sai deslizando inteiro pela direita, como uma
-              // página seguinte do painel do produto.
-              "duration-300 data-ending-style:opacity-100 data-starting-style:opacity-100 data-[side=right]:data-ending-style:translate-x-full data-[side=right]:data-starting-style:translate-x-full data-[side=right]:sm:max-w-[640px]"
+            ? "data-[side=right]:sm:max-w-[640px]"
             : "data-[side=right]:sm:max-w-[560px]",
         )}
       >
-        {isMounted ? (
+        {snapshot.isMounted ? (
           <EditorForm
-            key={shownGroup?.id ?? "new"}
-            group={shownGroup}
+            key={snapshot.value?.id ?? "new"}
+            group={snapshot.value}
             onSave={onSave}
             onDone={() => onOpenChange(false)}
             nested={nested}
