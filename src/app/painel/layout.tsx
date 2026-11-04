@@ -59,6 +59,7 @@ async function PanelWithAccess({
   return (
     <LiveOrdersProvider
       storeId={access.store.id}
+      storeName={store?.name ?? access.store.name}
       initialBoard={board}
       initialAlerts={orderAlerts}
       renderedAt={board.fetchedAt}

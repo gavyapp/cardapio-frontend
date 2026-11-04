@@ -79,6 +79,24 @@ export async function setOrderPaid(
   return { ok: true, order: toSnapshot(data) };
 }
 
+/**
+ * Marca o pedido como lido ao abrir o detalhe. Só grava a primeira leitura
+ * (read_at fica com a hora em que alguém abriu pela primeira vez).
+ */
+export async function markOrderRead(
+  orderId: string,
+): Promise<void> {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("mark_order_read", {
+    p_order_id: orderId,
+  });
+  if (error) {
+    throw new Error(
+      `Erro ao marcar o pedido como lido: ${error.message}`,
+    );
+  }
+}
+
 function toSnapshot(
   row: Tables<"orders">,
 ): OrderStatusSnapshot {

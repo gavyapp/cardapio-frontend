@@ -3,6 +3,7 @@
 import { Clock } from "lucide-react";
 
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
+import { OrderActionsMenu } from "@/components/molecules/order-actions-menu";
 import { formatCurrency, pluralize } from "@/lib/format";
 import {
   MODE_LABELS,
@@ -28,8 +29,8 @@ const TONE_STRIPE: Record<OrderTone, string> = {
 /**
  * Card do quadro, como no protótipo: número, cliente e tempo desde o pedido
  * (vermelho com relógio quando atrasado); modo, itens, pagamento e total;
- * há quanto tempo está na etapa; e o botão do passo seguinte. Tocar no card
- * abre o detalhe.
+ * há quanto tempo está na etapa; o botão do passo seguinte e o menu "…"
+ * (pago, recusar ou cancelar). Tocar no card abre o detalhe.
  */
 export function OrderCard({
   order,
@@ -39,6 +40,8 @@ export function OrderCard({
   pending = false,
   onOpen,
   onAdvance,
+  onTogglePaid,
+  onCloseOrder,
 }: {
   order: BoardOrder;
   now: number;
@@ -48,6 +51,8 @@ export function OrderCard({
   pending?: boolean;
   onOpen: () => void;
   onAdvance: () => void;
+  onTogglePaid: () => void;
+  onCloseOrder: () => void;
 }) {
   const late = isLate(order, lateAfterMinutes, now);
   const isNew = order.status === "RECEBIDO";
@@ -139,22 +144,33 @@ export function OrderCard({
           ) : null}
         </button>
         {step ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={(event) => {
-              event.stopPropagation();
-              onAdvance();
-            }}
-            className={cn(
-              "flex h-11 min-w-0 items-center justify-center rounded-[4px] px-3 text-[13px] font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
-              isNew
-                ? "bg-foreground text-background"
-                : "border bg-card text-foreground",
-            )}
-          >
-            {pending ? "Salvando…" : step.label}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={(event) => {
+                event.stopPropagation();
+                onAdvance();
+              }}
+              className={cn(
+                "flex h-11 min-w-0 flex-1 items-center justify-center rounded-[4px] px-3 text-[13px] font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
+                isNew
+                  ? "bg-foreground text-background"
+                  : "border bg-card text-foreground",
+              )}
+            >
+              {pending ? "Salvando…" : step.label}
+            </button>
+            <OrderActionsMenu
+              orderNumber={order.number}
+              status={order.status}
+              isPaid={order.isPaid}
+              disabled={pending}
+              onTogglePaid={onTogglePaid}
+              onCloseOrder={onCloseOrder}
+              className="size-11 lg:size-9"
+            />
+          </div>
         ) : null}
       </div>
     </article>

@@ -98,7 +98,7 @@ function minutesSince(
 
 /** Pedido aberto há mais tempo que o limite da loja. */
 export function isLate(
-  order: BoardOrder,
+  order: Pick<BoardOrder, "createdAt">,
   lateAfterMinutes: number,
   now: number,
 ): boolean {
@@ -124,7 +124,7 @@ export function columnAverage(
 
 /** Tempo desde o pedido no card: "agora", "7min" ou "1h 50min". */
 export function elapsedLabel(
-  order: BoardOrder,
+  order: Pick<BoardOrder, "createdAt">,
   now: number,
 ): string {
   const minutes = minutesSince(order.createdAt, now);

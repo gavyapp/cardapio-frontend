@@ -1,13 +1,22 @@
 "use client";
 
 import { WifiOff } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { CountChip } from "@/components/atoms/count-chip";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderCard } from "@/components/molecules/order-card";
+import type { AvailabilityTarget } from "@/components/molecules/order-items";
+import {
+  OrderReasonDialog,
+  type ClosingOrder,
+} from "@/components/molecules/order-reason-dialog";
 import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import {
+  OrderDetailPanel,
+  type OrderDetailHandlers,
+} from "@/components/organisms/order-detail";
 import {
   setSearchParam,
   useSearchParamState,
@@ -24,14 +33,39 @@ import {
   type BoardColumnId,
   type BoardOrder,
 } from "@/lib/orders/board";
+import {
+  closingKind,
+  type OrderRef,
+} from "@/lib/orders/detail";
 import type { OrderStatus } from "@/lib/orders/status";
 import type { ActionResult } from "@/lib/panel/action-result";
 import { cn } from "@/lib/utils";
 
-export type AdvanceOrderAction = (
-  orderId: string,
-  status: OrderStatus,
-) => Promise<ActionResult>;
+/** Server actions que o quadro usa, ligadas pela página. */
+export type OrderBoardActions = {
+  advance: (
+    orderId: string,
+    status: OrderStatus,
+  ) => Promise<ActionResult>;
+  closeOrder: (
+    orderId: string,
+    status: "REJEITADO" | "CANCELADO",
+    reason: string,
+  ) => Promise<ActionResult>;
+  setPaid: (
+    orderId: string,
+    paid: boolean,
+  ) => Promise<ActionResult>;
+  markRead: (orderId: string) => Promise<ActionResult>;
+  setProductAvailability: (
+    productId: string,
+    isAvailable: boolean,
+  ) => Promise<ActionResult>;
+  setComplementAvailability: (
+    complementId: string,
+    isAvailable: boolean,
+  ) => Promise<ActionResult>;
+};
 
 type CardProps = {
   now: number;
@@ -40,6 +74,8 @@ type CardProps = {
   pending: Record<string, OrderStatus>;
   onOpen: (order: BoardOrder) => void;
   onAdvance: (order: BoardOrder) => void;
+  onTogglePaid: (order: OrderRef) => void;
+  onCloseOrder: (order: OrderRef) => void;
 };
 
 /**
@@ -48,9 +84,9 @@ type CardProps = {
  * pedidos vêm do provider do painel, que os mantém em tempo real.
  */
 export function OrderBoard({
-  advance,
+  actions,
 }: {
-  advance: AdvanceOrderAction;
+  actions: OrderBoardActions;
 }) {
   const live = useLiveOrdersContext();
   const [search] = useSearchParamState(ORDER_SEARCH_PARAM);
@@ -63,6 +99,14 @@ export function OrderBoard({
   const [pending, setPending] = useState<
     Record<string, OrderStatus>
   >({});
+  const [closing, setClosing] = useState<
+    (ClosingOrder & { id: string }) | null
+  >(null);
+  const { markRead } = actions;
+  const onMarkRead = useCallback(
+    (orderId: string) => void markRead(orderId),
+    [markRead],
+  );
 
   if (!live) return null;
   const { now, alerts, refresh } = live;
@@ -79,14 +123,17 @@ export function OrderBoard({
     now,
   );
 
-  async function advanceOrder(order: BoardOrder) {
+  async function advanceOrder(order: OrderRef) {
     const step = nextStep(order);
     if (!step) return;
     setPending((current) => ({
       ...current,
       [order.id]: order.status,
     }));
-    const result = await advance(order.id, step.status);
+    const result = await actions.advance(
+      order.id,
+      step.status,
+    );
     if (result.ok) {
       if (step.status === "CONCLUIDO" && isSelected(order))
         setSelected(null);
@@ -102,9 +149,103 @@ export function OrderBoard({
     refresh();
   }
 
-  function isSelected(order: BoardOrder) {
+  function isSelected(order: Pick<OrderRef, "number">) {
     return selected === String(order.number);
   }
+
+  async function togglePaid(order: OrderRef) {
+    const paid = !order.isPaid;
+    const result = await actions.setPaid(order.id, paid);
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(
+      `Pedido #${order.number} ${paid ? "marcado" : "desmarcado"} como pago`,
+    );
+    refresh();
+  }
+
+  function askToClose(order: OrderRef) {
+    const kind = closingKind(order.status);
+    if (!kind) return;
+    setClosing({
+      id: order.id,
+      number: order.number,
+      customerName: order.customerName,
+      total: order.total,
+      kind,
+    });
+  }
+
+  async function closeOrder(
+    reason: string,
+  ): Promise<string | null> {
+    if (!closing) return null;
+    const result = await actions.closeOrder(
+      closing.id,
+      closing.kind === "reject" ? "REJEITADO" : "CANCELADO",
+      reason,
+    );
+    refresh();
+    if (!result.ok) return result.error;
+    toast.success(
+      `Pedido #${closing.number} ${closing.kind === "reject" ? "recusado" : "cancelado"}`,
+    );
+    if (isSelected(closing)) setSelected(null);
+    return null;
+  }
+
+  async function toggleAvailability(
+    target: AvailabilityTarget,
+  ): Promise<boolean> {
+    const change = (isAvailable: boolean) =>
+      target.kind === "product"
+        ? actions.setProductAvailability(
+            target.id,
+            isAvailable,
+          )
+        : actions.setComplementAvailability(
+            target.id,
+            isAvailable,
+          );
+    const next = !target.isAvailable;
+    const result = await change(next);
+    if (!result.ok) {
+      toast.error(result.error);
+      return false;
+    }
+    const name =
+      target.kind === "complement"
+        ? `+ ${target.name}`
+        : target.name;
+    toast.success(
+      next
+        ? `${name} disponível no cardápio`
+        : `${name} esgotado no cardápio`,
+      {
+        action: {
+          label: "Desfazer",
+          onClick: () => {
+            void change(target.isAvailable).then((undo) => {
+              if (!undo.ok) toast.error(undo.error);
+              else refresh();
+            });
+          },
+        },
+      },
+    );
+    return true;
+  }
+
+  const detailHandlers: OrderDetailHandlers = {
+    pending,
+    onAdvance: (order) => void advanceOrder(order),
+    onTogglePaid: (order) => void togglePaid(order),
+    onCloseOrder: askToClose,
+    onToggleAvailability: toggleAvailability,
+    onMarkRead,
+  };
 
   const cardProps: CardProps = {
     now,
@@ -116,7 +257,13 @@ export function OrderBoard({
         isSelected(order) ? null : String(order.number),
       ),
     onAdvance: (order) => void advanceOrder(order),
+    onTogglePaid: (order) => void togglePaid(order),
+    onCloseOrder: askToClose,
   };
+  const openNumber =
+    selected && /^\d+$/.test(selected)
+      ? Number(selected)
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -206,6 +353,26 @@ export function OrderBoard({
           </section>
         ))}
       </div>
+
+      <OrderDetailPanel
+        number={openNumber}
+        onClose={() => setSelected(null)}
+        live={{
+          storeId: live.storeId,
+          storeName: live.storeName,
+          version: live.version,
+          now,
+          lateAfterMinutes: alerts.lateAfterMinutes,
+        }}
+        handlers={detailHandlers}
+      />
+      <OrderReasonDialog
+        order={closing}
+        onOpenChange={(open) => {
+          if (!open) setClosing(null);
+        }}
+        onConfirm={closeOrder}
+      />
     </div>
   );
 }
@@ -218,6 +385,8 @@ function BoardCard({
   pending,
   onOpen,
   onAdvance,
+  onTogglePaid,
+  onCloseOrder,
 }: CardProps & { order: BoardOrder }) {
   return (
     <OrderCard
@@ -228,6 +397,8 @@ function BoardCard({
       pending={pending[order.id] === order.status}
       onOpen={() => onOpen(order)}
       onAdvance={() => onAdvance(order)}
+      onTogglePaid={() => onTogglePaid(order)}
+      onCloseOrder={() => onCloseOrder(order)}
     />
   );
 }

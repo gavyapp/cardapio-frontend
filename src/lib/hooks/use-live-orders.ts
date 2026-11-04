@@ -31,6 +31,11 @@ export type LiveOrdersState = {
   now: number;
   /** Relê a lista agora (por exemplo, depois de mudar um status). */
   refresh: () => void;
+  /**
+   * Sobe a cada releitura da lista. Quem mostra um pedido fora da lista
+   * (o detalhe) relê junto e acompanha mudanças de outros aparelhos.
+   */
+  version: number;
 };
 
 /**
@@ -51,6 +56,7 @@ export function useLiveOrders({
   const [board, setBoard] = useState(initialBoard);
   const [connected, setConnected] = useState(true);
   const [now, setNow] = useState(renderedAt);
+  const [version, setVersion] = useState(0);
   const lastRequest = useRef(0);
   const debounce = useRef<number | undefined>(undefined);
 
@@ -62,6 +68,7 @@ export function useLiveOrders({
       if (request === lastRequest.current) {
         setBoard(next);
         setNow(Date.now());
+        setVersion((current) => current + 1);
       }
     } catch (error) {
       // Mantém a lista atual; a próxima releitura tenta de novo.
@@ -133,5 +140,6 @@ export function useLiveOrders({
     connected,
     now,
     refresh,
+    version,
   };
 }

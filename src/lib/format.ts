@@ -109,3 +109,14 @@ export function formatDuration(minutes: number): string {
   const rest = total % 60;
   return rest === 0 ? `${hours}h` : `${hours}h ${rest}min`;
 }
+
+const storeTime = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+/** "2026-11-04T22:42:00Z" → "19:42", no horário de Brasília. */
+export function formatStoreTime(isoDate: string): string {
+  return storeTime.format(new Date(isoDate));
+}

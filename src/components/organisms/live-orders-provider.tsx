@@ -19,12 +19,16 @@ import {
 } from "@/lib/orders/board";
 
 type LiveOrders = {
+  storeId: string;
+  /** Nome da loja, para as mensagens ao cliente. */
+  storeName: string;
   orders: BoardOrder[];
   todayCount: number;
   newCount: number;
   connected: boolean;
   now: number;
   refresh: () => void;
+  version: number;
   alerts: OrderAlerts;
   /** Aplica na hora os avisos que acabaram de ser salvos. */
   setAlerts: (alerts: OrderAlerts) => void;
@@ -46,12 +50,14 @@ export function useLiveOrdersContext(): LiveOrders | null {
  */
 export function LiveOrdersProvider({
   storeId,
+  storeName,
   initialBoard,
   initialAlerts,
   renderedAt,
   children,
 }: {
   storeId: string;
+  storeName: string;
   initialBoard: BoardSnapshot;
   initialAlerts: OrderAlerts;
   renderedAt: number;
@@ -67,7 +73,14 @@ export function LiveOrdersProvider({
   const alarm = useOrderAlarm(alerts.sound && newCount > 0);
   useTitleCount(newCount);
 
-  const value = { ...live, newCount, alerts, setAlerts };
+  const value = {
+    ...live,
+    storeId,
+    storeName,
+    newCount,
+    alerts,
+    setAlerts,
+  };
 
   return (
     <LiveOrdersContext value={value}>
