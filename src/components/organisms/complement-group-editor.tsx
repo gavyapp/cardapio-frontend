@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import {
@@ -30,6 +30,7 @@ import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 type OptionRow = {
   /** Chave da linha na tela; opção nova ganha uma provisória. */
@@ -83,6 +84,7 @@ export function ComplementGroupEditor({
   onOpenChange,
   group,
   onSave,
+  nested = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -91,13 +93,28 @@ export function ComplementGroupEditor({
   onSave: (
     draft: ComplementGroupDraft,
   ) => Promise<ActionResultWith<string>>;
+  /**
+   * Aberto de dentro do editor de produto: cobre o painel do produto como
+   * uma página seguinte, sem escurecer de novo o fundo, e volta pela seta.
+   */
+  nested?: boolean;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-[560px]"
+        overlayClassName={
+          nested
+            ? "bg-transparent supports-backdrop-filter:backdrop-blur-none"
+            : undefined
+        }
+        className={cn(
+          "gap-0 data-[side=right]:w-full",
+          nested
+            ? "data-[side=right]:sm:max-w-[640px]"
+            : "data-[side=right]:sm:max-w-[560px]",
+        )}
       >
         {open ? (
           <EditorForm
@@ -105,6 +122,7 @@ export function ComplementGroupEditor({
             group={group}
             onSave={onSave}
             onDone={() => onOpenChange(false)}
+            nested={nested}
           />
         ) : null}
       </SheetContent>
@@ -116,12 +134,14 @@ function EditorForm({
   group,
   onSave,
   onDone,
+  nested,
 }: {
   group: EditableComplementGroup | null;
   onSave: (
     draft: ComplementGroupDraft,
   ) => Promise<ActionResultWith<string>>;
   onDone: () => void;
+  nested: boolean;
 }) {
   const [name, setName] = useState(group?.name ?? "");
   const [isRequired, setIsRequired] = useState(
@@ -272,7 +292,24 @@ function EditorForm({
         submit();
       }}
     >
-      <header className="flex min-h-16 shrink-0 items-start gap-2 border-b py-3 pr-4 pl-6">
+      <header
+        className={cn(
+          "flex min-h-16 shrink-0 items-start gap-2 border-b py-3 pr-4",
+          nested ? "pl-3" : "pl-6",
+        )}
+      >
+        {nested ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Voltar para o produto"
+            title="Voltar para o produto"
+            onClick={onDone}
+          >
+            <ArrowLeft aria-hidden />
+          </Button>
+        ) : null}
         <div className="mr-auto flex min-w-0 flex-col gap-1 pt-1">
           <SheetTitle className="text-lg font-semibold">
             {group
@@ -285,15 +322,17 @@ function EditorForm({
               : "Escolhas do cliente, como ponto da carne, sabor ou adicionais."}
           </SheetDescription>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Fechar"
-          onClick={onDone}
-        >
-          <X aria-hidden />
-        </Button>
+        {nested ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Fechar"
+            onClick={onDone}
+          >
+            <X aria-hidden />
+          </Button>
+        )}
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 [&>*]:shrink-0">

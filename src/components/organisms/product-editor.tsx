@@ -431,6 +431,7 @@ function EditorForm({
       </footer>
 
       <ComplementGroupEditor
+        nested
         open={groupEditor !== null}
         onOpenChange={(isOpen) =>
           !isOpen && setGroupEditor(null)
