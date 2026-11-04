@@ -1,7 +1,10 @@
 // Regras do quadro de pedidos: colunas, tempos, atraso, busca e o próximo
 // passo de cada pedido. Sem acesso a banco; vale no servidor e no navegador.
 import type { Enums } from "@/lib/database.types";
-import { normalizeSearch } from "@/lib/format";
+import {
+  formatDuration,
+  normalizeSearch,
+} from "@/lib/format";
 
 import type { OrderStatus } from "./status";
 
@@ -116,16 +119,16 @@ export function columnAverage(
       sum + minutesSince(order.stageStartedAt, now),
     0,
   );
-  return `${column.averageLabel} ${Math.round(total / orders.length)} min`;
+  return `${column.averageLabel} ${formatDuration(Math.round(total / orders.length))}`;
 }
 
-/** Tempo desde o pedido no card: "agora" ou "7 min". */
+/** Tempo desde o pedido no card: "agora", "7 min" ou "1h 50min". */
 export function elapsedLabel(
   order: BoardOrder,
   now: number,
 ): string {
   const minutes = minutesSince(order.createdAt, now);
-  return minutes < 1 ? "agora" : `${minutes} min`;
+  return minutes < 1 ? "agora" : formatDuration(minutes);
 }
 
 /** Busca por nome do cliente, número do pedido ou telefone. */
@@ -232,14 +235,16 @@ export function stageCaption(
   order: BoardOrder,
   now: number,
 ): string | null {
-  const minutes = minutesSince(order.stageStartedAt, now);
+  const duration = formatDuration(
+    minutesSince(order.stageStartedAt, now),
+  );
   switch (order.status) {
     case "EM_PREPARO":
-      return `Aceito há ${minutes} min`;
+      return `Aceito há ${duration}`;
     case "PRONTO":
-      return `Pronto há ${minutes} min`;
+      return `Pronto há ${duration}`;
     case "A_CAMINHO":
-      return `Saiu há ${minutes} min`;
+      return `Saiu há ${duration}`;
     default:
       return null;
   }
