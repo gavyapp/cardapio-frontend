@@ -7,11 +7,11 @@ import {
   useState,
 } from "react";
 
+import type { BoardSnapshot } from "@/lib/data/order-board";
 import {
   fetchBoardInBrowser,
   subscribeToStoreOrders,
-  type BoardSnapshot,
-} from "@/lib/data/order-board";
+} from "@/lib/data/order-board-live";
 import type { BoardOrder } from "@/lib/orders/board";
 
 /** Espera entre um evento e a releitura, para juntar eventos em sequência. */

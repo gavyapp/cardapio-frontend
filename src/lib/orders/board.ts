@@ -88,7 +88,7 @@ export const DEFAULT_ORDER_ALERTS = {
 export type OrderAlerts = typeof DEFAULT_ORDER_ALERTS;
 
 /** Minutos inteiros entre a data e agora (nunca negativo). */
-export function minutesSince(
+function minutesSince(
   isoDate: string,
   now: number,
 ): number {
@@ -193,7 +193,7 @@ export function countNewOrders(
   ).length;
 }
 
-export type NextStep = {
+type NextStep = {
   status: OrderStatus;
   label: string;
 };

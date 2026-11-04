@@ -20,9 +20,12 @@ function audioContext(): AudioContext | null {
   return context;
 }
 
-/** O navegador já deixa tocar som nesta página. */
+/**
+ * O navegador já deixa tocar som nesta página. Não cria o contexto: criado
+ * antes de um clique, ele nasce bloqueado e o navegador reclama no console.
+ */
 export function isAudioUnlocked(): boolean {
-  return audioContext()?.state === "running";
+  return context?.state === "running";
 }
 
 /** Libera o som. Funciona só dentro de um clique ou tecla. */
