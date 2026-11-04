@@ -92,7 +92,7 @@ export function OrderCard({
               {late ? (
                 <Clock
                   aria-hidden
-                  className="size-3.5"
+                  className="size-3.5 -translate-y-[0.5px]"
                   strokeWidth={2.4}
                 />
               ) : null}
@@ -104,9 +104,12 @@ export function OrderCard({
           </span>
           <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-medium text-foreground">
+              {/* O desenho pesa para baixo e, em 13px, o centro das
+                  maiúsculas fica acima do meio da linha: o ícone sobe um
+                  pouco para alinhar com o texto. */}
               <OrderModeIcon
                 mode={order.mode}
-                className="shrink-0"
+                className="shrink-0 -translate-y-[1.5px]"
               />
               {MODE_LABELS[order.mode]}
             </span>
