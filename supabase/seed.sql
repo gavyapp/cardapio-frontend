@@ -1,5 +1,6 @@
 -- Dados de exemplo: o cardápio real da Stack Burguer (Orleans – SC),
--- igual ao protótipo, e um login de lojista para testar o painel.
+-- igual ao protótipo, um login de lojista para testar o painel e pedidos
+-- de exemplo em todos os status.
 --
 -- Roda sozinho no `supabase db reset` e no `supabase start` local
 -- (config.toml → [db.seed]). Num projeto remoto só roda com
@@ -8,8 +9,8 @@
 --
 -- Login do painel: dono@stackburguer.test / stack1234
 --
--- Se a loja já existe (slug stack-burguer), não faz nada, então pode
--- rodar mais de uma vez sem duplicar.
+-- Se a loja já existe (slug stack-burguer), não recria o cardápio; se ela
+-- já tem pedidos, não cria pedidos. Pode rodar mais de uma vez sem duplicar.
 --
 -- Preço do produto é o preço cheio. Os descontos que o protótipo mostra
 -- (Combo The Classic e Porção com Cheddar e Bacon) são promoções e
@@ -200,3 +201,193 @@ begin
   select v_store, id, 'OWNER' from auth.users where email = 'dono@stackburguer.test';
 end
 $seed$;
+
+-- Pedidos de exemplo da Stack Burguer, um em cada status, para testar o
+-- quadro e o detalhe do pedido no painel antes de o checkout existir.
+--
+-- Cada pedido entra pelo create_order e anda pelo update_order_status como
+-- o dono do seed, então os eventos têm user_id e passam pelas mesmas
+-- regras do painel. Depois os horários são espalhados pelas últimas duas
+-- horas, para ter pedido recente e pedido atrasado.
+--
+-- Se a loja já tem pedido, não faz nada, então rodar de novo não duplica.
+do $orders$
+declare
+  v_store    uuid;
+  v_user     uuid;
+  v_override boolean;
+  v_o        jsonb;
+  v_item     jsonb;
+  v_comp     jsonb;
+  v_items    jsonb;
+  v_comps    jsonb;
+  v_order    uuid;
+  v_created  timestamptz;
+  v_step     interval;
+  v_status   text;
+  v_i        int;
+  v_count    int;
+
+  -- Cada pedido: cliente, entrega ou retirada, pagamento, itens (produto
+  -- e complementos [grupo, opção] pelo nome), caminho de status, motivo
+  -- de rejeição ou cancelamento, se já está pago e há quantos minutos
+  -- chegou.
+  v_orders   jsonb := $json$
+  [
+    { "name": "Ana Souza", "phone": "48999000001", "mode": "ENTREGA", "payment": "PIX",
+      "address": { "street": "Rua Coronel Marcos Rovaris", "number": "120", "district": "Centro",
+                   "complement": "Apto 302" },
+      "items": [
+        { "product": "The Classic", "quantity": 2, "complements": [["Adicionais", "Bacon"]] },
+        { "product": "Coca-Cola Lata", "complements": [["Versão", "Zero"]] } ],
+      "path": [], "minutes_ago": 3 },
+    { "name": "Bruno Lima", "phone": "48999000002", "mode": "RETIRADA", "payment": "DINHEIRO",
+      "change_for": 50,
+      "items": [
+        { "product": "Combo The Original", "notes": "Sem cebola roxa",
+          "complements": [["Coca-Cola do combo", "Tradicional"]] } ],
+      "path": [], "minutes_ago": 7 },
+    { "name": "Carla Mendes", "phone": "48999000003", "mode": "ENTREGA", "payment": "CARTAO",
+      "notes": "Interfone quebrado, ligar quando chegar",
+      "address": { "street": "Rua Pedro Bernardo Warmling", "number": "45", "district": "Murialdo",
+                   "reference": "Casa amarela de esquina" },
+      "items": [
+        { "product": "The Spicy Honey" },
+        { "product": "Batatinha" } ],
+      "path": ["EM_PREPARO"], "minutes_ago": 18 },
+    { "name": "Diego Rocha", "phone": "48999000004", "mode": "RETIRADA", "payment": "PIX",
+      "items": [
+        { "product": "Porção de Batata com Cheddar e Bacon" },
+        { "product": "Coca-Cola Lata", "quantity": 2, "complements": [["Versão", "Tradicional"]] } ],
+      "path": ["EM_PREPARO", "PRONTO"], "paid": true, "minutes_ago": 32 },
+    { "name": "Elisa Martins", "phone": "48999000005", "mode": "ENTREGA", "payment": "DINHEIRO",
+      "change_for": 100,
+      "address": { "street": "Rua Vereador Arno Kuhnen", "number": "780", "district": "Vila Nova" },
+      "items": [
+        { "product": "Combo The Chicken Little",
+          "complements": [["Coca-Cola do combo", "Zero"], ["Adicionais", "Fatia de Cheddar"]] },
+        { "product": "The Cookies" } ],
+      "path": ["EM_PREPARO", "A_CAMINHO"], "minutes_ago": 46 },
+    { "name": "Gabriela Nunes", "phone": "48999000007", "mode": "ENTREGA", "payment": "CARTAO",
+      "address": { "street": "Estrada Geral Rio Pinheiros", "number": "s/n", "district": "Rio Pinheiros" },
+      "items": [ { "product": "The Tropical" } ],
+      "path": ["REJEITADO"], "reason": "Endereço fora da área de entrega", "minutes_ago": 60 },
+    { "name": "Henrique Alves", "phone": "48999000008", "mode": "RETIRADA", "payment": "CARTAO",
+      "items": [ { "product": "The Flash" }, { "product": "Pote de Maionese Caseira" } ],
+      "path": ["EM_PREPARO", "CANCELADO"], "reason": "Cliente desistiu", "minutes_ago": 75 },
+    { "name": "Fábio Costa", "phone": "48999000006", "mode": "ENTREGA", "payment": "PIX",
+      "address": { "street": "Rua Sete de Setembro", "number": "310", "district": "Centro" },
+      "items": [
+        { "product": "Billy, The Kid" },
+        { "product": "Bonnie & Clyde", "complements": [["Adicionais", "Burger"]] } ],
+      "path": ["EM_PREPARO", "A_CAMINHO", "CONCLUIDO"], "paid": true, "minutes_ago": 95 }
+  ]
+  $json$;
+begin
+  select id, is_open_override into v_store, v_override
+  from public.stores where slug = 'stack-burguer';
+  if not found then
+    raise notice 'Seed: loja stack-burguer não existe, sem pedidos de exemplo';
+    return;
+  end if;
+
+  if exists (select 1 from public.orders where store_id = v_store) then
+    raise notice 'Seed: loja stack-burguer já tem pedidos, nada a fazer';
+    return;
+  end if;
+
+  -- As mudanças de status rodam como o dono da loja.
+  select id into v_user from auth.users where email = 'dono@stackburguer.test';
+  perform set_config('request.jwt.claims',
+    jsonb_build_object('sub', v_user, 'role', 'authenticated')::text, true);
+
+  -- Loja aberta só enquanto cria os pedidos.
+  update public.stores set is_open_override = true where id = v_store;
+
+  -- Do mais antigo para o mais recente, para o número seguir a ordem
+  for v_o in
+    select value from jsonb_array_elements(v_orders)
+    order by (value ->> 'minutes_ago')::int desc
+  loop
+    -- Itens no formato do create_order, com ids pelos nomes
+    v_items := '[]';
+    for v_item in select * from jsonb_array_elements(v_o -> 'items') loop
+      v_comps := '[]';
+      for v_comp in select * from jsonb_array_elements(coalesce(v_item -> 'complements', '[]')) loop
+        v_comps := v_comps || jsonb_build_object('complement_id', (
+          select c.id
+          from public.complements c
+          join public.complement_groups g on g.id = c.complement_group_id
+          where c.store_id = v_store and g.name = v_comp ->> 0 and c.name = v_comp ->> 1
+        ));
+      end loop;
+
+      v_items := v_items || jsonb_build_object(
+        'product_id', (select id from public.products
+                       where store_id = v_store and name = v_item ->> 'product'),
+        'quantity', coalesce((v_item ->> 'quantity')::int, 1),
+        'notes', v_item ->> 'notes',
+        'complements', v_comps);
+    end loop;
+
+    v_order := (public.create_order(
+      v_store,
+      (v_o ->> 'mode')::public.order_mode,
+      v_o ->> 'name',
+      v_o ->> 'phone',
+      (v_o ->> 'payment')::public.payment_method,
+      v_items,
+      v_o -> 'address',
+      (v_o ->> 'change_for')::numeric,
+      v_o ->> 'notes'
+    ) ->> 'id')::uuid;
+
+    -- Caminho de status, cada passo alguns minutos depois do anterior
+    v_created := now() - make_interval(mins => (v_o ->> 'minutes_ago')::int);
+    v_step := least(interval '10 minutes',
+      make_interval(mins => (v_o ->> 'minutes_ago')::int)
+        / (jsonb_array_length(v_o -> 'path') + 1));
+    -- Evento de criação do pedido
+    update public.order_events
+       set created_at = v_created
+     where order_id = v_order and from_status is null;
+
+    v_i := 0;
+    for v_status in select jsonb_array_elements_text(v_o -> 'path') loop
+      v_i := v_i + 1;
+      perform public.update_order_status(
+        v_order,
+        v_status::public.order_status,
+        case when v_status in ('REJEITADO', 'CANCELADO') then v_o ->> 'reason' end);
+
+      update public.order_events
+         set created_at = v_created + v_step * v_i
+       where order_id = v_order and to_status = v_status::public.order_status;
+    end loop;
+
+    if (v_o ->> 'paid')::boolean then
+      perform public.set_order_paid(v_order, true);
+    end if;
+
+    -- Horários do pedido de acordo com os eventos
+    update public.orders o
+       set created_at   = v_created,
+           read_at      = case when o.status <> 'RECEBIDO' then v_created + interval '1 minute' end,
+           accepted_at  = (select e.created_at from public.order_events e
+                           where e.order_id = o.id and e.to_status = 'EM_PREPARO'),
+           completed_at = case when o.status in ('CONCLUIDO', 'REJEITADO', 'CANCELADO')
+                            then (select max(e.created_at) from public.order_events e
+                                  where e.order_id = o.id) end
+     where o.id = v_order;
+  end loop;
+
+  update public.stores set is_open_override = v_override where id = v_store;
+  perform set_config('request.jwt.claims', '', true);
+
+  -- Confere que o seed deixou um pedido em cada status
+  select count(distinct status) into v_count from public.orders where store_id = v_store;
+  if v_count <> 7 then
+    raise exception 'Seed: pedidos de exemplo cobrem % status, esperado 7', v_count;
+  end if;
+end
+$orders$;

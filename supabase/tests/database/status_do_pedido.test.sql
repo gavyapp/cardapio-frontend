@@ -1,10 +1,12 @@
 -- Mudança de status pelo painel: update_order_status grava o status anterior
--- no evento e marca como pago; pedido e eventos não mudam direto na tabela.
+-- no evento e marca como pago; set_order_paid marca ou desmarca como pago
+-- em qualquer status, sem mudar o status nem gravar evento; pedido e
+-- eventos não mudam direto na tabela.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(5);
+select plan(12);
 
 -- Dado: pedido novo (RECEBIDO) numa loja com um funcionário logado
 insert into auth.users (id, email) values
@@ -45,6 +47,29 @@ select is(
   (public.update_order_status((select id from pedido), 'EM_PREPARO', null, true)).is_paid,
   true, 'marcar como pago no mesmo status → pago, status mantido');
 
+select results_eq(
+  $$ select status::text, is_paid from public.set_order_paid((select id from pedido), false) $$,
+  $$ values ('EM_PREPARO', false) $$,
+  'set_order_paid desmarca em EM_PREPARO → não pago, status mantido');
+
+select lives_ok(
+  $$ select public.update_order_status((select id from pedido), 'PRONTO') $$,
+  'EM_PREPARO → PRONTO → sem erro');
+select lives_ok(
+  $$ select public.update_order_status((select id from pedido), 'CONCLUIDO') $$,
+  'PRONTO → CONCLUIDO → sem erro');
+select results_eq(
+  $$ select status::text, is_paid from public.set_order_paid((select id from pedido), true) $$,
+  $$ values ('CONCLUIDO', true) $$,
+  'set_order_paid em pedido CONCLUIDO → pago, status mantido');
+select is(
+  (select count(*)::int from public.order_events where order_id = (select id from pedido)),
+  4, 'criação, três mudanças de status e três de pagamento → quatro eventos (pagamento não grava)');
+
+select throws_ok(
+  $$ select public.set_order_paid('00000000-0000-0000-0000-0000000000ff', true) $$,
+  'P0002', 'Pedido não encontrado', 'set_order_paid em pedido que não existe → P0002');
+
 select throws_ok(
   $$ update public.orders set total = 0 where id = (select id from pedido) $$,
   '42501', null, 'UPDATE direto em orders → negado');
@@ -52,6 +77,14 @@ select throws_ok(
   $$ insert into public.order_events (store_id, order_id, to_status)
      select '5a000000-0000-0000-0000-000000000001', id, 'CONCLUIDO' from pedido $$,
   '42501', null, 'INSERT direto em order_events → negado');
+
+-- Dado: usuário logado que não é da loja
+do $$ begin
+  perform set_config('request.jwt.claims', '{"sub": "a0000000-0000-0000-0000-0000000000ee", "role": "authenticated"}', true);
+end $$;
+select throws_ok(
+  $$ select public.set_order_paid((select id from pedido), false) $$,
+  '42501', 'Sem permissão', 'set_order_paid por quem não é da loja → 42501');
 
 select * from finish();
 rollback;
