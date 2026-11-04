@@ -74,6 +74,16 @@ function useActiveSection(
 
   useEffect(() => {
     function update() {
+      // No fim da página a última seção nunca chega ao topo:
+      // se a rolagem acabou, ela é a ativa.
+      const reachedBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 1;
+      if (reachedBottom && sections.length) {
+        setActive(sections[sections.length - 1].id);
+        return;
+      }
+
       let current = sections[0]?.id ?? "";
       for (const { id } of sections) {
         const element = document.getElementById(id);
