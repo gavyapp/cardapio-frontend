@@ -5,9 +5,12 @@ import {
   PanelHeader,
   type HeaderStore,
 } from "@/components/organisms/panel-header";
+import { LiveOrdersProvider } from "@/components/organisms/live-orders-provider";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
 import { Toaster } from "@/components/atoms/sonner";
 import { countCatalog } from "@/lib/data/catalog-counts";
+import { findOrderAlerts } from "@/lib/data/order-alerts";
+import { listOpenOrders } from "@/lib/data/orders";
 import { findStoreBySlug } from "@/lib/data/store";
 import {
   PANEL_ROUTE,
@@ -37,10 +40,13 @@ async function PanelWithAccess({
     );
   }
 
-  const [store, catalogCounts] = await Promise.all([
-    findStoreBySlug(access.store.slug),
-    countCatalog(access.store.id),
-  ]);
+  const [store, catalogCounts, openOrders, orderAlerts] =
+    await Promise.all([
+      findStoreBySlug(access.store.slug),
+      countCatalog(access.store.id),
+      listOpenOrders(access.store.id),
+      findOrderAlerts(access.store.id),
+    ]);
   const headerStore: HeaderStore | null = store
     ? {
         slug: store.slug,
@@ -49,8 +55,14 @@ async function PanelWithAccess({
       }
     : null;
 
+  // Pedidos, alarme e contador valem no painel todo, não só no quadro.
   return (
-    <>
+    <LiveOrdersProvider
+      storeId={access.store.id}
+      initialOrders={openOrders.orders}
+      initialAlerts={orderAlerts}
+      renderedAt={openOrders.fetchedAt}
+    >
       <PanelHeader
         store={headerStore}
         catalogCounts={catalogCounts}
@@ -59,7 +71,7 @@ async function PanelWithAccess({
       <main className="flex flex-1 flex-col">
         {children}
       </main>
-    </>
+    </LiveOrdersProvider>
   );
 }
 

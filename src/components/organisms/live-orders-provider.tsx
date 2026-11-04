@@ -1,0 +1,115 @@
+"use client";
+
+import { BellRing } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+
+import { useLiveOrders } from "@/lib/hooks/use-live-orders";
+import { useOrderAlarm } from "@/lib/hooks/use-order-alarm";
+import {
+  countNewOrders,
+  type BoardOrder,
+  type OrderAlerts,
+} from "@/lib/orders/board";
+
+type LiveOrders = {
+  orders: BoardOrder[];
+  newCount: number;
+  connected: boolean;
+  now: number;
+  refresh: () => void;
+  alerts: OrderAlerts;
+  /** Aplica na hora os avisos que acabaram de ser salvos. */
+  setAlerts: (alerts: OrderAlerts) => void;
+};
+
+const LiveOrdersContext = createContext<LiveOrders | null>(
+  null,
+);
+
+/** Pedidos em aberto do painel; null fora do provider (painel sem loja). */
+export function useLiveOrdersContext(): LiveOrders | null {
+  return useContext(LiveOrdersContext);
+}
+
+/**
+ * Envolve o painel todo: mantém os pedidos em aberto atualizados, toca o
+ * alarme enquanto houver pedido novo (em qualquer aba do painel) e põe o
+ * número de pedidos novos no título da aba do navegador.
+ */
+export function LiveOrdersProvider({
+  storeId,
+  initialOrders,
+  initialAlerts,
+  renderedAt,
+  children,
+}: {
+  storeId: string;
+  initialOrders: BoardOrder[];
+  initialAlerts: OrderAlerts;
+  renderedAt: number;
+  children: ReactNode;
+}) {
+  const live = useLiveOrders({
+    storeId,
+    initialOrders,
+    renderedAt,
+  });
+  const [alerts, setAlerts] = useState(initialAlerts);
+  const newCount = countNewOrders(live.orders);
+  const alarm = useOrderAlarm(alerts.sound && newCount > 0);
+  useTitleCount(newCount);
+
+  const value = { ...live, newCount, alerts, setAlerts };
+
+  return (
+    <LiveOrdersContext value={value}>
+      {alarm.blocked ? (
+        <button
+          type="button"
+          className="flex w-full items-center justify-center gap-2 bg-warning px-4 py-2.5 text-sm font-semibold text-warning-foreground"
+        >
+          <BellRing aria-hidden className="size-4" />
+          Toque aqui para ativar o som dos pedidos novos
+        </button>
+      ) : null}
+      {children}
+    </LiveOrdersContext>
+  );
+}
+
+const TITLE_COUNT = /^\(\d+\) /;
+
+/**
+ * "(2) Pedidos · Painel": o número de pedidos novos à frente do título. O
+ * Next troca o título a cada navegação, então o prefixo é reaplicado sempre
+ * que ele muda.
+ */
+function useTitleCount(count: number) {
+  useEffect(() => {
+    function apply() {
+      const base = document.title.replace(TITLE_COUNT, "");
+      const next = count > 0 ? `(${count}) ${base}` : base;
+      if (document.title !== next) document.title = next;
+    }
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+    return () => {
+      observer.disconnect();
+      document.title = document.title.replace(
+        TITLE_COUNT,
+        "",
+      );
+    };
+  }, [count]);
+}

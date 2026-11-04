@@ -13,6 +13,10 @@ import {
 } from "@/lib/database.types";
 
 import {
+  DEFAULT_ORDER_ALERTS,
+  type OrderAlerts,
+} from "@/lib/orders/board";
+import {
   DEFAULT_APPEARANCE,
   type StoreAppearance,
 } from "@/lib/store/theme";
@@ -42,6 +46,14 @@ export const storeThemeSchema = z.object({
   welcome: z.string().max(140).optional(),
 });
 
+// Avisos do quadro de pedidos.
+export const orderAlertsSchema = z.object({
+  // Minutos desde o pedido até ele ficar em vermelho.
+  late_after_minutes: z.int().min(5).max(180).optional(),
+  // Som enquanto houver pedido novo não aceito.
+  sound: z.boolean().optional(),
+});
+
 export const storeSettingsSchema = z.object({
   // Aparência do cardápio. Sem a chave: visual padrão do layout.
   theme: storeThemeSchema.optional(),
@@ -55,6 +67,8 @@ export const storeSettingsSchema = z.object({
   payment_methods: z
     .array(z.enum(paymentMethods))
     .optional(),
+  // Avisos do quadro. Sem a chave: 30 min e som ligado.
+  order_alerts: orderAlertsSchema.optional(),
 });
 
 /** Formato gravado em stores.settings. */
@@ -122,4 +136,23 @@ export function calculateDeliveryFee(
     return 0;
   }
   return rules.deliveryFee;
+}
+
+/** Avisos do quadro com os padrões aplicados. Settings inválido cai no padrão. */
+export function readOrderAlerts(
+  settings: Json,
+): OrderAlerts {
+  const result = storeSettingsSchema.safeParse(
+    settings ?? {},
+  );
+  const alerts = result.success
+    ? result.data.order_alerts
+    : undefined;
+
+  return {
+    lateAfterMinutes:
+      alerts?.late_after_minutes ??
+      DEFAULT_ORDER_ALERTS.lateAfterMinutes,
+    sound: alerts?.sound ?? DEFAULT_ORDER_ALERTS.sound,
+  };
 }
