@@ -4,15 +4,15 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
-import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Separator } from "@/components/atoms/separator";
 import { Switch } from "@/components/atoms/switch";
 import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
+import { MinutesInput } from "@/components/molecules/minutes-input";
 import { NumberStepper } from "@/components/molecules/number-stepper";
 import { SectionCard } from "@/components/molecules/section-card";
 import { SettingRow } from "@/components/molecules/setting-row";
+import type { ActionResult } from "@/lib/panel/action-result";
 import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
 import {
   playOrderChime,
@@ -22,125 +22,19 @@ import {
   DEFAULT_ORDER_ALERTS,
   type OrderAlerts,
 } from "@/lib/orders/board";
-import type { ActionResult } from "@/lib/panel/action-result";
-import { cn } from "@/lib/utils";
 
-// Seções das configurações da loja. Estáticas por enquanto (recebem os
-// valores por props e ainda não gravam nada), menos a de avisos de pedidos.
+import { useSettingsForm } from "./settings-form-context";
 
-export type StoreDataValues = {
-  name: string;
-  cnpj: string;
-  address: string;
-  menuHost: string;
-};
-
-export function StoreDataSection({
-  id,
-  values,
-}: {
-  id: string;
-  values: StoreDataValues;
-}) {
-  return (
-    <SectionCard
-      id={id}
-      title="Dados da loja"
-      description="Aparecem no rodapé do cardápio."
-    >
-      <div className="flex flex-col gap-6 px-6 py-6">
-        <div className="grid gap-5 md:grid-cols-3">
-          <Field id="store-name" label="Nome">
-            <Input
-              id="store-name"
-              defaultValue={values.name}
-            />
-          </Field>
-          <Field id="store-cnpj" label="CNPJ">
-            <Input
-              id="store-cnpj"
-              defaultValue={values.cnpj}
-              className="tabular"
-            />
-          </Field>
-          <Field id="store-address" label="Endereço">
-            <Input
-              id="store-address"
-              defaultValue={values.address}
-            />
-          </Field>
-        </div>
-
-        <Separator />
-
-        <div className="grid gap-2">
-          <p className="text-sm font-medium">
-            Link do cardápio
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[15px]">
-              {values.menuHost}
-            </span>
-            <Button variant="outline">Copiar link</Button>
-            <Button variant="outline">
-              Baixar QR code
-            </Button>
-          </div>
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
-
-export type DayHours = {
-  day: string;
-  hours: string | null;
-};
-
-export function HoursSection({
-  id,
-  days,
-}: {
-  id: string;
-  days: readonly DayHours[];
-}) {
-  return (
-    <SectionCard
-      id={id}
-      title="Horário de funcionamento"
-      description='Fora do horário, o cardápio mostra "Fechado" e não recebe pedidos.'
-      action={
-        <Button variant="outline">Editar horários</Button>
-      }
-    >
-      <dl className="max-w-[560px] divide-y px-6 py-2">
-        {days.map(({ day, hours }) => (
-          <div
-            key={day}
-            className="flex items-center justify-between py-4 text-[15px]"
-          >
-            <dt>{day}</dt>
-            <dd
-              className={cn(
-                "tabular",
-                !hours && "text-muted-foreground",
-              )}
-            >
-              {hours ?? "Fechado"}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </SectionCard>
-  );
-}
+// Seções das configurações da loja. Entrega e pagamento vão para o
+// formulário da página; avisos salvam sozinhos a cada mudança.
 
 export type DeliveryValues = {
   deliveryFee: string;
-  deliveryTime: string;
-  pickupTime: string;
+  deliveryTimeMinutes: number | null;
+  pickupTimeMinutes: number | null;
 };
 
+/** Os campos pertencem ao formulário da página (atributo form), salvo pela barra. */
 export function DeliverySection({
   id,
   values,
@@ -148,6 +42,8 @@ export function DeliverySection({
   id: string;
   values: DeliveryValues;
 }) {
+  const { formId } = useSettingsForm();
+
   return (
     <SectionCard
       id={id}
@@ -158,19 +54,25 @@ export function DeliverySection({
         <Field id="delivery-fee" label="Taxa de entrega">
           <CurrencyInput
             id="delivery-fee"
+            name="deliveryFee"
+            form={formId}
             defaultValue={values.deliveryFee}
           />
         </Field>
         <Field id="delivery-time" label="Tempo de entrega">
-          <Input
+          <MinutesInput
             id="delivery-time"
-            defaultValue={values.deliveryTime}
+            name="deliveryTimeMinutes"
+            form={formId}
+            defaultValue={values.deliveryTimeMinutes ?? ""}
           />
         </Field>
         <Field id="pickup-time" label="Tempo de retirada">
-          <Input
+          <MinutesInput
             id="pickup-time"
-            defaultValue={values.pickupTime}
+            name="pickupTimeMinutes"
+            form={formId}
+            defaultValue={values.pickupTimeMinutes ?? ""}
           />
         </Field>
       </div>
@@ -179,11 +81,16 @@ export function DeliverySection({
 }
 
 export type PaymentMethodOption = {
+  /** Valor do enum payment_method (PIX, DINHEIRO, CARTAO). */
   id: string;
   label: string;
   enabled: boolean;
 };
 
+/**
+ * Os switches são controlados aqui e as formas ligadas vão para o
+ * formulário da página como campos ocultos "paymentMethods".
+ */
 export function PaymentSection({
   id,
   methods,
@@ -191,6 +98,23 @@ export function PaymentSection({
   id: string;
   methods: readonly PaymentMethodOption[];
 }) {
+  const { formId } = useSettingsForm();
+  const [enabled, setEnabled] = useState<Set<string>>(
+    () =>
+      new Set(
+        methods.filter((m) => m.enabled).map((m) => m.id),
+      ),
+  );
+
+  function toggle(methodId: string, on: boolean) {
+    setEnabled((current) => {
+      const next = new Set(current);
+      if (on) next.add(methodId);
+      else next.delete(methodId);
+      return next;
+    });
+  }
+
   return (
     <SectionCard
       id={id}
@@ -211,8 +135,19 @@ export function PaymentSection({
             </Label>
             <Switch
               id={`payment-${method.id}`}
-              defaultChecked={method.enabled}
+              checked={enabled.has(method.id)}
+              onCheckedChange={(on) =>
+                toggle(method.id, on)
+              }
             />
+            {enabled.has(method.id) ? (
+              <input
+                type="hidden"
+                name="paymentMethods"
+                value={method.id}
+                form={formId}
+              />
+            ) : null}
           </div>
         ))}
       </div>
