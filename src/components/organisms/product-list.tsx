@@ -264,8 +264,14 @@ export function ProductList({
         <span
           className="hidden h-11 items-center sm:flex"
           onClick={(event) => event.stopPropagation()}
+          title={
+            product.isAvailable
+              ? undefined
+              : "Produto esgotado não pode ser sugerido"
+          }
         >
           <Switch
+            disabled={!product.isAvailable}
             checked={product.isSuggested}
             onCheckedChange={(checked) =>
               patch(product, { isSuggested: checked }, () =>
@@ -286,11 +292,20 @@ export function ProductList({
           <Switch
             checked={product.isAvailable}
             onCheckedChange={(checked) =>
-              patch(product, { isAvailable: checked }, () =>
-                actions.setAvailability(
-                  product.id,
-                  checked,
-                ),
+              patch(
+                product,
+                // Esgotar tira a sugestão no carrinho junto, como no banco.
+                checked
+                  ? { isAvailable: true }
+                  : {
+                      isAvailable: false,
+                      isSuggested: false,
+                    },
+                () =>
+                  actions.setAvailability(
+                    product.id,
+                    checked,
+                  ),
               )
             }
             aria-label={

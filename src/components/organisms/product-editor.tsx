@@ -355,6 +355,7 @@ function EditorForm({
           <ProductDetailsTab
             storeId={storeId}
             values={form}
+            isAvailable={product?.isAvailable ?? true}
             errors={errors}
             onChange={update}
           />

@@ -32,11 +32,14 @@ export type ProductDetailsValues = {
 export function ProductDetailsTab({
   storeId,
   values,
+  isAvailable,
   errors,
   onChange,
 }: {
   storeId: string;
   values: ProductDetailsValues;
+  /** Produto esgotado não pode ser sugerido no carrinho. */
+  isAvailable: boolean;
   errors: { name?: string; price?: string };
   onChange: (
     changes: Partial<ProductDetailsValues>,
@@ -187,12 +190,14 @@ export function ProductDetailsTab({
             Sugerir no carrinho
           </label>
           <span className="text-[13px] text-muted-foreground">
-            Aparece como sugestão quando o cliente revisa o
-            pedido. Bom para bebidas e sobremesas.
+            {isAvailable
+              ? "Aparece como sugestão quando o cliente revisa o pedido. Bom para bebidas e sobremesas."
+              : "Produto esgotado não pode ser sugerido. Deixe ele disponível na lista de produtos para sugerir."}
           </span>
         </div>
         <Switch
           id="product-suggested"
+          disabled={!isAvailable}
           checked={values.isSuggested}
           onCheckedChange={(isSuggested) =>
             onChange({ isSuggested })

@@ -46,10 +46,10 @@ select lives_ok(
        p_store_id => '5a000000-0000-0000-0000-000000000001',
        p_category_id => 'ca000000-0000-0000-0000-000000000001',
        p_name => 'Burger', p_price => 25, p_badges => '{novo}',
-       p_is_available => true, p_is_suggested => false,
+       p_is_available => false, p_is_suggested => false,
        p_group_ids => array['6a000000-0000-0000-0000-000000000002', '6a000000-0000-0000-0000-000000000001']::uuid[],
        p_description => 'Pão e carne') $$,
-  'cria Burger com Adicionais e Ponto → aceito');
+  'cria Burger esgotado com Adicionais e Ponto → aceito');
 select results_eq(
   $$ select category_id, price, badges, description, sort_order from public.products where name = 'Burger' $$,
   $$ values ('ca000000-0000-0000-0000-000000000001'::uuid, 25::numeric, '{novo}'::text[], 'Pão e carne', 0) $$,
@@ -67,14 +67,14 @@ select lives_ok(
        p_store_id => '5a000000-0000-0000-0000-000000000001',
        p_category_id => 'ca000000-0000-0000-0000-000000000002',
        p_name => 'Burger da casa', p_price => 27, p_badges => '{}',
-       p_is_available => false, p_is_suggested => true,
+       p_is_available => true, p_is_suggested => true,
        p_group_ids => array['6a000000-0000-0000-0000-000000000001']::uuid[],
        p_product_id => (select id from public.products where name = 'Burger')) $$,
-  'altera Burger para Bebidas, só com Ponto → aceito');
+  'altera Burger para Bebidas, disponível e sugerido, só com Ponto → aceito');
 select results_eq(
   $$ select name, category_id, price, is_available, is_suggested, description, sort_order
        from public.products where name = 'Burger da casa' $$,
-  $$ values ('Burger da casa', 'ca000000-0000-0000-0000-000000000002'::uuid, 27::numeric, false, true, null::text, 1) $$,
+  $$ values ('Burger da casa', 'ca000000-0000-0000-0000-000000000002'::uuid, 27::numeric, true, true, null::text, 1) $$,
   'produto que mudou de categoria → campos novos e no fim da nova categoria');
 select results_eq(
   $$ select l.complement_group_id from public.product_complement_groups l
@@ -87,7 +87,7 @@ select lives_ok(
        p_store_id => '5a000000-0000-0000-0000-000000000001',
        p_category_id => 'ca000000-0000-0000-0000-000000000002',
        p_name => 'Burger da casa', p_price => 28, p_badges => '{}',
-       p_is_available => false, p_is_suggested => true,
+       p_is_available => true, p_is_suggested => true,
        p_group_ids => array['6a000000-0000-0000-0000-000000000001']::uuid[],
        p_product_id => (select id from public.products where name = 'Burger da casa')) $$,
   'altera só o preço → aceito');

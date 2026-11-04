@@ -115,6 +115,7 @@ async function writeProduct(
     if (error.code === "P0001") {
       throw new UserFacingError(error.message);
     }
+    throwIfSuggestingUnavailable(error);
     throw new Error(
       `Erro ao salvar produto: ${error.message}`,
     );
@@ -257,7 +258,11 @@ export async function duplicateProduct(
   });
 }
 
-/** Esgota ou volta o produto, direto da lista. */
+/**
+ * Esgota ou volta o produto, direto da lista. Esgotar tira a sugestão no
+ * carrinho junto (o banco não aceita produto esgotado e sugerido); voltar
+ * não liga a sugestão de novo.
+ */
 export async function setProductAvailability(
   storeId: string,
   productId: string,
@@ -266,7 +271,11 @@ export async function setProductAvailability(
   const supabase = await createServerSupabase();
   const { error } = await supabase
     .from("products")
-    .update({ is_available: isAvailable })
+    .update(
+      isAvailable
+        ? { is_available: true }
+        : { is_available: false, is_suggested: false },
+    )
     .eq("id", productId)
     .eq("store_id", storeId)
     .is("deleted_at", null);
@@ -291,8 +300,24 @@ export async function setProductSuggested(
     .eq("store_id", storeId)
     .is("deleted_at", null);
   if (error) {
+    throwIfSuggestingUnavailable(error);
     throw new Error(
       `Erro ao alterar produto: ${error.message}`,
+    );
+  }
+}
+
+/** Recusa do banco ao sugerir produto esgotado, com mensagem para a tela. */
+function throwIfSuggestingUnavailable(error: {
+  message: string;
+}) {
+  if (
+    error.message.includes(
+      "products_suggested_requires_available",
+    )
+  ) {
+    throw new UserFacingError(
+      "Produto esgotado não pode ser sugerido no carrinho.",
     );
   }
 }
