@@ -12,6 +12,7 @@ import {
 
 import type { CatalogCounts } from "@/lib/data/catalog-counts";
 import { cn } from "@/lib/utils";
+import { CountChip } from "@/components/atoms/count-chip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,10 +70,11 @@ export function PanelNav({
             <ClipboardList />
             Pedidos
             {newOrders > 0 ? (
-              <span className="tabular rounded-md bg-warning-soft px-1.5 py-0.5 text-xs font-medium text-warning-foreground">
-                {newOrders}
-                <span className="sr-only"> novos</span>
-              </span>
+              <CountChip
+                count={newOrders}
+                hot
+                label="novos"
+              />
             ) : null}
           </Link>
         </li>

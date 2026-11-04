@@ -4,6 +4,7 @@ import { WifiOff } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { CountChip } from "@/components/atoms/count-chip";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderCard } from "@/components/molecules/order-card";
 import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
@@ -343,28 +344,6 @@ function EmptyColumn({
         </button>
       ) : null}
     </div>
-  );
-}
-
-function CountChip({
-  count,
-  hot,
-  small = false,
-}: {
-  count: number;
-  hot: boolean;
-  small?: boolean;
-}) {
-  return (
-    <span
-      className={cn(
-        "tabular inline-flex h-5 shrink-0 items-center justify-center rounded-[4px] text-xs font-semibold text-foreground",
-        small ? "min-w-5 px-[5px]" : "min-w-6 px-1.5",
-        hot && count > 0 ? "bg-warning" : "bg-muted",
-      )}
-    >
-      {count}
-    </span>
   );
 }
 
