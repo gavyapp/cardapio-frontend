@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type KeyboardCoordinateGetter,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -22,6 +23,55 @@ import { GripVertical } from "lucide-react";
 import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+
+/**
+ * Setas para cima e para baixo levam o centro do item arrastado ao centro do
+ * vizinho. O padrão do dnd-kit alinha pelas bordas e não troca de lugar
+ * quando os itens têm alturas diferentes (categoria aberta ao lado de
+ * fechada, grupo com aviso ao lado de grupo sem).
+ */
+const verticalKeyboardCoordinates: KeyboardCoordinateGetter =
+  (event, args) => {
+    const down = event.code === "ArrowDown";
+    if (!down && event.code !== "ArrowUp") {
+      return sortableKeyboardCoordinates(event, args);
+    }
+    event.preventDefault();
+    const {
+      active,
+      collisionRect,
+      droppableRects,
+      droppableContainers,
+    } = args.context;
+    if (!active || !collisionRect) return undefined;
+
+    const activeCenter =
+      collisionRect.top + collisionRect.height / 2;
+    let target: number | null = null;
+    for (const container of droppableContainers.getEnabled()) {
+      if (container.id === active.id) continue;
+      const rect = droppableRects.get(container.id);
+      if (!rect) continue;
+      const center = rect.top + rect.height / 2;
+      const ahead = down
+        ? center > activeCenter + 1
+        : center < activeCenter - 1;
+      if (
+        ahead &&
+        (target === null ||
+          Math.abs(center - activeCenter) <
+            Math.abs(target - activeCenter))
+      ) {
+        target = center;
+      }
+    }
+    if (target === null) return undefined;
+    return {
+      x: args.currentCoordinates.x,
+      y:
+        args.currentCoordinates.y + (target - activeCenter),
+    };
+  };
 
 /**
  * Lista que reordena arrastando pela alça (mouse, toque ou teclado: foco na
@@ -55,7 +105,7 @@ export function SortableList<T extends { id: string }>({
       activationConstraint: { delay: 150, tolerance: 6 },
     }),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter: verticalKeyboardCoordinates,
     }),
   );
 

@@ -83,6 +83,20 @@ function SheetContent({
           className,
         )}
         {...props}
+        onKeyDown={(event) => {
+          // O Base UI segura as setas dentro do painel; durante um arrastar
+          // pelo teclado (alça ativa do dnd-kit) elas precisam chegar ao
+          // documento, senão o item não se move.
+          const target = event.target as HTMLElement;
+          if (
+            target.getAttribute("aria-roledescription") ===
+              "sortable" &&
+            target.getAttribute("aria-pressed") === "true"
+          ) {
+            event.preventBaseUIHandler();
+          }
+          props.onKeyDown?.(event);
+        }}
       >
         {children}
         {showCloseButton && (

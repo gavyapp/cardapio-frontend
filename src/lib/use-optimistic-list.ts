@@ -28,7 +28,13 @@ export function useOptimisticList<T>(serverItems: T[]) {
     const previous = items;
     setItems(next);
     startTransition(async () => {
-      const result = await save();
+      // Falha de rede chega como exceção, não como resposta.
+      const result = await save().catch(
+        (): ActionResult => ({
+          ok: false,
+          error: "Sem conexão. A mudança não foi salva.",
+        }),
+      );
       if (!result.ok) {
         setItems(previous);
         toast.error(result.error);
