@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Pencil, Plus, X } from "lucide-react";
 
-import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { EditorCard } from "@/components/molecules/editor-card";
@@ -16,7 +15,6 @@ import {
   isRequiredGroup,
 } from "@/lib/complement-rules";
 import { normalizeSearch, pluralize } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 /**
  * Aba Complementos do editor: os grupos do produto, na ordem em que o
@@ -95,11 +93,13 @@ export function ProductComplementsTab({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    size="icon-sm"
                     className="bg-card"
+                    aria-label={`Editar ${group.name}`}
+                    title="Editar"
                     onClick={() => onEditGroup(group)}
                   >
-                    Editar
+                    <Pencil aria-hidden />
                   </Button>
                   <Button
                     type="button"
@@ -169,14 +169,15 @@ export function ProductComplementsTab({
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   className="mt-1.5 shrink-0 bg-card"
+                  aria-label={`Adicionar ${group.name} ao produto`}
+                  title="Adicionar"
                   onClick={() =>
                     onChange([...value, group.id])
                   }
                 >
                   <Plus aria-hidden />
-                  Adicionar
                 </Button>
               </li>
             ))}
@@ -197,12 +198,9 @@ function GroupSummary({
   usedByCount?: number;
 }) {
   const required = isRequiredGroup(group.minSelect);
-  // No produto o tipo vai num selo; na lista para adicionar, no texto.
   const isLinked = usedByCount === undefined;
   const details = [
-    ...(isLinked
-      ? []
-      : [required ? "Obrigatório" : "Opcional"]),
+    required ? "Obrigatório" : "Opcional",
     describeChoiceRule(group.minSelect, group.maxSelect),
     pluralize(group.options.length, "opção", "opções"),
     ...(isLinked
@@ -216,24 +214,9 @@ function GroupSummary({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5 leading-tight">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="text-[15px] font-semibold">
-          {group.name}
-        </span>
-        {isLinked ? (
-          <Badge
-            variant={required ? "default" : "outline"}
-            className={cn(
-              "h-5 rounded-md px-1.5 text-[11px] font-semibold",
-              required
-                ? "bg-foreground text-background"
-                : "border-transparent bg-muted text-muted-foreground",
-            )}
-          >
-            {required ? "Obrigatório" : "Opcional"}
-          </Badge>
-        ) : null}
-      </div>
+      <span className="text-[15px] font-semibold">
+        {group.name}
+      </span>
       <span className="text-[13px]">
         {details.join(" · ")}
       </span>
