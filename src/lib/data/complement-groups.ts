@@ -7,6 +7,8 @@ import "server-only";
 import { UserFacingError } from "@/lib/action-result";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+import { reorderRows } from "./reorder";
+
 export type PanelComplement = {
   id: string;
   name: string;
@@ -257,22 +259,11 @@ export async function reorderComplementGroups(
   storeId: string,
   orderedIds: string[],
 ): Promise<void> {
-  const supabase = await createServerSupabase();
-  const results = await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase
-        .from("complement_groups")
-        .update({ sort_order: index })
-        .eq("id", id)
-        .eq("store_id", storeId),
-    ),
+  await reorderRows(
+    "complement_groups",
+    storeId,
+    orderedIds,
   );
-  const failed = results.find((result) => result.error);
-  if (failed?.error) {
-    throw new Error(
-      `Erro ao reordenar grupos: ${failed.error.message}`,
-    );
-  }
 }
 
 /**

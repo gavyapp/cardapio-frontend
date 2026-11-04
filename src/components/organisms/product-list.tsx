@@ -22,26 +22,30 @@ import { SortableList } from "@/components/molecules/sortable-list";
 import {
   CategoryList,
   type CategoryActions,
-  type CategoryItem,
 } from "@/components/organisms/category-list";
-import type { ComplementGroupDraft } from "@/components/organisms/complement-group-editor";
-import type { ComplementGroupItem } from "@/components/organisms/complement-group-list";
-import {
-  ProductEditor,
-  isBlockingGroup,
-  type EditableProduct,
-  type ProductDraft,
-} from "@/components/organisms/product-editor";
+import { ProductEditor } from "@/components/organisms/product-editor";
 import type {
   ActionResult,
   ActionResultWith,
 } from "@/lib/action-result";
+import type {
+  CategoryItem,
+  ComplementGroupDraft,
+  ComplementGroupItem,
+  EditableProduct,
+  ProductDraft,
+} from "@/lib/catalog-types";
+import { isBlockingGroup } from "@/lib/complement-rules";
 import {
   NEW_ITEM,
   PRODUCT_PARAM,
   SEARCH_PARAM,
 } from "@/lib/catalog-params";
-import { formatCurrency } from "@/lib/format";
+import {
+  formatCurrency,
+  normalizeSearch,
+} from "@/lib/format";
+import { useOptimisticList } from "@/lib/use-optimistic-list";
 import { useSearchParamState } from "@/lib/use-search-param-state";
 import { cn } from "@/lib/utils";
 
@@ -74,13 +78,6 @@ export type ProductActions = {
 const ROW_GRID =
   "grid grid-cols-[44px_40px_minmax(0,1fr)_44px_36px] items-center gap-x-3 sm:grid-cols-[44px_40px_minmax(0,1fr)_96px_136px_80px_36px] sm:gap-x-4";
 
-function normalize(text: string) {
-  return text
-    .toLocaleLowerCase("pt-BR")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-}
-
 /**
  * Tela de produtos: cada categoria é um cartão (ativar, renomear, excluir,
  * arrastar) com a tabela dos produtos dela. Na linha do produto dá para
@@ -102,8 +99,7 @@ export function ProductList({
   actions: ProductActions;
   categoryActions: CategoryActions;
 }) {
-  const [items, setItems] = useState(products);
-  const [source, setSource] = useState(products);
+  const { items, optimistic } = useOptimisticList(products);
   const [deleting, setDeleting] =
     useState<EditableProduct | null>(null);
   // Categoria do "+ Adicionar produto" que abriu o editor.
@@ -115,11 +111,6 @@ export function ProductList({
   const [searchParam] = useSearchParamState(SEARCH_PARAM);
   const [, startTransition] = useTransition();
 
-  if (source !== products) {
-    setSource(products);
-    setItems(products);
-  }
-
   const editing =
     items.find((product) => product.id === editorParam) ??
     null;
@@ -127,26 +118,11 @@ export function ProductList({
   const groupsById = new Map(
     groups.map((group) => [group.id, group]),
   );
-  const search = normalize((searchParam ?? "").trim());
+  const search = normalizeSearch(searchParam ?? "");
 
   function openNew(categoryId?: string) {
     setNewInCategory(categoryId);
     setEditorParam(NEW_ITEM);
-  }
-
-  function optimistic(
-    next: EditableProduct[],
-    save: () => Promise<ActionResult>,
-  ) {
-    const previous = items;
-    setItems(next);
-    startTransition(async () => {
-      const result = await save();
-      if (!result.ok) {
-        setItems(previous);
-        toast.error(result.error);
-      }
-    });
   }
 
   function patch(
@@ -420,7 +396,7 @@ export function ProductList({
         matches: items.filter(
           (product) =>
             product.categoryId === category.id &&
-            normalize(
+            normalizeSearch(
               `${product.name} ${product.description}`,
             ).includes(search),
         ),

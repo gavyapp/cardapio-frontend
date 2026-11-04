@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,23 +9,19 @@ import { Switch } from "@/components/atoms/switch";
 import { ConfirmDialog } from "@/components/molecules/confirm-dialog";
 import { NameDialog } from "@/components/molecules/name-dialog";
 import { SortableList } from "@/components/molecules/sortable-list";
-import type { ActionResult } from "@/lib/action-result";
+import type {
+  ActionResult,
+  ActionResultWith,
+} from "@/lib/action-result";
+import type { CategoryItem } from "@/lib/catalog-types";
+import { pluralize } from "@/lib/format";
+import { useOptimisticList } from "@/lib/use-optimistic-list";
 import { cn } from "@/lib/utils";
-
-export type CategoryItem = {
-  id: string;
-  name: string;
-  isAvailable: boolean;
-  productCount: number;
-};
 
 export type CategoryActions = {
   create: (
     name: string,
-  ) => Promise<
-    | { ok: true; data: string }
-    | { ok: false; error: string }
-  >;
+  ) => Promise<ActionResultWith<string>>;
   rename: (
     id: string,
     name: string,
@@ -49,8 +41,9 @@ type DialogState =
   | null;
 
 function productCountLabel(count: number) {
-  if (count === 0) return "Nenhum produto";
-  return count === 1 ? "1 produto" : `${count} produtos`;
+  return count === 0
+    ? "Nenhum produto"
+    : pluralize(count, "produto", "produtos");
 }
 
 /**
@@ -69,8 +62,8 @@ export function CategoryList({
   actions: CategoryActions;
   renderContent?: (category: CategoryItem) => ReactNode;
 }) {
-  const [items, setItems] = useState(categories);
-  const [source, setSource] = useState(categories);
+  const { items, optimistic } =
+    useOptimisticList(categories);
   const [dialog, setDialog] = useState<DialogState>(null);
   // Só a primeira categoria começa aberta.
   const [expanded, setExpanded] = useState<
@@ -78,31 +71,6 @@ export function CategoryList({
   >(() =>
     categories[0] ? { [categories[0].id]: true } : {},
   );
-  const [, startTransition] = useTransition();
-
-  // Dados novos do servidor (depois de salvar) substituem o estado local.
-  if (source !== categories) {
-    setSource(categories);
-    setItems(categories);
-  }
-
-  function optimistic(
-    next: CategoryItem[],
-    save: () => Promise<ActionResult>,
-    successMessage?: string,
-  ) {
-    const previous = items;
-    setItems(next);
-    startTransition(async () => {
-      const result = await save();
-      if (!result.ok) {
-        setItems(previous);
-        toast.error(result.error);
-      } else if (successMessage) {
-        toast.success(successMessage);
-      }
-    });
-  }
 
   function toggle(
     category: CategoryItem,

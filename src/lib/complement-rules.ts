@@ -1,6 +1,8 @@
 // Regras de escolha de um grupo de complementos, em texto para o lojista e
 // para o cliente. Mínimo maior que 0 torna o grupo obrigatório.
 
+import { formatAmountInput } from "@/lib/format";
+
 export function isRequiredGroup(
   minSelect: number,
 ): boolean {
@@ -27,4 +29,38 @@ export function describeGroupRule(
     ? "Obrigatório"
     : "Opcional";
   return `${kind} · ${describeChoiceRule(minSelect, maxSelect)}`;
+}
+
+type GroupOption = {
+  name: string;
+  price: number;
+  isAvailable: boolean;
+};
+
+/** "Mal passado · Bacon +5,00 · Cheddar (pausado)" */
+export function describeGroupOptions(
+  options: GroupOption[],
+): string {
+  if (options.length === 0) return "Sem opções";
+  return options
+    .map(
+      (option) =>
+        option.name +
+        (option.price > 0
+          ? ` +${formatAmountInput(option.price)}`
+          : "") +
+        (option.isAvailable ? "" : " (pausado)"),
+    )
+    .join(" · ");
+}
+
+/** Grupo obrigatório sem opção disponível: o produto não pode ser pedido. */
+export function isBlockingGroup(group: {
+  minSelect: number;
+  options: GroupOption[];
+}): boolean {
+  return (
+    isRequiredGroup(group.minSelect) &&
+    !group.options.some((option) => option.isAvailable)
+  );
 }

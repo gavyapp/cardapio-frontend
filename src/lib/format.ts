@@ -78,3 +78,21 @@ export function parseAmountInput(
   if (!/^\d+(\.\d{1,2})?$/.test(text)) return null;
   return Number(text);
 }
+
+/** (1, "produto", "produtos") → "1 produto"; (3, …) → "3 produtos". */
+export function pluralize(
+  count: number,
+  singular: string,
+  plural: string,
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+/** Texto para comparar em buscas: minúsculo e sem acento. */
+export function normalizeSearch(text: string): string {
+  return text
+    .trim()
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}

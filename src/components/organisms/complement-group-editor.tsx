@@ -17,35 +17,19 @@ import { CurrencyInput } from "@/components/molecules/currency-input";
 import { Field } from "@/components/molecules/field";
 import { FieldError } from "@/components/molecules/field-error";
 import { NumberStepper } from "@/components/molecules/number-stepper";
-import { cn } from "@/lib/utils";
+import { SegmentedControl } from "@/components/molecules/segmented-control";
 import { SortableList } from "@/components/molecules/sortable-list";
 import type { ActionResultWith } from "@/lib/action-result";
+import type {
+  ComplementGroupDraft,
+  EditableComplementGroup,
+} from "@/lib/catalog-types";
 import { describeChoiceRule } from "@/lib/complement-rules";
 import { focusFirstInvalid } from "@/lib/focus-first-invalid";
 import {
   formatAmountInput,
   parseAmountInput,
 } from "@/lib/format";
-
-export type ComplementGroupDraft = {
-  id?: string;
-  name: string;
-  minSelect: number;
-  maxSelect: number;
-  allowRepeat: boolean;
-  options: {
-    id?: string;
-    name: string;
-    price: number;
-    isAvailable: boolean;
-  }[];
-};
-
-export type EditableComplementGroup =
-  ComplementGroupDraft & {
-    id: string;
-    usedByCount: number;
-  };
 
 type OptionRow = {
   /** Chave da linha na tela; opção nova ganha uma provisória. */
@@ -336,37 +320,19 @@ function EditorForm({
           <Label id="group-required-label">
             O cliente precisa escolher?
           </Label>
-          <div
-            role="radiogroup"
-            aria-labelledby="group-required-label"
-            className="flex w-fit overflow-hidden rounded-md border"
-          >
-            {(
-              [
-                [true, "Obrigatório"],
-                [false, "Opcional"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={label}
-                type="button"
-                role="radio"
-                aria-checked={isRequired === value}
-                onClick={() => {
-                  setIsRequired(value);
-                  setError(null);
-                }}
-                className={cn(
-                  "h-11 px-4 text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:ring-inset",
-                  isRequired === value
-                    ? "bg-foreground font-semibold text-background"
-                    : "bg-card hover:bg-muted",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            variant="solid"
+            labelledBy="group-required-label"
+            value={isRequired}
+            options={[
+              [true, "Obrigatório"],
+              [false, "Opcional"],
+            ]}
+            onChange={(value) => {
+              setIsRequired(value);
+              setError(null);
+            }}
+          />
         </div>
 
         <div className="grid gap-2">

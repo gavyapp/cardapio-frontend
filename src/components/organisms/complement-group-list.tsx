@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { ChevronDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,38 +8,25 @@ import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
 import { ConfirmDialog } from "@/components/molecules/confirm-dialog";
 import { SortableList } from "@/components/molecules/sortable-list";
-import {
-  ComplementGroupEditor,
-  type ComplementGroupDraft,
-  type EditableComplementGroup,
-} from "@/components/organisms/complement-group-editor";
+import { ComplementGroupEditor } from "@/components/organisms/complement-group-editor";
 import type {
   ActionResult,
   ActionResultWith,
 } from "@/lib/action-result";
+import type {
+  ComplementGroupDraft,
+  ComplementGroupItem,
+  EditableComplementGroup,
+} from "@/lib/catalog-types";
 import {
   GROUP_PARAM,
   NEW_ITEM,
 } from "@/lib/catalog-params";
 import { describeGroupRule } from "@/lib/complement-rules";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, pluralize } from "@/lib/format";
+import { useOptimisticList } from "@/lib/use-optimistic-list";
 import { useSearchParamState } from "@/lib/use-search-param-state";
 import { cn } from "@/lib/utils";
-
-export type ComplementGroupItem = {
-  id: string;
-  name: string;
-  minSelect: number;
-  maxSelect: number;
-  allowRepeat: boolean;
-  options: {
-    id: string;
-    name: string;
-    price: number;
-    isAvailable: boolean;
-  }[];
-  usedBy: { id: string; name: string }[];
-};
 
 export type ComplementGroupActions = {
   save: (
@@ -52,14 +39,6 @@ export type ComplementGroupActions = {
   reorder: (orderedIds: string[]) => Promise<ActionResult>;
   remove: (groupId: string) => Promise<ActionResult>;
 };
-
-function countLabel(
-  count: number,
-  one: string,
-  many: string,
-) {
-  return count === 1 ? `1 ${one}` : `${count} ${many}`;
-}
 
 function toEditable(
   group: ComplementGroupItem,
@@ -88,8 +67,7 @@ export function ComplementGroupList({
   groups: ComplementGroupItem[];
   actions: ComplementGroupActions;
 }) {
-  const [items, setItems] = useState(groups);
-  const [source, setSource] = useState(groups);
+  const { items, optimistic } = useOptimisticList(groups);
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(),
   );
@@ -110,12 +88,6 @@ export function ComplementGroupList({
         : null;
   const [deleting, setDeleting] =
     useState<ComplementGroupItem | null>(null);
-  const [, startTransition] = useTransition();
-
-  if (source !== groups) {
-    setSource(groups);
-    setItems(groups);
-  }
 
   function toggleIn(
     set: Set<string>,
@@ -126,21 +98,6 @@ export function ComplementGroupList({
     if (next.has(id)) next.delete(id);
     else next.add(id);
     update(next);
-  }
-
-  function optimistic(
-    next: ComplementGroupItem[],
-    save: () => Promise<ActionResult>,
-  ) {
-    const previous = items;
-    setItems(next);
-    startTransition(async () => {
-      const result = await save();
-      if (!result.ok) {
-        setItems(previous);
-        toast.error(result.error);
-      }
-    });
   }
 
   function toggleOption(
@@ -233,7 +190,7 @@ export function ComplementGroupList({
                           group.maxSelect,
                         )}
                         {" · "}
-                        {countLabel(
+                        {pluralize(
                           group.options.length,
                           "opção",
                           "opções",
@@ -257,7 +214,7 @@ export function ComplementGroupList({
                   >
                     {usedCount === 0
                       ? "Não usado"
-                      : `Usado em ${countLabel(usedCount, "produto", "produtos")}`}
+                      : `Usado em ${pluralize(usedCount, "produto", "produtos")}`}
                   </Button>
                   <Button
                     variant="outline"
@@ -379,7 +336,7 @@ export function ComplementGroupList({
         }
         description={
           deleting && deleting.usedBy.length > 0
-            ? `O grupo sai de ${countLabel(deleting.usedBy.length, "produto", "produtos")}: ${deleting.usedBy.map((product) => product.name).join(", ")}. Pedidos já feitos não mudam.`
+            ? `O grupo sai de ${pluralize(deleting.usedBy.length, "produto", "produtos")}: ${deleting.usedBy.map((product) => product.name).join(", ")}. Pedidos já feitos não mudam.`
             : "O grupo e as opções somem do painel. Pedidos já feitos não mudam."
         }
         confirmLabel="Excluir grupo"

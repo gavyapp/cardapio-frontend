@@ -7,6 +7,7 @@ import { UserFacingError } from "@/lib/action-result";
 import { storeImagePathFromUrl } from "@/lib/store-images";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+import { reorderRows } from "./reorder";
 import { removeReplacedStoreImage } from "./store-image-cleanup";
 
 export type PanelProduct = {
@@ -430,29 +431,18 @@ export async function setProductSuggested(
   }
 }
 
-/** Ordem dos produtos de uma categoria: a posição na lista vira sort_order. */
+/** Ordem dos produtos de uma categoria. */
 export async function reorderProducts(
   storeId: string,
   categoryId: string,
   orderedIds: string[],
 ): Promise<void> {
-  const supabase = await createServerSupabase();
-  const results = await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase
-        .from("products")
-        .update({ sort_order: index })
-        .eq("id", id)
-        .eq("store_id", storeId)
-        .eq("category_id", categoryId),
-    ),
+  await reorderRows(
+    "products",
+    storeId,
+    orderedIds,
+    categoryId,
   );
-  const failed = results.find((result) => result.error);
-  if (failed?.error) {
-    throw new Error(
-      `Erro ao reordenar produtos: ${failed.error.message}`,
-    );
-  }
 }
 
 /**
