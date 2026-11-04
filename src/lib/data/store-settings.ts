@@ -22,6 +22,7 @@ import {
 } from "@/lib/store/theme";
 
 const amountInReais = z.number().finite().nonnegative();
+const minutes = z.number().int().nonnegative();
 
 export const paymentMethods =
   Constants.public.Enums.payment_method;
@@ -67,6 +68,9 @@ export const storeSettingsSchema = z.object({
   payment_methods: z
     .array(z.enum(paymentMethods))
     .optional(),
+  // Prazos mostrados ao cliente, em minutos. Sem a chave: não mostra.
+  delivery_time_minutes: minutes.nullable().optional(),
+  pickup_time_minutes: minutes.nullable().optional(),
   // Avisos do quadro. Sem a chave: 30 min e som ligado.
   order_alerts: orderAlertsSchema.optional(),
 });
@@ -82,6 +86,8 @@ export type StoreRules = {
   deliveryFee: number;
   freeDeliveryAbove: number | null;
   paymentMethods: Enums<"payment_method">[];
+  deliveryTimeMinutes: number | null;
+  pickupTimeMinutes: number | null;
 };
 
 /**
@@ -98,6 +104,9 @@ export function readStoreRules(settings: Json): StoreRules {
     paymentMethods: parsed.payment_methods ?? [
       ...paymentMethods,
     ],
+    deliveryTimeMinutes:
+      parsed.delivery_time_minutes ?? null,
+    pickupTimeMinutes: parsed.pickup_time_minutes ?? null,
   };
 }
 

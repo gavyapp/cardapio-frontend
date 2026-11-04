@@ -1,23 +1,33 @@
-import { Button } from "@/components/atoms/button";
+"use client";
 
-/** Barra fixa no rodapé com a ação principal da página. */
+import { Button } from "@/components/atoms/button";
+import { useSettingsForm } from "@/components/organisms/settings-form-context";
+
+/** Barra no fim da página que submete o formulário dela e mostra o carregamento. */
 export function SaveBar({
   message,
   label = "Salvar alterações",
-  onSave,
+  pendingLabel = "Salvando…",
 }: {
   message: string;
   label?: string;
-  onSave?: () => void;
+  pendingLabel?: string;
 }) {
+  const { formId, pending } = useSettingsForm();
+
   return (
-    <div className="sticky bottom-0 -mx-4 border-t bg-card px-4 py-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:rounded-xl lg:border">
+    <div className="rounded-xl border bg-card px-6 py-4">
       <div className="flex items-center justify-between gap-4">
         <p className="text-[15px] text-muted-foreground">
           {message}
         </p>
-        <Button size="lg" onClick={onSave}>
-          {label}
+        <Button
+          type="submit"
+          form={formId}
+          size="lg"
+          loading={pending}
+        >
+          {pending ? pendingLabel : label}
         </Button>
       </div>
     </div>

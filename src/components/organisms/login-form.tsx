@@ -1,12 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import {
-  CircleAlert,
-  Eye,
-  EyeOff,
-  LoaderCircle,
-} from "lucide-react";
+import { CircleAlert, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
@@ -120,14 +115,8 @@ export function LoginForm({
         type="submit"
         size="lg"
         className="mt-2"
-        disabled={pending}
+        loading={pending}
       >
-        {pending && (
-          <LoaderCircle
-            data-icon="inline-start"
-            className="animate-spin"
-          />
-        )}
         {pending ? "Entrando..." : "Entrar"}
       </Button>
     </form>
