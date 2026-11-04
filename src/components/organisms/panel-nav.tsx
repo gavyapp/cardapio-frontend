@@ -73,6 +73,7 @@ export function PanelNav({
               <CountChip
                 count={newOrders}
                 hot
+                pulse
                 label="novos"
               />
             ) : null}
