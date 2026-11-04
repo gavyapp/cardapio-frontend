@@ -904,6 +904,43 @@ export type Database = {
         }
         Returns: string
       }
+      set_order_paid: {
+        Args: { p_is_paid: boolean; p_order_id: string }
+        Returns: {
+          accepted_at: string | null
+          address: Json | null
+          applied_promotions: Json
+          change_for: number | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          deleted_at: string | null
+          delivery_fee: number
+          discount: number
+          id: string
+          is_paid: boolean
+          mode: Database["public"]["Enums"]["order_mode"]
+          notes: string | null
+          number: number
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          public_token: string
+          read_at: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          store_id: string
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_order_status: {
         Args: {
           p_is_paid?: boolean
