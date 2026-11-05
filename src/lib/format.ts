@@ -120,3 +120,20 @@ const storeTime = new Intl.DateTimeFormat("pt-BR", {
 export function formatStoreTime(isoDate: string): string {
   return storeTime.format(new Date(isoDate));
 }
+
+/**
+ * Máscara do campo de telefone enquanto digita: "4899" → "(48) 99",
+ * "4899995027" → "(48) 9999-5027", "48999950272" → "(48) 99999-0272".
+ * Aceita até 11 dígitos; o DDD vem sempre nos dois primeiros.
+ */
+export function maskPhoneInput(typed: string): string {
+  const digits = typed.replace(/\D/g, "").slice(0, 11);
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+  const ddd = digits.slice(0, 2);
+  const rest = digits.slice(2);
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+  const split = rest.length === 9 ? 5 : 4;
+  if (rest.length <= split) return `(${ddd}) ${rest}`;
+  return `(${ddd}) ${rest.slice(0, split)}-${rest.slice(split)}`;
+}
