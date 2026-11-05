@@ -16,9 +16,12 @@ import {
 export function SearchParamInput({
   name,
   placeholder,
+  label = placeholder,
 }: {
   name: string;
   placeholder: string;
+  /** Nome acessível, quando há mais de uma busca na página. */
+  label?: string;
 }) {
   const [param] = useSearchParamState(name);
   const [value, setValue] = useState(param ?? "");
@@ -39,16 +42,18 @@ export function SearchParamInput({
   }
 
   return (
-    <div className="relative w-full text-muted-foreground sm:w-64">
+    <div className="relative w-full self-center text-muted-foreground sm:w-64">
       <Search
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
       />
       <Input
         type="search"
-        aria-label={placeholder}
+        aria-label={label}
         placeholder={placeholder}
-        className="bg-card px-9 [&::-webkit-search-cancel-button]:hidden"
+        // Busca padrão do painel: altura, borda e texto dos botões de
+        // filtro (36px, canto de 4px, 13px no computador).
+        className="rounded-[4px] border-border bg-card px-9 text-[13px] lg:h-9 [&::-webkit-search-cancel-button]:hidden"
         value={value}
         onChange={(event) => change(event.target.value)}
       />

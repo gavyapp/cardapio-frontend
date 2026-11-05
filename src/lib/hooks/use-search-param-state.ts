@@ -26,13 +26,23 @@ export function useSearchParamState(
 export function setSearchParam(
   name: string,
   value: string | null,
+  options: { replace?: boolean } = {},
+) {
+  setSearchParams({ [name]: value }, options);
+}
+
+/** Muda vários parâmetros numa entrada só do histórico. */
+export function setSearchParams(
+  values: Record<string, string | null>,
   { replace = false }: { replace?: boolean } = {},
 ) {
   const params = new URLSearchParams(
     window.location.search,
   );
-  if (value === null) params.delete(name);
-  else params.set(name, value);
+  for (const [name, value] of Object.entries(values)) {
+    if (value === null) params.delete(name);
+    else params.set(name, value);
+  }
   const query = params.toString();
   const url = query
     ? `${window.location.pathname}?${query}`

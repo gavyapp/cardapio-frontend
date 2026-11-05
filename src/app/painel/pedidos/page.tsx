@@ -6,6 +6,7 @@ import {
   TodayOrdersTitle,
   OrderBoard,
 } from "@/components/organisms/order-board";
+import { ClosedOrders } from "@/components/organisms/closed-orders";
 import { OrderBoardTemplate } from "@/components/templates/order-board-template";
 import { ORDER_SEARCH_PARAM } from "@/lib/orders/board";
 
@@ -25,11 +26,17 @@ export default function OrdersPage() {
   return (
     <OrderBoardTemplate
       title={<TodayOrdersTitle />}
+      below={
+        <Suspense>
+          <ClosedOrders />
+        </Suspense>
+      }
       action={
         <Suspense>
           <SearchParamInput
             name={ORDER_SEARCH_PARAM}
             placeholder="Nome, nº ou telefone"
+            label="Buscar nos pedidos em andamento"
           />
         </Suspense>
       }

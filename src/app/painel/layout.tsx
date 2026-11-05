@@ -69,7 +69,9 @@ async function PanelWithAccess({
         catalogCounts={catalogCounts}
         onSignOut={signOut}
       />
-      <main className="flex min-h-0 flex-1 flex-col">
+      {/* Na página do quadro, o <main> rola sozinho com a altura da tela
+          menos o cabeçalho, e o quadro ocupa essa primeira tela. */}
+      <main className="flex flex-1 flex-col lg:has-[[data-fill-viewport]]:min-h-0 lg:has-[[data-fill-viewport]]:overflow-y-auto">
         {children}
       </main>
     </LiveOrdersProvider>
@@ -80,9 +82,7 @@ export default function PanelLayout({
   children,
 }: LayoutProps<"/painel">) {
   return (
-    // O quadro de pedidos ocupa só a altura da tela no computador: quem
-    // rola são as colunas, não a página.
-    <div className="flex min-h-full flex-1 flex-col lg:has-[[data-fill-viewport]]:max-h-dvh lg:has-[[data-fill-viewport]]:min-h-0">
+    <div className="flex min-h-full flex-1 flex-col lg:has-[[data-fill-viewport]]:h-dvh lg:has-[[data-fill-viewport]]:flex-none">
       <Suspense fallback={<PanelHeader store={null} />}>
         <PanelWithAccess>{children}</PanelWithAccess>
       </Suspense>
