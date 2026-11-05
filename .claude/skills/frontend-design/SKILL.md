@@ -1,71 +1,71 @@
 ---
 name: frontend-design
-description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
-license: Complete terms in LICENSE.txt
+description: Orientação para um design visual marcante e intencional ao criar uma interface nova ou remodelar uma existente. Ajuda na direção estética, na tipografia e em escolhas que não pareçam padrão de template.
+license: Termos completos em LICENSE.txt
 ---
 
-# Frontend Design
+# Design de frontend
 
-Approach this as the design lead at a design studio known for giving every client a distinct visual identity that is not mistaken for anyone else's. This client has already rejected proposals that felt cliché or templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take aesthetic risk if justified.
+Encare a tarefa como o líder de design de um estúdio conhecido por dar a cada cliente uma identidade visual própria, que não se confunde com a de ninguém. Esse cliente já recusou propostas que pareciam clichê ou de template e está pagando por um ponto de vista marcante: faça escolhas deliberadas e opinativas de paleta, tipografia e layout, específicas para este briefing, e assuma riscos estéticos quando fizer sentido.
 
-## Ground your designs in the subject matter
+## Baseie o design no assunto
 
-If the brief does not identify what the product or subject matter is, identify it yourself before designing, and confirm with the client. You can come up with one concrete subject, the design's audience, and the design's primary job, as a proposal. If there's any information in your memory about the client's preferences or context about what they're building, use that as a hint. The subject's industry, subject matter, materials, and vernacular are where distinctive visual choices come from — a design for a toy for girls aged 8–11 will be very aesthetically different from a dashboard for financial analysts. Build with the brief's real content and subject matter throughout.
+Se o briefing não diz qual é o produto ou o assunto, identifique você mesmo antes de desenhar e confirme com o cliente. Você pode propor um assunto concreto, o público do design e a função principal dele. Se houver algo na sua memória sobre as preferências do cliente ou sobre o que ele está construindo, use como pista. O setor, o tema, os materiais e o vocabulário do assunto são de onde saem as escolhas visuais marcantes: o design de um brinquedo para meninas de 8 a 11 anos será esteticamente muito diferente de um dashboard para analistas financeiros. Use o conteúdo real e o assunto do briefing do começo ao fim.
 
-## Design principles
+## Princípios de design
 
-For web designs, the hero is the first thing viewers will see. Open with the most characteristic thing in the subject's world, in the form that is most appropriate: a headline, an image, an animation, a live demo, an interactive moment, or other treatments. Be deliberate with your choice: a big number with a small label, supporting stats, and a gradient accent is the default treatment, so only use it if that's truly the best option.
+Em páginas web, o destaque principal (hero) é a primeira coisa que as pessoas veem. Abra com o que há de mais característico no mundo do assunto, na forma mais adequada: um título, uma imagem, uma animação, uma demonstração ao vivo, um momento interativo ou outro tratamento. Escolha com intenção: um número grande com um rótulo pequeno, estatísticas de apoio e um destaque em degradê é o tratamento padrão, então só use se for mesmo a melhor opção.
 
-Typography carries the personality of the page. You don't need a different typeface for display or headline text and body content: use one family or two, and if two, make them clearly distinct.
+A tipografia carrega a personalidade da página. Não é preciso uma fonte diferente para títulos e para o texto corrido: use uma ou duas famílias e, se forem duas, que sejam claramente distintas.
 
-Choose your typefaces deliberately, not the default families you would reach for on any other project, and set a clear type scale following the default guidance of The Elements of Typographic Style with intentional weights, widths, and spacing. When type is used as a headline or visual element, use the type treatment itself as an active part of the design, not a neutral delivery vehicle for the content.
+Escolha as fontes com intenção, não as famílias padrão que você usaria em qualquer outro projeto, e defina uma escala tipográfica clara seguindo as orientações de The Elements of Typographic Style, com pesos, larguras e espaçamentos intencionais. Quando o texto for usado como título ou elemento visual, faça do próprio tratamento tipográfico uma parte ativa do design, não um veículo neutro para o conteúdo.
 
-Default to line lengths of less than 80 characters. Serif typefaces can have slightly longer line lengths; give serif body text slightly more line-height than a sans-serif.
+Por padrão, mantenha linhas com menos de 80 caracteres. Fontes serifadas aceitam linhas um pouco mais longas; dê ao texto corrido serifado um pouco mais de entrelinha que a um sem serifa.
 
-Avoid these default typographic treatments; they are the commonest tells of a generated page:
-- Accenting just a single word or phrase in a headline, like putting one word in italic/bold or a different color.
-- Using all caps for labels.
-- Adding unnecessary typographic labels above content.
+Evite estes tratamentos tipográficos padrão, que são os sinais mais comuns de uma página gerada:
+- Destacar só uma palavra ou expressão num título, como deixar uma palavra em itálico, negrito ou outra cor.
+- Usar caixa alta em rótulos.
+- Pôr rótulos tipográficos desnecessários acima do conteúdo.
 
-Visual structure is information. Structural devices like outlines, borders, numbering, eyebrows, dividers, labels, etc., encode useful information about the content rather than decorate it. Many generic designs use numbered markers (01 / 02 / 03), but that's only appropriate if the content actually is a sequence — like a stepped process or a timeline. Before adding numbered markers, check the content really is a sequence.
+Estrutura visual é informação. Recursos estruturais como contornos, bordas, numeração, sobretítulos, divisores e rótulos devem transmitir algo útil sobre o conteúdo, não decorá-lo. Muitos designs genéricos usam marcadores numerados (01 / 02 / 03), mas isso só faz sentido se o conteúdo for de fato uma sequência, como um processo em etapas ou uma linha do tempo. Antes de numerar, confira se o conteúdo é mesmo uma sequência.
 
-Use non-user-triggered motion sparingly and deliberately, only to draw attention. A single orchestrated moment — one page-load sequence or one reveal — lands better than scattered effects; fade-and-slide-up entrances on each section and hover transitions on every card are the generic default and read as AI-generated. Motion that answers a person's action (opening, expanding, confirming) is welcome when it shows what changed.
+Use movimento que não foi disparado pela pessoa com moderação e intenção, só para chamar atenção. Um único momento orquestrado (uma sequência de carregamento da página ou uma revelação) funciona melhor que efeitos espalhados; entradas com fade e deslize em cada seção e transições de hover em todo card são o padrão genérico e parecem geradas por IA. Movimento que responde a uma ação da pessoa (abrir, expandir, confirmar) é bem-vindo quando mostra o que mudou.
 
-Consider written content carefully. Often a design brief may not contain real content, and it's up to you to come up with copy and placeholder content. Copy can make a design feel as templated as the design itself. See the below section on writing for more guidance.
+Pense com cuidado no texto. Muitas vezes o briefing não traz o conteúdo real e cabe a você escrever os textos e o conteúdo provisório. O texto pode deixar um design com cara de template tanto quanto o próprio visual. Veja a seção sobre escrita mais abaixo.
 
-## Process: plan, review against the brief, build, critique
+## Processo: planejar, revisar contra o briefing, construir, criticar
 
-For calibration, AI-generated design right now clusters around some traits:
-1. a warm cream background (near #F4F1EA) with a high-contrast serif display and a terracotta or warm-clay accent (often near #D97757 — Anthropic's own Claude-interaction accent, so on a user's brief it reads as a tell);
-2. a near-black background with a single bright acid-green or vermilion accent;
-3. a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper-like columns;
-4. the SaaS-card kit: content chopped into identical rounded cards, one border-radius on everything regardless of hierarchy, the same soft grey shadow (rgba(0,0,0,.1)) under each, and gradient washes as decoration;
-5. template chrome that appears whatever the subject: a tracked-out ALL-CAPS eyebrow label above every heading; meta strings joined with middle dots ('A · B · C'); labels built as 'WORD — fragment' with a spaced em dash; tinted near-black (#0B0B0B, #111) standing in for black; a monospace face for small data labels; a '→' appended to link and button text.
+Para calibrar: hoje o design gerado por IA se concentra em alguns traços:
+1. fundo creme quente (perto de #F4F1EA) com um título serifado de alto contraste e um destaque terracota ou argila (muitas vezes perto de #D97757, o destaque da própria Anthropic nas interações com o Claude, então no briefing de um cliente isso denuncia a origem);
+2. fundo quase preto com um único destaque verde-ácido ou vermelhão;
+3. layout de jornal, com filetes finos, cantos retos e colunas densas;
+4. o kit de cards de SaaS: conteúdo picado em cards arredondados idênticos, o mesmo raio em tudo independentemente da hierarquia, a mesma sombra cinza suave (rgba(0,0,0,.1)) embaixo de cada um e degradês como decoração;
+5. elementos de template que aparecem qualquer que seja o assunto: um sobretítulo em CAIXA ALTA espaçada acima de cada título; metadados unidos por pontos médios ('A · B · C'); rótulos no formato 'PALAVRA — fragmento' com travessão espaçado; quase preto com tom (#0B0B0B, #111) no lugar do preto; fonte monoespaçada para rótulos pequenos de dados; uma '→' no fim do texto de links e botões.
 
-All traits are legitimate for some briefs, but they are defaults rather than choices, and they appear regardless of subject. Where the brief pins down a visual direction, follow it exactly — the brief's own words always win, including when it asks for one of these looks. Where it leaves an axis free, don't spend that freedom on one of these defaults. As with a hired human designer, there's often a careful balance between doing what you're good at and taking each project as a chance to experiment and learn.
+Todos esses traços são legítimos para algum briefing, mas são padrões e não escolhas, e aparecem seja qual for o assunto. Onde o briefing define uma direção visual, siga exatamente: as palavras do briefing sempre vencem, inclusive quando ele pede um desses visuais. Onde ele deixa um eixo livre, não gaste essa liberdade com um desses padrões. Como com um designer humano contratado, muitas vezes é preciso equilibrar fazer aquilo em que você é bom com aproveitar cada projeto para experimentar e aprender.
 
-Work in two passes. First, brainstorm a short design plan based on the client's design brief: create a compact token system with color, type, layout, and principles.
-- Color: describe the core base palette as 4–6 named hex values.
-- Type: the typefaces and their roles.
-- Layout: a layout concept, using one-sentence prose descriptions and ASCII wireframes to ideate and compare. Include alignment guidance; should the content be left aligned, center aligned, justified?
-- Principles: the high-level guidance for what makes this page unique.
+Trabalhe em duas passadas. Primeiro, faça um plano de design curto a partir do briefing do cliente: um sistema de tokens compacto com cor, tipografia, layout e princípios.
+- Cor: descreva a paleta base em 4 a 6 valores hex com nome.
+- Tipografia: as fontes e o papel de cada uma.
+- Layout: um conceito de layout, com descrições de uma frase e wireframes em ASCII para gerar ideias e comparar. Inclua a orientação de alinhamento: o conteúdo fica alinhado à esquerda, centralizado ou justificado?
+- Princípios: as orientações gerais do que torna esta página única.
 
-Then review that plan against the brief before building: if any part of it reads like the generic default you would produce for any similar page (work through a similar prompt to see if you arrive somewhere similar) rather than a choice made for this specific brief — revise that part, say what you changed and why. Only after you've confirmed the relative uniqueness of your design plan should you start to write the code, following the revised plan.
+Depois revise o plano contra o briefing antes de construir: se alguma parte parecer o padrão genérico que você produziria para qualquer página parecida (pense num pedido semelhante e veja se chegaria a algo parecido) em vez de uma escolha feita para este briefing específico, revise essa parte e diga o que mudou e por quê. Só comece a escrever o código depois de confirmar que o plano é relativamente único, seguindo o plano revisado.
 
-When writing the code, be careful of structuring your CSS selector specificities. It's easy to generate CSS classes that cancel each other out (especially with a type-based selector like .section and an element-based selector like .cta). This can happen often with padding/margin between sections.
+Ao escrever o código, cuide da especificidade dos seletores CSS. É fácil gerar classes que se anulam (principalmente um seletor por tipo, como .section, contra um seletor por elemento, como .cta). Isso acontece muito com padding e margin entre seções.
 
-## Restraint and self-critique
+## Contenção e autocrítica
 
-Spend your boldness in one place. Let one element be the memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected, visually accessible, harmonious color palettes. Critique your own work as you build, taking screenshots to review if your environment supports it — a picture is worth 1000 tokens. Consider Chanel's advice: before leaving the house, take a look in the mirror and remove one accessory. Human creatives have memory and always try to do something new, so if you have a space to quickly jot down notes about what you've tried, it can help you in future passes.
+Gaste a ousadia em um lugar só. Deixe um elemento ser o memorável, mantenha tudo em volta quieto e disciplinado e corte qualquer decoração que não sirva ao briefing. Construa com um patamar mínimo de qualidade sem anunciar: responsivo até o celular, foco de teclado visível, respeito a movimento reduzido, acessível visualmente e paletas harmoniosas. Critique seu trabalho enquanto constrói, tirando capturas de tela para revisar se o ambiente permitir: uma imagem vale mais que 1000 tokens. Lembre do conselho da Chanel: antes de sair de casa, olhe no espelho e tire um acessório. Criativos humanos têm memória e sempre tentam algo novo; se você tiver onde anotar rapidamente o que já tentou, isso ajuda nas próximas passadas.
 
-## More on writing in design
+## Mais sobre escrita no design
 
-Words appear in a design for one reason: to make it easier to understand and use. They are design content, not decoration. Bring the same intentionality and minimalism to copywriting that you would bring to spacing and color. Before writing anything, ask what the design needs to say, and how it can best be said to help the person navigate the experience.
+Palavras aparecem num design por um motivo: deixar mais fácil de entender e de usar. São conteúdo de design, não decoração. Traga para o texto a mesma intenção e o mesmo minimalismo que você traz para espaçamento e cor. Antes de escrever, pergunte o que o design precisa dizer e qual a melhor forma de dizer para ajudar a pessoa a se orientar.
 
-Write from the end user's perspective. Name things by what users will understand in simple language, not by how the system is built. A user manages notifications, not webhook config. Describe what something is or does in plain terms rather than selling it. Being specific and legible to new users is always better than being clever.
+Escreva do ponto de vista de quem usa. Dê às coisas nomes que as pessoas entendem, em linguagem simples, e não pelo jeito como o sistema foi construído. A pessoa gerencia notificações, não configuração de webhook. Descreva o que algo é ou faz em termos claros, sem vender. Ser específico e compreensível para quem chega agora é sempre melhor que ser espirituoso.
 
-Use active voice as default. A CTA says exactly what happens when it is used: "Save changes," not "Submit." An action keeps the same name through the whole flow, so the button that says "Publish" produces a toast that says "Published." The vocabulary of an interface is the signposting for someone navigating the product. Cohesion and consistency are how people learn their way around.
+Use voz ativa por padrão. Um botão diz exatamente o que acontece ao usá-lo: "Salvar alterações", não "Enviar". Uma ação mantém o mesmo nome em todo o fluxo, então o botão "Publicar" gera um aviso que diz "Publicado". O vocabulário de uma interface é a sinalização para quem navega no produto; coesão e consistência são como as pessoas aprendem o caminho.
 
-Treat failure and emptiness as moments for direction, not mood. Explain what went wrong and how to fix it, in the interface's voice rather than a person's. Errors don't apologize, and they are never vague about what happened. An empty screen is an invitation to act.
+Trate falhas e telas vazias como momentos de orientar, não de criar clima. Explique o que deu errado e como resolver, na voz da interface e não de uma pessoa. Erros não pedem desculpas e nunca são vagos sobre o que aconteceu. Uma tela vazia é um convite para agir.
 
-Keep the tone conversational: plain verbs, sentence case, no filler, with tone matched to the brand and the audience. Let each written element do exactly one job.
+Mantenha o tom de conversa: verbos simples, só a primeira letra maiúscula, sem enrolação, com o tom ajustado à marca e ao público. Cada elemento escrito faz exatamente uma coisa.
