@@ -20,7 +20,12 @@ export function SearchParamButton({
   children: ReactNode;
 }) {
   return (
-    <Button onClick={() => setSearchParam(name, value)}>
+    <Button
+      onClick={() => setSearchParam(name, value)}
+      // Botão de ação do cabeçalho, como no protótipo: altura e canto da
+      // busca ao lado (44px no celular, 36px no computador, canto de 4px).
+      className="rounded-[4px] font-semibold lg:h-9"
+    >
       <Plus aria-hidden />
       {children}
     </Button>

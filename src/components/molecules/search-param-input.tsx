@@ -42,7 +42,7 @@ export function SearchParamInput({
   }
 
   return (
-    <div className="relative w-full text-muted-foreground sm:w-64">
+    <div className="relative w-full self-center text-muted-foreground sm:w-64">
       <Search
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
