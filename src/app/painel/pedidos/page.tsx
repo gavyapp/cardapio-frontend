@@ -26,11 +26,17 @@ export default function OrdersPage() {
   return (
     <OrderBoardTemplate
       title={<TodayOrdersTitle />}
+      below={
+        <Suspense>
+          <ClosedOrders />
+        </Suspense>
+      }
       action={
         <Suspense>
           <SearchParamInput
             name={ORDER_SEARCH_PARAM}
             placeholder="Nome, nº ou telefone"
+            label="Buscar nos pedidos em andamento"
           />
         </Suspense>
       }
@@ -48,9 +54,6 @@ export default function OrdersPage() {
               setComplementAvailabilityAction,
           }}
         />
-      </Suspense>
-      <Suspense>
-        <ClosedOrders />
       </Suspense>
     </OrderBoardTemplate>
   );

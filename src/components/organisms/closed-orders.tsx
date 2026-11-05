@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { Pagination } from "@/components/molecules/pagination";
+import { SearchParamInput } from "@/components/molecules/search-param-input";
 import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
 import {
   formatCurrency,
@@ -18,7 +19,6 @@ import {
 import {
   MODE_LABELS,
   ORDER_PARAM,
-  ORDER_SEARCH_PARAM,
   PAYMENT_LABELS,
   matchesOrderSearch,
 } from "@/lib/orders/board";
@@ -27,6 +27,7 @@ import {
   CLOSED_FILTER_PARAM,
   CLOSED_PAGE_PARAM,
   CLOSED_PAGE_SIZE,
+  CLOSED_SEARCH_PARAM,
   CLOSED_STATUS_LABELS,
   applyClosedFilter,
   isCompleted,
@@ -51,7 +52,7 @@ const COLUMNS =
  */
 export function ClosedOrders() {
   const live = useLiveOrdersContext();
-  const [search] = useSearchParamState(ORDER_SEARCH_PARAM);
+  const [search] = useSearchParamState(CLOSED_SEARCH_PARAM);
   const [selected] = useSearchParamState(ORDER_PARAM);
   const [filterParam] = useSearchParamState(
     CLOSED_FILTER_PARAM,
@@ -133,6 +134,11 @@ export function ClosedOrders() {
             </p>
           ) : null}
         </div>
+        <SearchParamInput
+          name={CLOSED_SEARCH_PARAM}
+          placeholder="Nome, nº ou telefone"
+          label="Buscar nos concluídos e cancelados"
+        />
         <div
           role="group"
           aria-label="Filtrar"
@@ -218,7 +224,7 @@ export function ClosedOrders() {
             onClick: () =>
               setSearchParams(
                 query
-                  ? { [ORDER_SEARCH_PARAM]: null }
+                  ? { [CLOSED_SEARCH_PARAM]: null }
                   : { [CLOSED_FILTER_PARAM]: null },
                 { replace: true },
               ),

@@ -25,6 +25,7 @@ export type ClosedFilter =
 /** Parâmetros da URL da lista. */
 export const CLOSED_FILTER_PARAM = "encerrados";
 export const CLOSED_PAGE_PARAM = "pagina";
+export const CLOSED_SEARCH_PARAM = "busca-encerrados";
 
 export const CLOSED_PAGE_SIZE = 20;
 

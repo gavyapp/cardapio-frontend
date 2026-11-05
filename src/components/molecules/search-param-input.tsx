@@ -16,9 +16,12 @@ import {
 export function SearchParamInput({
   name,
   placeholder,
+  label = placeholder,
 }: {
   name: string;
   placeholder: string;
+  /** Nome acessível, quando há mais de uma busca na página. */
+  label?: string;
 }) {
   const [param] = useSearchParamState(name);
   const [value, setValue] = useState(param ?? "");
@@ -46,7 +49,7 @@ export function SearchParamInput({
       />
       <Input
         type="search"
-        aria-label={placeholder}
+        aria-label={label}
         placeholder={placeholder}
         className="bg-card px-9 [&::-webkit-search-cancel-button]:hidden"
         value={value}

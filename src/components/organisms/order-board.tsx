@@ -266,7 +266,7 @@ export function OrderBoard({
       : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 lg:min-h-0 lg:flex-1">
       {!live.connected ? (
         <p
           role="status"
@@ -278,7 +278,7 @@ export function OrderBoard({
         </p>
       ) : null}
 
-      <div className="grid gap-4 lg:h-[600px] lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)]">
+      <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)]">
         {BOARD_COLUMNS.map((column) => (
           <section
             key={column.id}
