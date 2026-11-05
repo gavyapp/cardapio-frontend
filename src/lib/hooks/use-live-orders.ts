@@ -12,7 +12,10 @@ import {
   fetchBoardInBrowser,
   subscribeToStoreOrders,
 } from "@/lib/data/order-board-live";
-import type { BoardOrder } from "@/lib/orders/board";
+import type {
+  BoardOrder,
+  StageHistory,
+} from "@/lib/orders/board";
 
 /** Espera entre um evento e a releitura, para juntar eventos em sequência. */
 const REFRESH_DEBOUNCE_MS = 300;
@@ -25,12 +28,19 @@ export type LiveOrdersState = {
   orders: BoardOrder[];
   /** Pedidos recebidos hoje, em qualquer status. */
   todayCount: number;
+  /** Mudanças de status de hoje, para a média de cada coluna. */
+  stageHistory: StageHistory[];
   /** Canal do Realtime conectado. */
   connected: boolean;
   /** Hora usada para os tempos na tela (atualiza a cada 30 s). */
   now: number;
   /** Relê a lista agora (por exemplo, depois de mudar um status). */
   refresh: () => void;
+  /**
+   * Sobe a cada releitura da lista. Quem mostra um pedido fora da lista
+   * (o detalhe) relê junto e acompanha mudanças de outros aparelhos.
+   */
+  version: number;
 };
 
 /**
@@ -51,6 +61,7 @@ export function useLiveOrders({
   const [board, setBoard] = useState(initialBoard);
   const [connected, setConnected] = useState(true);
   const [now, setNow] = useState(renderedAt);
+  const [version, setVersion] = useState(0);
   const lastRequest = useRef(0);
   const debounce = useRef<number | undefined>(undefined);
 
@@ -62,6 +73,7 @@ export function useLiveOrders({
       if (request === lastRequest.current) {
         setBoard(next);
         setNow(Date.now());
+        setVersion((current) => current + 1);
       }
     } catch (error) {
       // Mantém a lista atual; a próxima releitura tenta de novo.
@@ -130,8 +142,10 @@ export function useLiveOrders({
   return {
     orders: board.orders,
     todayCount: board.todayCount,
+    stageHistory: board.stageHistory,
     connected,
     now,
     refresh,
+    version,
   };
 }

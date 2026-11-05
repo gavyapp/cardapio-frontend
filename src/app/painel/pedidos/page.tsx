@@ -9,7 +9,14 @@ import {
 import { OrderBoardTemplate } from "@/components/templates/order-board-template";
 import { ORDER_SEARCH_PARAM } from "@/lib/orders/board";
 
-import { advanceOrderAction } from "./actions";
+import { setComplementAvailabilityAction } from "../cardapio/complementos/actions";
+import { setProductAvailabilityAction } from "../cardapio/produtos/actions";
+import {
+  advanceOrderAction,
+  closeOrderAction,
+  markOrderReadAction,
+  setOrderPaidAction,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
@@ -28,7 +35,18 @@ export default function OrdersPage() {
       }
     >
       <Suspense>
-        <OrderBoard advance={advanceOrderAction} />
+        <OrderBoard
+          actions={{
+            advance: advanceOrderAction,
+            closeOrder: closeOrderAction,
+            setPaid: setOrderPaidAction,
+            markRead: markOrderReadAction,
+            setProductAvailability:
+              setProductAvailabilityAction,
+            setComplementAvailability:
+              setComplementAvailabilityAction,
+          }}
+        />
       </Suspense>
     </OrderBoardTemplate>
   );

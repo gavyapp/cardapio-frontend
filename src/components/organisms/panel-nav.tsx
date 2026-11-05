@@ -50,7 +50,9 @@ export function PanelNav({
   catalogCounts?: CatalogCounts;
 }) {
   const pathname = usePathname();
-  const newOrders = useLiveOrdersContext()?.newCount ?? 0;
+  const live = useLiveOrdersContext();
+  const newOrders = live?.newCount ?? 0;
+  const unseenOrders = live?.unseenCount ?? 0;
 
   return (
     <nav
@@ -73,7 +75,7 @@ export function PanelNav({
               <CountChip
                 count={newOrders}
                 hot
-                pulse
+                pulse={unseenOrders > 0}
                 label="novos"
               />
             ) : null}

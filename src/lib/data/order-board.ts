@@ -11,13 +11,14 @@ import {
   OPEN_ORDER_STATUSES,
   startOfStoreDay,
   type BoardOrder,
+  type StageHistory,
 } from "@/lib/orders/board";
 
 type Client = SupabaseClient<Database>;
 
 const BOARD_COLUMNS_SELECT = `
   id, number, customer_name, customer_phone, mode, payment_method, total, is_paid, status,
-  created_at, accepted_at,
+  read_at, created_at, accepted_at,
   order_items ( quantity ),
   order_events ( to_status, created_at )
 `;
@@ -27,7 +28,14 @@ export type BoardSnapshot = {
   orders: BoardOrder[];
   /** Pedidos recebidos hoje, em qualquer status (título da página). */
   todayCount: number;
+  /** Pedidos de hoje e os ainda abertos, para a média de cada coluna. */
+  stageHistory: StageHistory[];
 };
+
+const HISTORY_SELECT = `
+  id, created_at,
+  order_events ( to_status, created_at )
+`;
 
 /** Lê o quadro com o cliente de quem chama. */
 export async function fetchBoard(
@@ -44,7 +52,7 @@ export async function fetchBoard(
       .order("created_at"),
     client
       .from("orders")
-      .select("id", { count: "exact", head: true })
+      .select(HISTORY_SELECT)
       .eq("store_id", storeId)
       .is("deleted_at", null)
       .gte("created_at", startOfStoreDay(Date.now())),
@@ -53,9 +61,22 @@ export async function fetchBoard(
   if (open.error) throw open.error;
   if (today.error) throw today.error;
 
+  // Pedido aberto de ontem também entra: a média conta quem está na coluna.
+  const history = new Map<string, StageHistory>();
+  for (const row of [...today.data, ...open.data]) {
+    history.set(row.id, {
+      createdAt: row.created_at,
+      events: row.order_events.map((event) => ({
+        status: event.to_status,
+        at: event.created_at,
+      })),
+    });
+  }
+
   return {
     orders: open.data.map(toBoardOrder),
-    todayCount: today.count ?? 0,
+    todayCount: today.data.length,
+    stageHistory: [...history.values()],
   };
 }
 
@@ -69,6 +90,7 @@ type BoardRow = Pick<
   | "payment_method"
   | "total"
   | "is_paid"
+  | "read_at"
   | "status"
   | "created_at"
   | "accepted_at"
@@ -104,6 +126,7 @@ function toBoardOrder(row: BoardRow): BoardOrder {
     paymentMethod: row.payment_method,
     total: Number(row.total),
     isPaid: row.is_paid,
+    isSeen: row.read_at !== null,
     status: row.status,
     createdAt: row.created_at,
     stageStartedAt,

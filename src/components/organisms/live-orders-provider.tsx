@@ -14,17 +14,26 @@ import { useLiveOrders } from "@/lib/hooks/use-live-orders";
 import { useOrderAlarm } from "@/lib/hooks/use-order-alarm";
 import {
   countNewOrders,
+  countUnseenOrders,
   type BoardOrder,
+  type StageHistory,
   type OrderAlerts,
 } from "@/lib/orders/board";
 
 type LiveOrders = {
+  storeId: string;
+  /** Nome da loja, para as mensagens ao cliente. */
+  storeName: string;
   orders: BoardOrder[];
   todayCount: number;
+  stageHistory: StageHistory[];
   newCount: number;
+  /** Pedidos novos que ninguém abriu ainda (alarme, título e menu). */
+  unseenCount: number;
   connected: boolean;
   now: number;
   refresh: () => void;
+  version: number;
   alerts: OrderAlerts;
   /** Aplica na hora os avisos que acabaram de ser salvos. */
   setAlerts: (alerts: OrderAlerts) => void;
@@ -41,17 +50,19 @@ export function useLiveOrdersContext(): LiveOrders | null {
 
 /**
  * Envolve o painel todo: mantém os pedidos em aberto atualizados, toca o
- * alarme enquanto houver pedido novo (em qualquer aba do painel) e põe o
- * número de pedidos novos no título da aba do navegador.
+ * alarme enquanto houver pedido novo não visto (em qualquer aba do painel) e
+ * põe o número de pedidos não vistos no título da aba do navegador.
  */
 export function LiveOrdersProvider({
   storeId,
+  storeName,
   initialBoard,
   initialAlerts,
   renderedAt,
   children,
 }: {
   storeId: string;
+  storeName: string;
   initialBoard: BoardSnapshot;
   initialAlerts: OrderAlerts;
   renderedAt: number;
@@ -64,10 +75,23 @@ export function LiveOrdersProvider({
   });
   const [alerts, setAlerts] = useState(initialAlerts);
   const newCount = countNewOrders(live.orders);
-  const alarm = useOrderAlarm(alerts.sound && newCount > 0);
-  useTitleCount(newCount);
+  const unseenCount = countUnseenOrders(live.orders);
+  // Toca enquanto houver pedido novo que ninguém abriu; abrir, aceitar ou
+  // recusar em qualquer aparelho da loja silencia todos.
+  const alarm = useOrderAlarm(
+    alerts.sound && unseenCount > 0,
+  );
+  useTitleCount(unseenCount);
 
-  const value = { ...live, newCount, alerts, setAlerts };
+  const value = {
+    ...live,
+    storeId,
+    storeName,
+    newCount,
+    unseenCount,
+    alerts,
+    setAlerts,
+  };
 
   return (
     <LiveOrdersContext value={value}>
@@ -88,7 +112,7 @@ export function LiveOrdersProvider({
 const TITLE_COUNT = /^\(\d+\) /;
 
 /**
- * "(2) Pedidos · Painel": o número de pedidos novos à frente do título. O
+ * "(2) Pedidos · Painel": o número de pedidos não vistos à frente do título. O
  * Next troca o título a cada navegação, então o prefixo é reaplicado sempre
  * que ele muda.
  */

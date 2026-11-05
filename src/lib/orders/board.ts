@@ -18,6 +18,8 @@ export type BoardOrder = {
   paymentMethod: Enums<"payment_method">;
   total: number;
   isPaid: boolean;
+  /** Alguém da loja já abriu o pedido (vale para todos os aparelhos). */
+  isSeen: boolean;
   status: OrderStatus;
   createdAt: string;
   /** Quando o pedido entrou no status atual. */
@@ -98,7 +100,7 @@ function minutesSince(
 
 /** Pedido aberto há mais tempo que o limite da loja. */
 export function isLate(
-  order: BoardOrder,
+  order: Pick<BoardOrder, "createdAt">,
   lateAfterMinutes: number,
   now: number,
 ): boolean {
@@ -107,24 +109,109 @@ export function isLate(
   );
 }
 
-/** "Espera média 4min", ou null sem pedidos. */
+/** Mudanças de status de um pedido, para as médias das colunas. */
+export type StageHistory = {
+  createdAt: string;
+  /** Em qualquer ordem; o "recebido" vem da hora do pedido. */
+  events: { status: OrderStatus; at: string }[];
+};
+
+/** Ordem do fluxo, para desempatar mudanças gravadas no mesmo instante. */
+const STATUS_FLOW: readonly OrderStatus[] = [
+  "RECEBIDO",
+  "EM_PREPARO",
+  "PRONTO",
+  "A_CAMINHO",
+  "CONCLUIDO",
+  "REJEITADO",
+  "CANCELADO",
+];
+
+type ColumnPassage = {
+  column: BoardColumnId;
+  start: number;
+  /** null enquanto o pedido ainda está na coluna. */
+  end: number | null;
+};
+
+function columnOf(
+  status: OrderStatus,
+): BoardColumnId | null {
+  return (
+    BOARD_COLUMNS.find((column) =>
+      column.statuses.includes(status),
+    )?.id ?? null
+  );
+}
+
+/**
+ * Passagens do pedido pelas colunas. Pronto e saiu para entrega ficam na
+ * mesma coluna, então contam como uma passagem só.
+ */
+function columnPassages(
+  history: StageHistory,
+): ColumnPassage[] {
+  const steps = [
+    {
+      status: "RECEBIDO" as OrderStatus,
+      at: history.createdAt,
+    },
+    ...history.events
+      .filter((event) => event.status !== "RECEBIDO")
+      .sort(
+        (a, b) =>
+          a.at.localeCompare(b.at) ||
+          STATUS_FLOW.indexOf(a.status) -
+            STATUS_FLOW.indexOf(b.status),
+      ),
+  ];
+  const passages: ColumnPassage[] = [];
+  for (const step of steps) {
+    const at = new Date(step.at).getTime();
+    const column = columnOf(step.status);
+    const current = passages[passages.length - 1];
+    if (current && current.end === null) {
+      if (current.column === column) continue;
+      current.end = at;
+    }
+    if (column)
+      passages.push({ column, start: at, end: null });
+  }
+  return passages;
+}
+
+/**
+ * "Média na etapa 18min": tempo médio dos pedidos do dia na coluna. Quem já
+ * saiu dela conta o tempo que ficou; quem ainda está conta o tempo até
+ * agora, para um pedido parado já puxar a média. Null se a etapa não teve
+ * pedidos hoje.
+ */
 export function columnAverage(
   column: BoardColumn,
-  orders: readonly BoardOrder[],
+  history: readonly StageHistory[],
   now: number,
 ): string | null {
-  if (orders.length === 0) return null;
-  const total = orders.reduce(
-    (sum, order) =>
-      sum + minutesSince(order.stageStartedAt, now),
-    0,
-  );
-  return `${column.averageLabel} ${formatDuration(Math.round(total / orders.length))}`;
+  const dayStart = new Date(startOfStoreDay(now)).getTime();
+  const durations = history
+    .flatMap(columnPassages)
+    .filter(
+      (passage) =>
+        passage.column === column.id &&
+        (passage.start >= dayStart || passage.end === null),
+    )
+    .map((passage) =>
+      Math.max(0, (passage.end ?? now) - passage.start),
+    );
+  if (durations.length === 0) return null;
+  const average =
+    durations.reduce((sum, ms) => sum + ms, 0) /
+    durations.length;
+  return `${column.averageLabel} ${formatDuration(Math.floor(average / 60_000))}`;
 }
 
 /** Tempo desde o pedido no card: "agora", "7min" ou "1h 50min". */
 export function elapsedLabel(
-  order: BoardOrder,
+  order: Pick<BoardOrder, "createdAt">,
   now: number,
 ): string {
   const minutes = minutesSince(order.createdAt, now);
@@ -182,6 +269,23 @@ export function groupByColumn(
     preparing: inColumn(lateFirst, "preparing"),
     ready: inColumn(lateFirst, "ready"),
   };
+}
+
+/**
+ * Pedido novo que ninguém da loja abriu ainda. É o que faz o alarme tocar
+ * e o que ganha o selo "Novo" no quadro.
+ */
+export function isUnseen(
+  order: Pick<BoardOrder, "status" | "isSeen">,
+): boolean {
+  return order.status === "RECEBIDO" && !order.isSeen;
+}
+
+/** Quantos pedidos novos ninguém abriu ainda. */
+export function countUnseenOrders(
+  orders: readonly BoardOrder[],
+): number {
+  return orders.filter(isUnseen).length;
 }
 
 /** Quantos pedidos esperam ser aceitos. */

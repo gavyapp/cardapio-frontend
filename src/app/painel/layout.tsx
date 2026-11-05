@@ -59,6 +59,7 @@ async function PanelWithAccess({
   return (
     <LiveOrdersProvider
       storeId={access.store.id}
+      storeName={store?.name ?? access.store.name}
       initialBoard={board}
       initialAlerts={orderAlerts}
       renderedAt={board.fetchedAt}
@@ -68,7 +69,7 @@ async function PanelWithAccess({
         catalogCounts={catalogCounts}
         onSignOut={signOut}
       />
-      <main className="flex flex-1 flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         {children}
       </main>
     </LiveOrdersProvider>
@@ -79,7 +80,9 @@ export default function PanelLayout({
   children,
 }: LayoutProps<"/painel">) {
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    // O quadro de pedidos ocupa só a altura da tela no computador: quem
+    // rola são as colunas, não a página.
+    <div className="flex min-h-full flex-1 flex-col lg:has-[[data-fill-viewport]]:max-h-dvh lg:has-[[data-fill-viewport]]:min-h-0">
       <Suspense fallback={<PanelHeader store={null} />}>
         <PanelWithAccess>{children}</PanelWithAccess>
       </Suspense>
