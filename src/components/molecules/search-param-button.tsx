@@ -22,11 +22,12 @@ export function SearchParamButton({
   return (
     <Button
       onClick={() => setSearchParam(name, value)}
-      // Botão de ação do cabeçalho, como no protótipo: altura e canto da
-      // busca ao lado (44px no celular, 36px no computador, canto de 4px).
-      className="rounded-[4px] font-semibold lg:h-9"
+      // Botão de ação do cabeçalho com a medida dos controles de 36px do
+      // protótipo (filtros e busca): no computador, texto de 13px, ícone de
+      // 14px e 12px de respiro; no celular, 44px e 15px. Canto de 4px.
+      className="rounded-[4px] font-semibold lg:h-9 lg:px-3 lg:text-[13px]"
     >
-      <Plus aria-hidden />
+      <Plus aria-hidden className="size-4 lg:size-3.5" />
       {children}
     </Button>
   );
