@@ -22,8 +22,9 @@ export type AvailabilityTarget = {
 };
 
 /**
- * Itens do pedido no detalhe: quantidade, nome e preço; complementos por
- * grupo; observação do item em destaque. O "…" de cada item esgota ou volta
+ * Itens do pedido no detalhe, como no protótipo: quantidade, nome e preço;
+ * escolhas dos grupos obrigatórios numa linha ("Zero · Ao ponto") e cada
+ * adicional com "+"; observação do item em destaque. O "…" de cada item esgota ou volta
  * o produto e os complementos escolhidos no cardápio, como no protótipo.
  */
 export function OrderItems({
@@ -36,7 +37,7 @@ export function OrderItems({
   ) => void;
 }) {
   return (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col gap-3">
       {items.map((item) => (
         <OrderItemRow
           key={item.id}
@@ -60,10 +61,16 @@ function OrderItemRow({
   const soldOut =
     item.menuItem !== null && !item.menuItem.isAvailable;
   const targets = availabilityTargets(item);
+  const choices = item.complements
+    .filter((complement) => complement.isChoice)
+    .map(complementLabel);
+  const extras = item.complements
+    .filter((complement) => !complement.isChoice)
+    .map(complementLabel);
 
   return (
     <li className="flex flex-col gap-1">
-      <div className="flex items-start gap-2 text-[15px] leading-snug">
+      <div className="flex items-start gap-2 text-[15px] leading-[1.3]">
         <span className="tabular min-w-8 font-semibold">
           {item.quantity}×
         </span>
@@ -75,14 +82,15 @@ function OrderItemRow({
             </span>
           ) : null}
         </div>
-        <span className="tabular whitespace-nowrap">
+        <span className="tabular text-[13px] whitespace-nowrap text-muted-foreground">
           {formatCurrency(item.total)}
         </span>
         {targets.length > 0 ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={`Esgotar ou disponibilizar ${item.name} no cardápio`}
-              className="-mt-1 -mr-2 flex size-8 shrink-0 items-center justify-center rounded-[4px] text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground aria-expanded:bg-muted"
+              title="Esgotar no cardápio"
+              className="-my-[7px] -mr-1.5 flex size-8 shrink-0 items-center justify-center rounded-[4px] text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground aria-expanded:bg-muted"
             >
               <MoreHorizontal
                 aria-hidden
@@ -99,9 +107,9 @@ function OrderItemRow({
                   onClick={() =>
                     onToggleAvailability(target)
                   }
-                  className="flex flex-col items-start gap-0"
+                  className="min-h-11 gap-3"
                 >
-                  <span>
+                  <span className="min-w-0 flex-1">
                     {target.isAvailable
                       ? "Esgotar"
                       : "Disponibilizar"}{" "}
@@ -121,17 +129,21 @@ function OrderItemRow({
           </DropdownMenu>
         ) : null}
       </div>
-      <div className="flex flex-col gap-0.5 pl-10 text-[13px] text-muted-foreground">
-        {groupComplements(item.complements).map(
-          ([group, names]) => (
-            <span key={group}>
-              {group}: {names}
-            </span>
-          ),
-        )}
-      </div>
+      {choices.length > 0 ? (
+        <span className="pl-10 text-[13px] text-muted-foreground">
+          {choices.join(" · ")}
+        </span>
+      ) : null}
+      {extras.map((extra) => (
+        <span
+          key={extra}
+          className="pl-10 text-[13px] text-muted-foreground"
+        >
+          + {extra}
+        </span>
+      ))}
       {item.notes ? (
-        <p className="ml-10 rounded-[4px] bg-warning-soft px-2.5 py-1.5 text-[13px] font-medium text-warning-foreground">
+        <p className="mt-1 ml-10 rounded-[4px] bg-foreground px-3 py-2 text-[13px] leading-[1.4] font-medium text-background">
           Obs.: {item.notes}
         </p>
       ) : null}
@@ -139,25 +151,13 @@ function OrderItemRow({
   );
 }
 
-/** "Adicionais" → "Bacon, 2× Cheddar", na ordem em que vieram. */
-function groupComplements(
-  complements: OrderDetailComplement[],
-): [string, string][] {
-  const groups = new Map<string, string[]>();
-  for (const complement of complements) {
-    const label =
-      complement.quantity > 1
-        ? `${complement.quantity}× ${complement.name}`
-        : complement.name;
-    groups.set(complement.groupName, [
-      ...(groups.get(complement.groupName) ?? []),
-      label,
-    ]);
-  }
-  return [...groups].map(([group, names]) => [
-    group,
-    names.join(", "),
-  ]);
+/** "Bacon" ou "2× Bacon". */
+function complementLabel(
+  complement: OrderDetailComplement,
+): string {
+  return complement.quantity > 1
+    ? `${complement.quantity}× ${complement.name}`
+    : complement.name;
 }
 
 /** Produto e complementos do item que ainda existem no cardápio. */

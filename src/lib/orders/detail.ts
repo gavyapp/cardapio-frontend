@@ -31,6 +31,11 @@ export type MenuAvailability = {
 export type OrderDetailComplement = {
   id: string;
   groupName: string;
+  /**
+   * Escolha de grupo obrigatório (ponto, sabor, versão), mostrada sem "+";
+   * as de grupo opcional são adicionais ("+ Bacon").
+   */
+  isChoice: boolean;
   name: string;
   quantity: number;
   menuItem: MenuAvailability;
@@ -326,18 +331,13 @@ export function parseAddress(
   };
 }
 
-export type WhatsAppAction = {
-  label: string;
-  href: string;
-};
-
 /**
- * Botão de WhatsApp do passo atual, com a mensagem já escrita. Só existe
- * nos passos do fluxo: pedido novo e em preparo (avisar um problema),
- * pronto para retirada e saiu para entrega (avisar o cliente). Pedido
- * fechado não tem.
+ * Link do botão WhatsApp do passo atual, com a mensagem já escrita. Só
+ * existe nos passos do fluxo: pedido novo, em preparo e pronto para entrega
+ * (falar de um problema), pronto para retirada e saiu para entrega (avisar
+ * o cliente). Pedido fechado não tem.
  */
-export function whatsAppAction(
+export function whatsAppLink(
   order: Pick<
     OrderDetail,
     | "status"
@@ -347,50 +347,36 @@ export function whatsAppAction(
     | "customerPhone"
   >,
   storeName: string,
-): WhatsAppAction | null {
+): string | null {
   const firstName =
     order.customerName.trim().split(/\s+/)[0] ?? "";
   const hello = firstName ? `Olá, ${firstName}!` : "Olá!";
   const number = `#${order.number}`;
+  const problem = `${hello} Aqui é da ${storeName}, sobre o seu pedido ${number}: `;
 
-  let action: { label: string; text: string } | null;
+  let text: string | null;
   switch (order.status) {
     case "RECEBIDO":
     case "EM_PREPARO":
-      action = {
-        label: "Avisar problema",
-        text: `${hello} Aqui é da ${storeName}, sobre o seu pedido ${number}: `,
-      };
+      text = problem;
       break;
     case "PRONTO":
-      action =
+      text =
         order.mode === "RETIRADA"
-          ? {
-              label: "Avisar que está pronto",
-              text: `${hello} Seu pedido ${number} da ${storeName} está pronto para retirada.`,
-            }
-          : {
-              label: "Avisar problema",
-              text: `${hello} Aqui é da ${storeName}, sobre o seu pedido ${number}: `,
-            };
+          ? `${hello} Seu pedido ${number} da ${storeName} está pronto para retirada.`
+          : problem;
       break;
     case "A_CAMINHO":
-      action = {
-        label: "Avisar que saiu",
-        text: `${hello} Seu pedido ${number} da ${storeName} saiu para entrega e já está a caminho.`,
-      };
+      text = `${hello} Seu pedido ${number} da ${storeName} saiu para entrega e já está a caminho.`;
       break;
     default:
-      action = null;
+      text = null;
   }
-  if (!action) return null;
+  if (!text) return null;
 
   const phone = whatsAppNumber(order.customerPhone);
   if (!phone) return null;
-  return {
-    label: action.label,
-    href: `https://wa.me/${phone}?text=${encodeURIComponent(action.text)}`,
-  };
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
 /** Telefone no formato do wa.me: só dígitos, com o 55 do Brasil. */

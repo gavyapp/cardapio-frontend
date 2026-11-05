@@ -23,7 +23,7 @@ const ORDER_DETAIL_SELECT = `
     products ( id, is_available, deleted_at ),
     order_item_complements (
       id, group_name, name, quantity, created_at,
-      complements ( id, is_available, deleted_at )
+      complements ( id, is_available, deleted_at, complement_groups ( min_select ) )
     )
   ),
   order_events ( to_status, note, created_at )
@@ -86,6 +86,10 @@ export async function fetchOrderDetail(
           .map((complement) => ({
             id: complement.id,
             groupName: complement.group_name,
+            // Opção excluída do cardápio: sem o grupo, entra como adicional.
+            isChoice:
+              (complement.complements?.complement_groups
+                ?.min_select ?? 0) > 0,
             name: complement.name,
             quantity: complement.quantity,
             menuItem: availability(complement.complements),
