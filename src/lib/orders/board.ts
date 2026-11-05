@@ -220,7 +220,10 @@ export function elapsedLabel(
 
 /** Busca por nome do cliente, número do pedido ou telefone. */
 export function matchesOrderSearch(
-  order: BoardOrder,
+  order: Pick<
+    BoardOrder,
+    "customerName" | "number" | "customerPhone"
+  >,
   query: string,
 ): boolean {
   const text = normalizeSearch(query);

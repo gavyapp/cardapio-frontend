@@ -6,6 +6,7 @@ import {
   TodayOrdersTitle,
   OrderBoard,
 } from "@/components/organisms/order-board";
+import { ClosedOrders } from "@/components/organisms/closed-orders";
 import { OrderBoardTemplate } from "@/components/templates/order-board-template";
 import { ORDER_SEARCH_PARAM } from "@/lib/orders/board";
 
@@ -47,6 +48,9 @@ export default function OrdersPage() {
               setComplementAvailabilityAction,
           }}
         />
+      </Suspense>
+      <Suspense>
+        <ClosedOrders />
       </Suspense>
     </OrderBoardTemplate>
   );
