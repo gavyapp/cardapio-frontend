@@ -18,6 +18,8 @@ export type BoardOrder = {
   paymentMethod: Enums<"payment_method">;
   total: number;
   isPaid: boolean;
+  /** Alguém da loja já abriu o pedido (vale para todos os aparelhos). */
+  isSeen: boolean;
   status: OrderStatus;
   createdAt: string;
   /** Quando o pedido entrou no status atual. */
@@ -182,6 +184,23 @@ export function groupByColumn(
     preparing: inColumn(lateFirst, "preparing"),
     ready: inColumn(lateFirst, "ready"),
   };
+}
+
+/**
+ * Pedido novo que ninguém da loja abriu ainda. É o que faz o alarme tocar
+ * e o que ganha o selo "Novo" no quadro.
+ */
+export function isUnseen(
+  order: Pick<BoardOrder, "status" | "isSeen">,
+): boolean {
+  return order.status === "RECEBIDO" && !order.isSeen;
+}
+
+/** Quantos pedidos novos ninguém abriu ainda. */
+export function countUnseenOrders(
+  orders: readonly BoardOrder[],
+): number {
+  return orders.filter(isUnseen).length;
 }
 
 /** Quantos pedidos esperam ser aceitos. */

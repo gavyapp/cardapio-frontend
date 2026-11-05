@@ -17,7 +17,7 @@ type Client = SupabaseClient<Database>;
 
 const BOARD_COLUMNS_SELECT = `
   id, number, customer_name, customer_phone, mode, payment_method, total, is_paid, status,
-  created_at, accepted_at,
+  read_at, created_at, accepted_at,
   order_items ( quantity ),
   order_events ( to_status, created_at )
 `;
@@ -69,6 +69,7 @@ type BoardRow = Pick<
   | "payment_method"
   | "total"
   | "is_paid"
+  | "read_at"
   | "status"
   | "created_at"
   | "accepted_at"
@@ -104,6 +105,7 @@ function toBoardOrder(row: BoardRow): BoardOrder {
     paymentMethod: row.payment_method,
     total: Number(row.total),
     isPaid: row.is_paid,
+    isSeen: row.read_at !== null,
     status: row.status,
     createdAt: row.created_at,
     stageStartedAt,

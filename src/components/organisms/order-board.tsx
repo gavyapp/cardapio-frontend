@@ -314,6 +314,10 @@ export function OrderBoard({
                     <CountChip
                       count={columns[tab.id].length}
                       hot={tab.id === "new"}
+                      pulse={
+                        tab.id === "new" &&
+                        live.unseenCount > 0
+                      }
                       small
                     />
                   </button>

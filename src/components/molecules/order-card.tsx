@@ -10,6 +10,7 @@ import {
   PAYMENT_LABELS,
   elapsedLabel,
   isLate,
+  isUnseen,
   nextStep,
   orderTone,
   stageCaption,
@@ -28,7 +29,8 @@ const TONE_STRIPE: Record<OrderTone, string> = {
 
 /**
  * Card do quadro, como no protótipo: número, cliente e tempo desde o pedido
- * (vermelho com relógio quando atrasado); modo, itens, pagamento e total;
+ * (vermelho com relógio quando atrasado; selo "Novo" piscando enquanto
+ * ninguém abriu o pedido); modo, itens, pagamento e total;
  * há quanto tempo está na etapa; o botão do passo seguinte e o menu "…"
  * (pago, recusar ou cancelar). Tocar no card abre o detalhe.
  */
@@ -56,6 +58,7 @@ export function OrderCard({
 }) {
   const late = isLate(order, lateAfterMinutes, now);
   const isNew = order.status === "RECEBIDO";
+  const unseen = isUnseen(order);
   const step = nextStep(order);
   const caption = stageCaption(order, now);
 
@@ -85,27 +88,44 @@ export function OrderCard({
             <span className="tabular shrink-0 font-semibold">
               #{order.number}
             </span>
-            <span className="min-w-0 truncate font-medium">
-              {order.customerName}
-            </span>
             <span
               className={cn(
-                "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-[13px] whitespace-nowrap",
-                late && "font-semibold text-destructive",
+                "min-w-0 truncate",
+                unseen ? "font-semibold" : "font-medium",
               )}
             >
-              {late ? (
-                <Clock
-                  aria-hidden
-                  className="size-3.5 -translate-y-[0.5px]"
-                  strokeWidth={2.4}
-                />
-              ) : null}
-              {elapsedLabel(order, now)}
-              {late ? (
-                <span className="sr-only"> (atrasado)</span>
-              ) : null}
+              {order.customerName}
             </span>
+            {unseen ? (
+              <span className="ml-auto inline-flex h-6 shrink-0 items-center rounded-[4px] bg-warning px-2 text-xs font-semibold text-warning-foreground motion-safe:animate-soft-pulse">
+                Novo
+                <span className="sr-only">
+                  , ainda não visto
+                </span>
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-[13px] whitespace-nowrap",
+                  late && "font-semibold text-destructive",
+                )}
+              >
+                {late ? (
+                  <Clock
+                    aria-hidden
+                    className="size-3.5 -translate-y-[0.5px]"
+                    strokeWidth={2.4}
+                  />
+                ) : null}
+                {elapsedLabel(order, now)}
+                {late ? (
+                  <span className="sr-only">
+                    {" "}
+                    (atrasado)
+                  </span>
+                ) : null}
+              </span>
+            )}
           </span>
           <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-medium text-foreground">
