@@ -16,6 +16,7 @@ import {
   countNewOrders,
   countUnseenOrders,
   type BoardOrder,
+  type StageHistory,
   type OrderAlerts,
 } from "@/lib/orders/board";
 
@@ -25,6 +26,7 @@ type LiveOrders = {
   storeName: string;
   orders: BoardOrder[];
   todayCount: number;
+  stageHistory: StageHistory[];
   newCount: number;
   /** Pedidos novos que ninguém abriu ainda (alarme, título e menu). */
   unseenCount: number;

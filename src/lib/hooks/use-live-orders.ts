@@ -12,7 +12,10 @@ import {
   fetchBoardInBrowser,
   subscribeToStoreOrders,
 } from "@/lib/data/order-board-live";
-import type { BoardOrder } from "@/lib/orders/board";
+import type {
+  BoardOrder,
+  StageHistory,
+} from "@/lib/orders/board";
 
 /** Espera entre um evento e a releitura, para juntar eventos em sequência. */
 const REFRESH_DEBOUNCE_MS = 300;
@@ -25,6 +28,8 @@ export type LiveOrdersState = {
   orders: BoardOrder[];
   /** Pedidos recebidos hoje, em qualquer status. */
   todayCount: number;
+  /** Mudanças de status de hoje, para a média de cada coluna. */
+  stageHistory: StageHistory[];
   /** Canal do Realtime conectado. */
   connected: boolean;
   /** Hora usada para os tempos na tela (atualiza a cada 30 s). */
@@ -137,6 +142,7 @@ export function useLiveOrders({
   return {
     orders: board.orders,
     todayCount: board.todayCount,
+    stageHistory: board.stageHistory,
     connected,
     now,
     refresh,

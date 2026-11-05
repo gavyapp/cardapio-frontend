@@ -329,7 +329,7 @@ export function OrderBoard({
               count={columns[column.id].length}
               average={columnAverage(
                 column,
-                columns[column.id],
+                live.stageHistory,
                 now,
               )}
             />
