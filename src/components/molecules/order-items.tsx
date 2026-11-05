@@ -129,19 +129,16 @@ function OrderItemRow({
           </DropdownMenu>
         ) : null}
       </div>
-      {choices.length > 0 ? (
-        <span className="pl-10 text-[13px] text-muted-foreground">
-          {choices.join(" · ")}
-        </span>
+      {choices.length > 0 || extras.length > 0 ? (
+        <div className="flex flex-col pl-10 text-[13px] leading-[1.35] text-muted-foreground">
+          {choices.length > 0 ? (
+            <span>{choices.join(" · ")}</span>
+          ) : null}
+          {extras.map((extra) => (
+            <span key={extra}>+ {extra}</span>
+          ))}
+        </div>
       ) : null}
-      {extras.map((extra) => (
-        <span
-          key={extra}
-          className="pl-10 text-[13px] text-muted-foreground"
-        >
-          + {extra}
-        </span>
-      ))}
       {item.notes ? (
         <p className="mt-1 ml-10 rounded-[4px] bg-warning-soft px-3 py-2 text-[13px] leading-[1.4] font-medium text-warning-foreground">
           Obs.: {item.notes}
