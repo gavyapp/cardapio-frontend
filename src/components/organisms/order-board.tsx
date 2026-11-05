@@ -266,7 +266,7 @@ export function OrderBoard({
       : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 lg:min-h-0 lg:flex-1">
       {!live.connected ? (
         <p
           role="status"
@@ -278,7 +278,7 @@ export function OrderBoard({
         </p>
       ) : null}
 
-      <div className="grid gap-4 lg:h-[max(600px,calc(100dvh-14rem))] lg:grid-cols-3">
+      <div className="grid gap-4 lg:min-h-[420px] lg:flex-1 lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)]">
         {BOARD_COLUMNS.map((column) => (
           <section
             key={column.id}
@@ -333,7 +333,9 @@ export function OrderBoard({
                 now,
               )}
             />
-            <div className="flex flex-col gap-2 p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            {/* relative: os textos sr-only dos cards ficam presos à coluna;
+                sem isso eles esticam a página inteira. */}
+            <div className="relative flex flex-col gap-2 p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
               {columns[column.id].length === 0 ? (
                 <EmptyColumn
                   column={column}
