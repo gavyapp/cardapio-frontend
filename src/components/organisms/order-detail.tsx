@@ -101,7 +101,7 @@ export function OrderDetailPanel({
         className={cn(
           "gap-0 overflow-hidden",
           desktop
-            ? "data-[side=right]:w-full data-[side=right]:sm:max-w-[420px]"
+            ? "data-[side=right]:w-full data-[side=right]:sm:max-w-[640px]"
             : "rounded-t-xl data-[side=bottom]:h-[calc(100dvh-16px)]",
         )}
       >
