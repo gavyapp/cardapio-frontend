@@ -138,7 +138,6 @@ export function ClosedOrders() {
           name={CLOSED_SEARCH_PARAM}
           placeholder="Nome, nº ou telefone"
           label="Buscar nos concluídos e cancelados"
-          compact
         />
         <div
           role="group"
