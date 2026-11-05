@@ -417,22 +417,26 @@ function ColumnHeader({
   average: string | null;
 }) {
   return (
-    <header className="flex min-h-14 shrink-0 flex-col justify-center gap-0.5 border-b py-2 pr-3 pl-4">
-      <h2
-        id={`coluna-${column.id}`}
-        className="flex items-center gap-2 text-[15px] leading-tight font-semibold whitespace-nowrap"
-      >
-        {column.title}
-        <CountChip
-          count={count}
-          hot={column.id === "new"}
-        />
-      </h2>
-      {average ? (
-        <p className="tabular text-xs text-muted-foreground">
-          {average}
-        </p>
-      ) : null}
+    <header className="flex min-h-14 shrink-0 items-center gap-3 border-b py-2 pr-3 pl-4">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+        <h2
+          id={`coluna-${column.id}`}
+          className="text-[15px] leading-tight font-semibold whitespace-nowrap"
+        >
+          {column.title}
+        </h2>
+        {average ? (
+          <p className="tabular truncate text-xs text-muted-foreground">
+            {average}
+          </p>
+        ) : null}
+      </div>
+      <CountChip
+        count={count}
+        hot={column.id === "new"}
+        large
+        label={count === 1 ? "pedido" : "pedidos"}
+      />
     </header>
   );
 }
