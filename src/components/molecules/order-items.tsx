@@ -143,7 +143,7 @@ function OrderItemRow({
         </span>
       ))}
       {item.notes ? (
-        <p className="mt-1 ml-10 rounded-[4px] bg-foreground px-3 py-2 text-[13px] leading-[1.4] font-medium text-background">
+        <p className="mt-1 ml-10 rounded-[4px] bg-warning-soft px-3 py-2 text-[13px] leading-[1.4] font-medium text-warning-foreground">
           Obs.: {item.notes}
         </p>
       ) : null}

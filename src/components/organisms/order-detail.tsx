@@ -247,7 +247,7 @@ function DetailContent({
             {pluralize(itemCount, "item", "itens")}
           </SectionLabel>
           {order.notes ? (
-            <p className="rounded-[4px] bg-foreground px-3 py-2 text-[13px] leading-[1.4] font-medium text-background">
+            <p className="rounded-[4px] bg-warning-soft px-3 py-2 text-[13px] leading-[1.4] font-medium text-warning-foreground">
               Obs. do pedido: {order.notes}
             </p>
           ) : null}
