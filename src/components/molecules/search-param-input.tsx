@@ -8,6 +8,7 @@ import {
   setSearchParam,
   useSearchParamState,
 } from "@/lib/hooks/use-search-param-state";
+import { cn } from "@/lib/utils";
 
 /**
  * Campo de busca do cabeçalho da página. Grava o texto num parâmetro da URL
@@ -17,11 +18,17 @@ export function SearchParamInput({
   name,
   placeholder,
   label = placeholder,
+  compact = false,
 }: {
   name: string;
   placeholder: string;
   /** Nome acessível, quando há mais de uma busca na página. */
   label?: string;
+  /**
+   * Na altura, borda e texto dos botões de filtro ao lado (busca dentro de
+   * um card, como a da lista de encerrados).
+   */
+  compact?: boolean;
 }) {
   const [param] = useSearchParamState(name);
   const [value, setValue] = useState(param ?? "");
@@ -51,7 +58,11 @@ export function SearchParamInput({
         type="search"
         aria-label={label}
         placeholder={placeholder}
-        className="bg-card px-9 [&::-webkit-search-cancel-button]:hidden"
+        className={cn(
+          "bg-card px-9 [&::-webkit-search-cancel-button]:hidden",
+          compact &&
+            "rounded-[4px] border-border text-[13px] lg:h-9",
+        )}
         value={value}
         onChange={(event) => change(event.target.value)}
       />
