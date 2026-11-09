@@ -1,5 +1,5 @@
-// Parâmetros da URL que abrem os editores do catálogo no painel. O botão do
-// cabeçalho (servidor) e a lista (navegador) precisam do mesmo nome.
+// Parâmetros da URL que abrem os editores do catálogo no painel. O botão
+// "Novo …" do cabeçalho e a lista (navegador) precisam do mesmo nome.
 
 /** "?grupo=novo" ou "?grupo=<id>" abre o editor de grupo de complementos. */
 export const GROUP_PARAM = "grupo";

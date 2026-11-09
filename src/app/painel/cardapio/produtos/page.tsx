@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { SearchParamButton } from "@/components/molecules/search-param-button";
+import { NewItemButton } from "@/components/molecules/new-item-button";
 import { SearchParamInput } from "@/components/molecules/search-param-input";
 import { ProductList } from "@/components/organisms/product-list";
 import {
@@ -9,7 +9,6 @@ import {
   CatalogPageTemplate,
 } from "@/components/templates/catalog-page-template";
 import {
-  NEW_ITEM,
   PRODUCT_PARAM,
   SEARCH_PARAM,
 } from "@/lib/catalog/params";
@@ -62,12 +61,9 @@ async function Products() {
         />
       }
       action={
-        <SearchParamButton
-          name={PRODUCT_PARAM}
-          value={NEW_ITEM}
-        >
+        <NewItemButton param={PRODUCT_PARAM}>
           Novo produto
-        </SearchParamButton>
+        </NewItemButton>
       }
     >
       <ProductList
