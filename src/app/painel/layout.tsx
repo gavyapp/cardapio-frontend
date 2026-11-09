@@ -52,6 +52,7 @@ async function PanelWithAccess({
         slug: store.slug,
         name: store.name,
         primaryColor: store.appearance.primaryColor,
+        logoUrl: store.appearance.logoUrl,
       }
     : null;
 

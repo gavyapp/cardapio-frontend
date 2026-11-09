@@ -14,6 +14,7 @@ export function SegmentedControl<
   options,
   onChange,
   variant = "pill",
+  fullWidth = false,
 }: {
   /** Nome acessível, quando não há rótulo visível. */
   label?: string;
@@ -23,6 +24,8 @@ export function SegmentedControl<
   options: [T, string][];
   onChange: (value: T) => void;
   variant?: "pill" | "solid";
+  /** Ocupa a largura disponível, com as opções divididas por igual. */
+  fullWidth?: boolean;
 }) {
   return (
     <div
@@ -30,7 +33,7 @@ export function SegmentedControl<
       aria-label={label}
       aria-labelledby={labelledBy}
       className={cn(
-        "flex w-fit self-start",
+        fullWidth ? "flex w-full" : "flex w-fit self-start",
         variant === "pill"
           ? "rounded-md border bg-muted p-0.5"
           : "overflow-hidden rounded-md border",
@@ -47,6 +50,7 @@ export function SegmentedControl<
             onClick={() => onChange(optionValue)}
             className={cn(
               "text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground",
+              fullWidth && "flex-1 text-[15px]",
               variant === "pill"
                 ? cn(
                     "h-8 rounded-[5px] px-3 font-medium text-muted-foreground",
