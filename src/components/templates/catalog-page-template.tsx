@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /**
  * Páginas do catálogo no painel (produtos e complementos): título com a
- * contagem ao lado, ação principal à direita e o conteúdo na largura toda.
+ * contagem ao lado, ação principal à direita e o conteúdo centralizado em até 1200px.
  */
 export function CatalogPageTemplate({
   title,
@@ -19,7 +19,7 @@ export function CatalogPageTemplate({
   children: ReactNode;
 }) {
   return (
-    <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       <header className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h1 className="flex min-w-0 items-baseline gap-2 text-2xl leading-tight font-semibold">
           {title}
@@ -48,7 +48,7 @@ export function CatalogPageSkeleton({
   title: string;
 }) {
   return (
-    <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       <h1 className="flex min-h-11 items-center text-2xl leading-tight font-semibold">
         {title}
       </h1>

@@ -26,6 +26,7 @@ export type MenuStore = {
   slug: string;
   name: string;
   primaryColor: string;
+  logoUrl: string | null;
 };
 
 const itemClass =
@@ -65,6 +66,7 @@ export function StoreMenu({
           <StoreAvatar
             name={store.name}
             primaryColor={store.primaryColor}
+            imageUrl={store.logoUrl}
             className="size-9 text-xs"
           />
         ) : null}
@@ -81,6 +83,7 @@ export function StoreMenu({
             <StoreAvatar
               name={store.name}
               primaryColor={store.primaryColor}
+              imageUrl={store.logoUrl}
               className="size-11 text-sm"
             />
             <div className="min-w-0">

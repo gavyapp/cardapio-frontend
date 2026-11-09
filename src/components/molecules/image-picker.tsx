@@ -23,6 +23,7 @@ export function ImagePicker({
   onChange,
   label = "Foto",
   aspect = "square",
+  uploadLabel = "Enviar foto",
 }: {
   storeId: string;
   kind: StoreImageKind;
@@ -30,6 +31,8 @@ export function ImagePicker({
   onChange: (url: string | null) => void;
   label?: string;
   aspect?: "square" | "wide";
+  /** Texto do botão quando ainda não há imagem. */
+  uploadLabel?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export function ImagePicker({
               ? "Enviando…"
               : value
                 ? "Trocar"
-                : "Enviar foto"}
+                : uploadLabel}
           </Button>
           {value ? (
             <Button

@@ -32,7 +32,7 @@ export function SectionNav({
   return (
     <nav
       aria-label={ariaLabel}
-      className="rounded-xl border bg-card p-2 lg:sticky lg:top-6"
+      className="rounded-xl border bg-card p-2 lg:sticky lg:top-32"
     >
       <ul className="flex flex-col gap-0.5">
         {sections.map((section) => (

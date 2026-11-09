@@ -45,7 +45,13 @@ export const storeThemeSchema = z.object({
     ])
     .optional(),
   welcome: z.string().max(140).optional(),
+  // Imagens do topo do cardápio, URLs públicas do bucket store-assets.
+  logo_url: z.url().nullable().optional(),
+  cover_url: z.url().nullable().optional(),
 });
+
+/** Formato gravado em stores.settings.theme. */
+export type StoreTheme = z.infer<typeof storeThemeSchema>;
 
 // Avisos do quadro de pedidos.
 export const orderAlertsSchema = z.object({
@@ -128,6 +134,8 @@ export function readStoreAppearance(
     layout: theme?.layout ?? DEFAULT_APPEARANCE.layout,
     font: theme?.font ?? DEFAULT_APPEARANCE.font,
     welcome: theme?.welcome ?? DEFAULT_APPEARANCE.welcome,
+    logoUrl: theme?.logo_url ?? null,
+    coverUrl: theme?.cover_url ?? null,
   };
 }
 

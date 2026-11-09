@@ -6,6 +6,7 @@ import {
   type MenuStore,
 } from "@/components/organisms/store-menu";
 import { Badge } from "@/components/atoms/badge";
+import { StoreAvatar } from "@/components/atoms/store-avatar";
 import type { CatalogCounts } from "@/lib/data/catalog-counts";
 
 export type HeaderStore = MenuStore;
@@ -21,13 +22,22 @@ export function PanelHeader({
   onSignOut?: () => Promise<void>;
 }) {
   return (
-    <header className="bg-card">
+    <header className="sticky top-0 z-40 bg-card">
       <div className="bg-foreground text-background">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
-          <span
-            aria-hidden
-            className="size-7 shrink-0 rounded-md bg-background"
-          />
+          {store ? (
+            <StoreAvatar
+              name={store.name}
+              primaryColor={store.primaryColor}
+              imageUrl={store.logoUrl}
+              className="size-8 rounded-md text-xs"
+            />
+          ) : (
+            <span
+              aria-hidden
+              className="size-8 shrink-0 rounded-md bg-background"
+            />
+          )}
           <p className="flex min-w-0 items-center gap-2 text-[15px]">
             <span className="shrink-0 font-semibold">
               {PLATFORM_NAME}

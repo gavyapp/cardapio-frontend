@@ -17,7 +17,19 @@ export type StoreAppearance = {
   layout: "lista" | "grade";
   font: StoreFont;
   welcome: string | null;
+  logoUrl: string | null;
+  coverUrl: string | null;
 };
+
+/** Cores sugeridas no painel, como no protótipo. */
+export const THEME_PALETTE = [
+  "#650000",
+  "#FF441B",
+  "#FF9D18",
+  "#1F6F5C",
+  "#2D5BD3",
+  "#16191D",
+] as const;
 
 /** Padrão quando a loja não configurou nada: o visual atual do layout. */
 export const DEFAULT_APPEARANCE: StoreAppearance = {
@@ -26,6 +38,8 @@ export const DEFAULT_APPEARANCE: StoreAppearance = {
   layout: "lista",
   font: "moderna",
   welcome: null,
+  logoUrl: null,
+  coverUrl: null,
 };
 
 // Por enquanto só a Figtree é carregada (src/app/layout.tsx). As outras
