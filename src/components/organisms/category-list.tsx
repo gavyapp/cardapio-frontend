@@ -105,14 +105,14 @@ export function CategoryList({
       <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
         <span
           className={cn(
-            "truncate text-[15px] font-semibold",
+            "truncate text-body font-semibold",
             !category.isAvailable &&
               "text-muted-foreground",
           )}
         >
           {category.name}
         </span>
-        <span className="tabular text-[13px] text-muted-foreground">
+        <span className="tabular text-meta text-muted-foreground">
           {productCountLabel(category.productCount)}
           {category.isAvailable
             ? ""
@@ -139,7 +139,7 @@ export function CategoryList({
                 [category.id]: !isOpen,
               }))
             }
-            className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+            className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-control text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
           >
             <ChevronRight
               aria-hidden
@@ -155,7 +155,7 @@ export function CategoryList({
         )}
         <span
           className={cn(
-            "hidden text-[13px] sm:inline",
+            "hidden text-meta sm:inline",
             !category.isAvailable &&
               "text-muted-foreground",
           )}
@@ -203,7 +203,7 @@ export function CategoryList({
     <>
       <div className="flex flex-col gap-4">
         {items.length === 0 ? (
-          <p className="text-[15px] text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             Nenhuma categoria ainda. Crie a primeira para
             começar a montar o cardápio.
           </p>
@@ -212,7 +212,7 @@ export function CategoryList({
             items={items}
             onReorder={reorder}
             className="flex flex-col gap-4"
-            itemClassName="rounded-lg border"
+            itemClassName="rounded-surface border"
             handleLabel={(category) =>
               `Mover ${category.name}`
             }
@@ -235,7 +235,7 @@ export function CategoryList({
         <button
           type="button"
           onClick={() => setDialog({ type: "create" })}
-          className="flex min-h-14 w-full items-center justify-center rounded-lg border border-dashed border-input text-[15px] font-medium outline-none hover:border-muted-foreground hover:bg-card focus-visible:ring-1 focus-visible:ring-foreground"
+          className="flex min-h-14 w-full items-center justify-center rounded-surface border border-dashed border-input text-body font-medium outline-none hover:border-muted-foreground hover:bg-card focus-visible:ring-1 focus-visible:ring-foreground"
         >
           + Nova categoria
         </button>

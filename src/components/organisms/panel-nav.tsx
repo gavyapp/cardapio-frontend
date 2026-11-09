@@ -36,7 +36,7 @@ const MENU_ITEMS = [
 ];
 
 const tabClass =
-  "relative flex h-12 shrink-0 items-center gap-2 px-1 text-[15px] text-muted-foreground transition-colors hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground data-[active=true]:after:absolute data-[active=true]:after:inset-x-0 data-[active=true]:after:-bottom-px data-[active=true]:after:h-0.5 data-[active=true]:after:bg-foreground [&_svg]:size-4.5";
+  "relative flex h-12 shrink-0 items-center gap-2 px-1 text-body text-muted-foreground transition-colors hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground data-[active=true]:after:absolute data-[active=true]:after:inset-x-0 data-[active=true]:after:-bottom-px data-[active=true]:after:h-0.5 data-[active=true]:after:bg-foreground [&_svg]:size-4.5";
 
 function isActive(pathname: string, href: string) {
   return (
@@ -114,7 +114,7 @@ export function PanelNav({
                       current ? "page" : undefined
                     }
                     className={cn(
-                      "h-11 cursor-pointer gap-3 rounded-none px-4 text-[15px]",
+                      "h-11 cursor-pointer gap-3 rounded-none px-4 text-body",
                       current && "bg-muted font-semibold",
                     )}
                   >
@@ -122,7 +122,7 @@ export function PanelNav({
                       {item.label}
                     </span>
                     {catalogCounts ? (
-                      <span className="tabular text-[13px] font-normal text-muted-foreground">
+                      <span className="tabular text-meta font-normal text-muted-foreground">
                         {item.count(catalogCounts)}
                       </span>
                     ) : null}

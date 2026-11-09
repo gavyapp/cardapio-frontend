@@ -27,7 +27,7 @@ export function OrderBoardTemplate({
         className="flex w-full flex-col gap-4 px-4 pt-4 pb-4 sm:px-6 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6"
       >
         <header className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-3">
-          <h1 className="flex min-w-0 items-baseline gap-2 text-2xl leading-tight font-semibold">
+          <h1 className="flex min-w-0 items-baseline gap-2 text-title leading-tight font-semibold">
             {title}
           </h1>
           {action}

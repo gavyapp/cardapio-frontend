@@ -13,9 +13,9 @@ export function SettingRow({
   return (
     <div className="grid gap-4 py-6 md:grid-cols-[280px_1fr] md:items-center">
       <div>
-        <p className="text-[15px] font-medium">{title}</p>
+        <p className="text-body font-medium">{title}</p>
         {description ? (
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {description}
           </p>
         ) : null}

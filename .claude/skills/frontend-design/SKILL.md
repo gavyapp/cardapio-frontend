@@ -23,6 +23,7 @@ Escolha as fontes com intenção, não as famílias padrão que você usaria em 
 Por padrão, mantenha linhas com menos de 80 caracteres. Fontes serifadas aceitam linhas um pouco mais longas; dê ao texto corrido serifado um pouco mais de entrelinha que a um sem serifa.
 
 Evite estes tratamentos tipográficos padrão, que são os sinais mais comuns de uma página gerada:
+
 - Destacar só uma palavra ou expressão num título, como deixar uma palavra em itálico, negrito ou outra cor.
 - Usar caixa alta em rótulos.
 - Pôr rótulos tipográficos desnecessários acima do conteúdo.
@@ -36,6 +37,7 @@ Pense com cuidado no texto. Muitas vezes o briefing não traz o conteúdo real e
 ## Processo: planejar, revisar contra o briefing, construir, criticar
 
 Para calibrar: hoje o design gerado por IA se concentra em alguns traços:
+
 1. fundo creme quente (perto de #F4F1EA) com um título serifado de alto contraste e um destaque terracota ou argila (muitas vezes perto de #D97757, o destaque da própria Anthropic nas interações com o Claude, então no briefing de um cliente isso denuncia a origem);
 2. fundo quase preto com um único destaque verde-ácido ou vermelhão;
 3. layout de jornal, com filetes finos, cantos retos e colunas densas;
@@ -45,6 +47,7 @@ Para calibrar: hoje o design gerado por IA se concentra em alguns traços:
 Todos esses traços são legítimos para algum briefing, mas são padrões e não escolhas, e aparecem seja qual for o assunto. Onde o briefing define uma direção visual, siga exatamente: as palavras do briefing sempre vencem, inclusive quando ele pede um desses visuais. Onde ele deixa um eixo livre, não gaste essa liberdade com um desses padrões. Como com um designer humano contratado, muitas vezes é preciso equilibrar fazer aquilo em que você é bom com aproveitar cada projeto para experimentar e aprender.
 
 Trabalhe em duas passadas. Primeiro, faça um plano de design curto a partir do briefing do cliente: um sistema de tokens compacto com cor, tipografia, layout e princípios.
+
 - Cor: descreva a paleta base em 4 a 6 valores hex com nome.
 - Tipografia: as fontes e o papel de cada uma.
 - Layout: um conceito de layout, com descrições de uma frase e wireframes em ASCII para gerar ideias e comparar. Inclua a orientação de alinhamento: o conteúdo fica alinhado à esquerda, centralizado ou justificado?

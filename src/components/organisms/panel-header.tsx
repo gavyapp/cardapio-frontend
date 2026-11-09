@@ -30,15 +30,15 @@ export function PanelHeader({
               name={store.name}
               primaryColor={store.primaryColor}
               imageUrl={store.logoUrl}
-              className="size-8 rounded-md text-xs"
+              className="size-8 rounded-control text-caption"
             />
           ) : (
             <span
               aria-hidden
-              className="size-8 shrink-0 rounded-md bg-background"
+              className="size-8 shrink-0 rounded-control bg-background"
             />
           )}
-          <p className="flex min-w-0 items-center gap-2 text-[15px]">
+          <p className="flex min-w-0 items-center gap-2 text-body">
             <span className="shrink-0 font-semibold">
               {PLATFORM_NAME}
             </span>
@@ -57,7 +57,7 @@ export function PanelHeader({
           </Badge>
 
           <div className="ml-auto flex items-center gap-4">
-            <Clock className="tabular hidden text-[15px] sm:block" />
+            <Clock className="tabular hidden text-body sm:block" />
             <StoreMenu
               store={store}
               onSignOut={onSignOut}

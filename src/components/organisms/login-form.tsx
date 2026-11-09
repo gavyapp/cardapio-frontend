@@ -91,7 +91,7 @@ export function LoginForm({
                 : "Mostrar senha"
             }
             aria-pressed={showPassword}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-foreground"
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-control text-muted-foreground outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-foreground"
           >
             {showPassword ? (
               <EyeOff className="size-5" />
@@ -105,7 +105,7 @@ export function LoginForm({
         <p
           id="login-error"
           role="alert"
-          className="flex items-start gap-2 rounded-lg bg-destructive-soft px-3 py-2.5 text-sm text-destructive"
+          className="flex items-start gap-2 rounded-control bg-destructive-soft px-3 py-2.5 text-meta text-destructive"
         >
           <CircleAlert className="mt-px size-4 shrink-0" />
           {state.error}
@@ -113,7 +113,6 @@ export function LoginForm({
       )}
       <Button
         type="submit"
-        size="lg"
         className="mt-2"
         loading={pending}
       >

@@ -29,7 +29,6 @@ export function NoStoreNotice({
         <Button
           type="submit"
           variant="outline"
-          size="lg"
           className="w-full"
         >
           <LogOut data-icon="inline-start" />

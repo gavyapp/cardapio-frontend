@@ -8,7 +8,7 @@ export function FieldError({
   return (
     <span
       role="alert"
-      className="text-[13px] text-destructive"
+      className="text-meta text-destructive"
     >
       {message}
     </span>

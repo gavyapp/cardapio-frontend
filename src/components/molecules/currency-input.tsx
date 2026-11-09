@@ -18,7 +18,7 @@ export function CurrencyInput({
     <div className="relative">
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[15px] text-muted-foreground"
+        className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-body text-muted-foreground"
       >
         R$
       </span>

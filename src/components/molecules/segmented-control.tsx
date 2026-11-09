@@ -35,8 +35,8 @@ export function SegmentedControl<
       className={cn(
         fullWidth ? "flex w-full" : "flex w-fit self-start",
         variant === "pill"
-          ? "rounded-md border bg-muted p-0.5"
-          : "overflow-hidden rounded-md border",
+          ? "rounded-control border bg-muted p-0.5"
+          : "overflow-hidden rounded-control border",
       )}
     >
       {options.map(([optionValue, optionLabel]) => {
@@ -49,13 +49,13 @@ export function SegmentedControl<
             aria-checked={selected}
             onClick={() => onChange(optionValue)}
             className={cn(
-              "text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground",
-              fullWidth && "flex-1 text-[15px]",
+              "text-meta outline-none focus-visible:ring-1 focus-visible:ring-foreground",
+              fullWidth && "flex-1 text-body",
               variant === "pill"
                 ? cn(
-                    "h-8 rounded-[5px] px-3 font-medium text-muted-foreground",
+                    "h-8 rounded-control px-3 font-medium text-muted-foreground",
                     selected &&
-                      "bg-card text-foreground shadow-sm",
+                      "bg-card text-foreground ring-1 ring-border",
                   )
                 : cn(
                     "h-11 px-4 focus-visible:ring-inset",

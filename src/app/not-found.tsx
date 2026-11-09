@@ -5,14 +5,14 @@ import { Button } from "@/components/atoms/button";
 export default function NotFound() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 p-8 text-center">
-      <p className="tabular text-[40px] leading-none font-semibold">
+      <p className="tabular text-display leading-none font-semibold">
         404
       </p>
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-title font-semibold">
           Página não encontrada
         </h1>
-        <p className="text-[15px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           O endereço pode estar errado ou a loja não está
           mais disponível.
         </p>

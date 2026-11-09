@@ -82,7 +82,7 @@ export function ProductDetailsTab({
                 })
               }
             />
-            <span className="flex justify-between gap-4 text-[13px] text-muted-foreground">
+            <span className="flex justify-between gap-4 text-meta text-muted-foreground">
               <span>
                 Aparece em até 3 linhas no cardápio.
               </span>
@@ -115,7 +115,7 @@ export function ProductDetailsTab({
       >
         <div className="flex flex-col gap-6 p-4 sm:p-6">
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-medium">
+            <span className="text-meta font-medium">
               Foto{" "}
               <span className="font-normal text-muted-foreground">
                 · opcional
@@ -145,13 +145,13 @@ export function ProductDetailsTab({
                 />
               </div>
             ) : (
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-meta text-muted-foreground">
                 O card do produto aparece sem imagem.
               </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-medium">
+            <span className="text-meta font-medium">
               Selos
             </span>
             <div className="flex flex-wrap gap-2">
@@ -181,15 +181,15 @@ export function ProductDetailsTab({
         </div>
       </EditorCard>
 
-      <div className="flex items-center gap-4 rounded-lg border bg-card px-4 py-3 sm:px-6">
+      <div className="flex items-center gap-4 rounded-surface border bg-card px-4 py-3 sm:px-6">
         <div className="flex flex-1 flex-col gap-1">
           <label
             htmlFor="product-suggested"
-            className="text-[15px] font-semibold"
+            className="text-body font-semibold"
           >
             Sugerir no carrinho
           </label>
-          <span className="text-[13px] text-muted-foreground">
+          <span className="text-meta text-muted-foreground">
             {isAvailable
               ? "Aparece como sugestão quando o cliente revisa o pedido. Bom para bebidas e sobremesas."
               : "Produto esgotado não pode ser sugerido. Deixe ele disponível na lista de produtos para sugerir."}

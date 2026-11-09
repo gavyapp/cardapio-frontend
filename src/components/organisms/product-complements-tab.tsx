@@ -62,7 +62,7 @@ export function ProductComplementsTab({
         title={
           <>
             Neste produto
-            <span className="tabular ml-2 text-[13px] font-normal text-muted-foreground">
+            <span className="tabular ml-2 text-meta font-normal text-muted-foreground">
               {linked.length}
             </span>
           </>
@@ -85,7 +85,7 @@ export function ProductComplementsTab({
             renderItem={(group, dragHandle) => (
               <div className="flex items-start gap-1 py-3 pr-4 pl-1 sm:pr-6">
                 {dragHandle}
-                <span className="tabular mt-2.5 mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                <span className="tabular mt-2.5 mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-caption font-semibold">
                   {linked.indexOf(group) + 1}
                 </span>
                 <GroupSummary group={group} />
@@ -148,7 +148,7 @@ export function ProductComplementsTab({
         }
       >
         {pickable.length === 0 ? (
-          <p className="px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
+          <p className="px-4 py-4 text-meta text-muted-foreground sm:px-6">
             {search
               ? `Nenhum grupo encontrado para "${query.trim()}".`
               : groups.length === 0
@@ -214,17 +214,17 @@ function GroupSummary({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5 leading-tight">
-      <span className="text-[15px] font-semibold">
+      <span className="text-body font-semibold">
         {group.name}
       </span>
-      <span className="text-[13px]">
+      <span className="text-meta">
         {details.join(" · ")}
       </span>
-      <span className="line-clamp-2 text-[13px] text-muted-foreground">
+      <span className="line-clamp-2 text-meta text-muted-foreground">
         {describeGroupOptions(group.options)}
       </span>
       {isLinked && isBlockingGroup(group) ? (
-        <span className="text-[13px] text-destructive">
+        <span className="text-meta text-destructive">
           Todas as opções estão pausadas: o produto não vai
           poder ser pedido.
         </span>

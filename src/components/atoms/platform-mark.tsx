@@ -21,7 +21,7 @@ export function PlatformMark({
       <span
         aria-hidden
         className={cn(
-          "size-7 shrink-0 rounded-md bg-current",
+          "size-7 shrink-0 rounded-control bg-current",
           squareClassName,
         )}
       />

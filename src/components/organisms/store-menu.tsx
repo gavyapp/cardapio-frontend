@@ -30,7 +30,7 @@ export type MenuStore = {
 };
 
 const itemClass =
-  "gap-3 px-3 py-2.5 text-[15px] [&_svg]:size-5 [&_svg]:text-muted-foreground";
+  "[&_svg]:size-5 [&_svg]:text-muted-foreground";
 
 export function StoreMenu({
   store,
@@ -67,7 +67,7 @@ export function StoreMenu({
             name={store.name}
             primaryColor={store.primaryColor}
             imageUrl={store.logoUrl}
-            className="size-9 text-xs"
+            className="size-9 text-caption"
           />
         ) : null}
         <Menu className="size-5 text-background" />
@@ -84,10 +84,10 @@ export function StoreMenu({
               name={store.name}
               primaryColor={store.primaryColor}
               imageUrl={store.logoUrl}
-              className="size-11 text-sm"
+              className="size-11 text-meta"
             />
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold">
+              <p className="truncate text-body font-semibold">
                 {store.name}
               </p>
               <PublicHost slug={store.slug} />
@@ -166,7 +166,7 @@ function PublicHost({ slug }: { slug: string }) {
   );
 
   return (
-    <p className="truncate text-[13px] text-muted-foreground">
+    <p className="truncate text-meta text-muted-foreground">
       {host}
     </p>
   );

@@ -21,7 +21,7 @@ export function CatalogPageTemplate({
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       <header className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <h1 className="flex min-w-0 items-baseline gap-2 text-2xl leading-tight font-semibold">
+        <h1 className="flex min-w-0 items-baseline gap-2 text-title leading-tight font-semibold">
           {title}
           {count === undefined ? null : (
             <span className="tabular font-normal text-muted-foreground">
@@ -32,7 +32,7 @@ export function CatalogPageTemplate({
         {action}
       </header>
       {description ? (
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {description}
         </p>
       ) : null}
@@ -49,14 +49,14 @@ export function CatalogPageSkeleton({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
-      <h1 className="flex min-h-11 items-center text-2xl leading-tight font-semibold">
+      <h1 className="flex min-h-11 items-center text-title leading-tight font-semibold">
         {title}
       </h1>
       <div className="flex flex-col gap-4" aria-hidden>
         {[0, 1, 2].map((index) => (
           <div
             key={index}
-            className="h-16 animate-pulse rounded-lg border bg-card"
+            className="h-16 animate-pulse rounded-surface border bg-card"
           />
         ))}
       </div>

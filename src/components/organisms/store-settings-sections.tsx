@@ -129,7 +129,7 @@ export function PaymentSection({
           >
             <Label
               htmlFor={`payment-${method.id}`}
-              className="text-[15px] font-normal"
+              className="text-body font-normal"
             >
               {method.label}
             </Label>

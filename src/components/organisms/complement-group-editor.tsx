@@ -318,12 +318,12 @@ function EditorForm({
           </Button>
         ) : null}
         <div className="mr-auto flex min-w-0 flex-col gap-1 pt-1">
-          <SheetTitle className="text-lg font-semibold">
+          <SheetTitle className="text-section font-semibold">
             {group
               ? "Editar grupo"
               : "Novo grupo de complementos"}
           </SheetTitle>
-          <SheetDescription className="text-[13px]">
+          <SheetDescription className="text-meta">
             {group && group.usedByCount > 0
               ? `Usado em ${group.usedByCount === 1 ? "1 produto" : `${group.usedByCount} produtos`}. O que mudar aqui vale para todos.`
               : "Escolhas do cliente, como ponto da carne, sabor ou adicionais."}
@@ -399,14 +399,14 @@ function EditorForm({
             }}
           />
           <FieldError message={errors.maxSelect} />
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             O cliente vê: &quot;
             {describeChoiceRule(minSelect, maxSelect)}&quot;
           </p>
         </div>
 
         <div className="grid gap-2">
-          <p className="text-sm font-medium">Opções</p>
+          <p className="text-meta font-medium">Opções</p>
           <SortableList
             items={rows}
             onReorder={setRows}
@@ -479,7 +479,7 @@ function EditorForm({
                   {rowErrors?.name || rowErrors?.price ? (
                     <p
                       role="alert"
-                      className="pl-[52px] text-[13px] text-destructive"
+                      className="pl-[52px] text-meta text-destructive"
                     >
                       {rowErrors.name ?? rowErrors.price}
                     </p>
@@ -505,7 +505,7 @@ function EditorForm({
           </Button>
           <FieldError message={errors.options} />
           {optionRows.length > 0 && activeCount === 0 ? (
-            <p className="rounded-lg bg-destructive-soft px-4 py-3 text-[13px] text-destructive">
+            <p className="rounded-control bg-destructive-soft px-4 py-3 text-meta text-destructive">
               Todas as opções estão pausadas.
               {minSelect > 0
                 ? " Produtos com este grupo não podem ser pedidos."
@@ -519,7 +519,7 @@ function EditorForm({
         {error ? (
           <p
             role="alert"
-            className="text-sm text-destructive"
+            className="text-meta text-destructive"
           >
             {error}
           </p>

@@ -31,7 +31,7 @@ export function SectionedSettingsTemplate({
     <SettingsFormProvider formId={formId}>
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 p-4 sm:p-6">
         {title ? (
-          <h1 className="text-2xl leading-tight font-semibold">
+          <h1 className="text-title leading-tight font-semibold">
             {title}
           </h1>
         ) : null}

@@ -5,12 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Tokens do protótipo v9.
+  Tokens do protótipo v9 (regras na ADR 0004).
 
-  Painel: tokens fixos (Archivo, ação primária escura).
-  Cardápio do cliente: o layout da loja sobrescreve --primary,
-  --primary-foreground, --ring e --font-sans com o tema da loja
-  (src/lib/tema-da-loja.ts). Nenhum componente precisa saber disso.
+  Painel: tokens fixos (Archivo, ação primária escura, cantos de 4 e 8px).
+  Cardápio do cliente: o layout da loja sobrescreve cor, fonte e cantos
+  com o tema da loja (src/lib/store/theme.ts). Nenhum componente precisa
+  saber em qual dos dois está.
 */
 
 @theme inline {
@@ -63,6 +63,18 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* Escala de texto do protótipo: use estes nomes, nunca text-[13px]. */
+  --text-caption: 12px; /* legenda, cabeçalho de tabela, selo */
+  --text-meta: 13px; /* texto secundário, rótulo, ajuda */
+  --text-body: 15px; /* texto padrão, campos, botões */
+  --text-section: 18px; /* título de seção e de modal */
+  --text-title: 24px; /* título da página */
+  --text-display: 40px; /* número grande */
+  /* Cantos do protótipo: controle (botão, campo, card, selo) e superfície
+     (modal, menu, painel, tabela). O cardápio do cliente troca os valores. */
+  --radius-control: var(--control-radius);
+  --radius-surface: var(--surface-radius);
+  /* Escala do shadcn, mantida para átomos novos; telas usam control/surface. */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -137,6 +149,8 @@
   --chart-5: #e39b0b;
 
   --radius: 0.625rem;
+  --control-radius: 4px;
+  --surface-radius: 8px;
   /* Sombra só em modal, menu e toast. */
   --shadow-elevated:
     0 1px 2px rgb(22 25 29 / 6%),

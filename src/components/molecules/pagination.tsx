@@ -4,7 +4,7 @@ import { pageNumbers } from "@/lib/panel/pagination";
 import { cn } from "@/lib/utils";
 
 const BUTTON =
-  "tabular flex h-11 min-w-11 items-center justify-center gap-1 rounded-[4px] border bg-card px-3 text-[13px] whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground disabled:pointer-events-none disabled:opacity-40 lg:h-9 lg:min-w-9";
+  "tabular flex h-11 min-w-11 items-center justify-center gap-1 rounded-control border bg-card px-3 text-meta whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground disabled:pointer-events-none disabled:opacity-40 lg:h-9 lg:min-w-9";
 
 /**
  * Rodapé de lista paginada: "1–20 de 47" à esquerda; Anterior, os números
@@ -35,7 +35,7 @@ export function Pagination({
         className,
       )}
     >
-      <p className="tabular text-[13px] text-muted-foreground">
+      <p className="tabular text-meta text-muted-foreground">
         {first}–{last} de {total}
       </p>
       <div className="flex items-center gap-1">
@@ -53,7 +53,7 @@ export function Pagination({
             <span
               key={`gap-${index}`}
               aria-hidden
-              className="w-6 text-center text-[13px] text-muted-foreground max-sm:hidden"
+              className="w-6 text-center text-meta text-muted-foreground max-sm:hidden"
             >
               …
             </span>

@@ -14,13 +14,13 @@ export function EditorCard({
   children?: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border bg-card">
+    <section className="overflow-hidden rounded-surface border bg-card">
       <header className="flex min-h-14 flex-col justify-center gap-1 border-b px-4 py-3 last:border-b-0 sm:px-6">
-        <h3 className="text-[15px] leading-tight font-semibold">
+        <h3 className="text-body leading-tight font-semibold">
           {title}
         </h3>
         {description ? (
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {description}
           </p>
         ) : null}

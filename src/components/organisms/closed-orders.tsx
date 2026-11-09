@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/atoms/button";
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -114,21 +115,21 @@ export function ClosedOrders() {
     <section
       id="encerrados"
       aria-labelledby="encerrados-titulo"
-      className="scroll-mt-4 overflow-hidden rounded-lg border bg-card"
+      className="scroll-mt-4 overflow-hidden rounded-surface border bg-card"
     >
       <header className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-3 border-b px-4 py-3 lg:px-6">
         <div className="mr-auto flex min-w-0 flex-col gap-0.5">
           <h2
             id="encerrados-titulo"
-            className="flex items-baseline gap-2 text-[15px] leading-tight font-semibold"
+            className="flex items-baseline gap-2 text-body leading-tight font-semibold"
           >
             Concluídos e cancelados
-            <span className="tabular text-[13px] font-normal text-muted-foreground">
+            <span className="tabular text-meta font-normal text-muted-foreground">
               {state.status === "ready" ? all.length : null}
             </span>
           </h2>
           {summary.counts.concluidos > 0 ? (
-            <p className="tabular text-xs text-muted-foreground">
+            <p className="tabular text-caption text-muted-foreground">
               {formatCurrency(summary.completedTotal)} em
               pedidos concluídos
             </p>
@@ -155,7 +156,7 @@ export function ClosedOrders() {
                 aria-pressed={active}
                 onClick={() => chooseFilter(id)}
                 className={cn(
-                  "flex h-11 shrink-0 items-center gap-2 rounded-[4px] border px-3 text-[13px] whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 lg:h-9",
+                  "flex h-11 shrink-0 items-center gap-2 rounded-control border px-3 text-meta whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 lg:h-9",
                   active
                     ? "border-foreground bg-foreground font-semibold text-background hover:border-foreground"
                     : "bg-card text-foreground",
@@ -164,7 +165,7 @@ export function ClosedOrders() {
                 {label}
                 <span
                   className={cn(
-                    "tabular inline-flex h-5 min-w-5 items-center justify-center rounded-[4px] text-xs font-semibold",
+                    "tabular inline-flex h-5 min-w-5 items-center justify-center rounded-control text-caption font-semibold",
                     alert
                       ? "bg-destructive px-1 text-destructive-foreground"
                       : active
@@ -184,7 +185,7 @@ export function ClosedOrders() {
         aria-hidden
         className={cn(
           COLUMNS,
-          "h-10 items-center border-b px-4 text-xs font-medium text-muted-foreground",
+          "h-10 items-center border-b px-4 text-caption font-medium text-muted-foreground",
         )}
       >
         <span>Nº</span>
@@ -208,7 +209,7 @@ export function ClosedOrders() {
           }}
         />
       ) : all.length === 0 ? (
-        <p className="border-b px-4 py-4 text-[13px] text-muted-foreground lg:px-6">
+        <p className="border-b px-4 py-4 text-meta text-muted-foreground lg:px-6">
           Nenhum pedido concluído ainda.
         </p>
       ) : page.items.length === 0 ? (
@@ -280,12 +281,12 @@ function ClosedOrderRow({
       }
       className={cn(
         COLUMNS,
-        "min-h-14 w-full items-center border-b px-4 py-2 text-left text-[15px] outline-none hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-inset",
+        "min-h-14 w-full items-center border-b px-4 py-2 text-left text-body outline-none hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-inset",
         selected && "bg-muted",
       )}
     >
       <span className="tabular">{order.number}</span>
-      <span className="tabular text-[13px] text-muted-foreground">
+      <span className="tabular text-meta text-muted-foreground">
         {formatStoreTime(order.createdAt)}
       </span>
       <span className="flex min-w-0 flex-col">
@@ -294,7 +295,7 @@ function ClosedOrderRow({
         </span>
         <span
           className={cn(
-            "truncate text-[13px] lg:hidden",
+            "truncate text-meta lg:hidden",
             completed
               ? "text-muted-foreground"
               : "text-destructive",
@@ -309,20 +310,20 @@ function ClosedOrderRow({
           ) : null}
         </span>
       </span>
-      <span className="flex items-center gap-1.5 text-[13px] max-lg:hidden">
+      <span className="flex items-center gap-1.5 text-meta max-lg:hidden">
         <OrderModeIcon
           mode={order.mode}
           className="shrink-0 -translate-y-[1px]"
         />
         {MODE_LABELS[order.mode]}
       </span>
-      <span className="flex min-w-0 items-center gap-2 text-[13px] max-lg:hidden">
+      <span className="flex min-w-0 items-center gap-2 text-meta max-lg:hidden">
         {PAYMENT_LABELS[order.paymentMethod]}
         <PaidTag order={order} />
       </span>
       <span
         className={cn(
-          "text-[13px] max-lg:hidden",
+          "text-meta max-lg:hidden",
           completed
             ? "text-muted-foreground"
             : "text-destructive",
@@ -361,7 +362,7 @@ function PaidTag({ order }: { order: ClosedOrder }) {
     );
   if (isUnpaid(order))
     return (
-      <span className="inline-flex h-6 items-center rounded-[4px] bg-warning-soft px-2 text-xs font-semibold text-foreground">
+      <span className="inline-flex h-6 items-center rounded-control bg-warning-soft px-2 text-caption font-semibold text-foreground">
         Não pago
       </span>
     );
@@ -409,17 +410,19 @@ function Notice({
 }) {
   return (
     <div className="flex flex-col items-center gap-1 border-b px-4 py-8 text-center">
-      <p className="text-[15px] font-medium">{title}</p>
-      <p className="max-w-80 text-[13px] leading-snug text-pretty text-muted-foreground">
+      <p className="text-body font-medium">{title}</p>
+      <p className="max-w-80 text-meta leading-snug text-pretty text-muted-foreground">
         {text}
       </p>
-      <button
+      <Button
         type="button"
         onClick={action.onClick}
-        className="mt-3 flex h-9 items-center rounded-[4px] border bg-card px-3 text-[13px] font-semibold hover:bg-muted"
+        variant="outline"
+        size="sm"
+        className="mt-3 font-semibold"
       >
         {action.label}
-      </button>
+      </Button>
     </div>
   );
 }

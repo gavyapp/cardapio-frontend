@@ -139,11 +139,11 @@ export function StoreProfileSection({
         <Separator />
 
         <div className="grid gap-2">
-          <p className="text-sm font-medium">
+          <p className="text-meta font-medium">
             Link do cardápio
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[15px]">
+            <span className="text-body">
               {values.menuHost}
             </span>
             <Button type="button" variant="outline">

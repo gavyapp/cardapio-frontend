@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/atoms/button";
 import { WifiOff } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -270,7 +271,7 @@ export function OrderBoard({
       {!live.connected ? (
         <p
           role="status"
-          className="flex items-center gap-2 rounded-lg bg-warning-soft px-4 py-2.5 text-[13px] text-warning-foreground"
+          className="flex items-center gap-2 rounded-surface bg-warning-soft px-4 py-2.5 text-meta text-warning-foreground"
         >
           <WifiOff aria-hidden className="size-4" />
           Sem conexão. Reconectando… Os pedidos novos
@@ -284,7 +285,7 @@ export function OrderBoard({
             key={column.id}
             aria-labelledby={`coluna-${column.id}`}
             className={cn(
-              "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border bg-card",
+              "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-surface border bg-card",
               mobileColumn !== column.id && "max-lg:hidden",
             )}
           >
@@ -303,7 +304,7 @@ export function OrderBoard({
                     aria-selected={active}
                     onClick={() => setMobileColumn(tab.id)}
                     className={cn(
-                      "flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 px-1 text-[13px] whitespace-nowrap text-muted-foreground",
+                      "flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 px-1 text-meta whitespace-nowrap text-muted-foreground",
                       active &&
                         "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--foreground)]",
                     )}
@@ -423,12 +424,12 @@ function ColumnHeader({
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
         <h2
           id={`coluna-${column.id}`}
-          className="text-[15px] leading-tight font-semibold whitespace-nowrap"
+          className="text-body leading-tight font-semibold whitespace-nowrap"
         >
           {column.title}
         </h2>
         {average ? (
-          <p className="tabular truncate text-xs text-muted-foreground">
+          <p className="tabular truncate text-caption text-muted-foreground">
             {average}
           </p>
         ) : null}
@@ -474,7 +475,7 @@ function ReadyGroups({
     <div key={group.label} className="contents">
       <p
         className={cn(
-          "tabular flex h-6 shrink-0 items-center gap-1.5 self-start rounded-[4px] px-2 text-xs font-semibold whitespace-nowrap",
+          "tabular flex h-6 shrink-0 items-center gap-1.5 self-start rounded-control px-2 text-caption font-semibold whitespace-nowrap",
           group.className,
           index > 0 && "mt-2",
         )}
@@ -503,26 +504,28 @@ function EmptyColumn({
 }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 py-8 text-center max-lg:min-h-60">
-      <p className="text-[15px] font-medium">
+      <p className="text-body font-medium">
         {query ? "Nenhum resultado" : column.emptyTitle}
       </p>
-      <p className="max-w-60 text-[13px] leading-snug text-pretty text-muted-foreground">
+      <p className="max-w-60 text-meta leading-snug text-pretty text-muted-foreground">
         {query
           ? `Nada nesta etapa para "${query}".`
           : column.emptyText}
       </p>
       {query ? (
-        <button
+        <Button
           type="button"
           onClick={() =>
             setSearchParam(ORDER_SEARCH_PARAM, null, {
               replace: true,
             })
           }
-          className="mt-3 flex h-9 items-center rounded-[4px] border bg-card px-3 text-[13px] font-semibold hover:bg-muted"
+          variant="outline"
+          size="sm"
+          className="mt-3 font-semibold"
         >
           Limpar busca
-        </button>
+        </Button>
       ) : null}
     </div>
   );

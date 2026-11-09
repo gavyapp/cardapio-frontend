@@ -6,6 +6,8 @@ Decisões de arquitetura ficam em `docs/adr/`. Banco: só muda por migration, e 
 
 Acesso ao banco só por `src/lib/data/`, nunca Supabase direto em página ou componente (ADR 0003).
 
+Estilo: só tokens do protótipo (`text-meta`, `rounded-control`...), nunca valor solto como `text-[13px]` ou `rounded-lg`; painel e cardápio do cliente mudam os valores pelo tema (ADR 0004).
+
 Testes do banco: pgTAP em `supabase/tests/database/`, um arquivo por assunto, cenário em `-- Dado:` e descrição `quando → então` (ADR 0002).
 
 Nome de arquivo e comentário dizem o assunto, nunca o código da task (T04, B3...). Código de task só no PR, na branch e no commit.

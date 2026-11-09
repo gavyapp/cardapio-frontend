@@ -6,7 +6,9 @@ export const metadata: Metadata = { title: "Promoções" };
 export default function PromotionsPage() {
   return (
     <div className="mx-auto w-full max-w-[1200px] p-4 sm:p-6">
-      <h1 className="text-2xl font-semibold">Promoções</h1>
+      <h1 className="text-title font-semibold">
+        Promoções
+      </h1>
     </div>
   );
 }

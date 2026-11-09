@@ -45,7 +45,7 @@ export function OrderActionsMenu({
         aria-label={`Mais ações do pedido ${orderNumber}`}
         onClick={(event) => event.stopPropagation()}
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-[4px] border bg-card text-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 aria-expanded:bg-muted",
+          "flex shrink-0 items-center justify-center rounded-control border bg-card text-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 aria-expanded:bg-muted",
           className,
         )}
       >

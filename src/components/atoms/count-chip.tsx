@@ -25,12 +25,12 @@ export function CountChip({
   return (
     <span
       className={cn(
-        "tabular inline-flex shrink-0 items-center justify-center rounded-[4px] font-semibold text-foreground",
+        "tabular inline-flex shrink-0 items-center justify-center rounded-control font-semibold text-foreground",
         large
-          ? "h-7 min-w-8 px-2 text-sm"
+          ? "h-7 min-w-8 px-2 text-meta"
           : small
-            ? "h-5 min-w-5 px-[5px] text-xs"
-            : "h-5 min-w-6 px-1.5 text-xs",
+            ? "h-5 min-w-5 px-1 text-caption"
+            : "h-5 min-w-6 px-1.5 text-caption",
         hot && count > 0 ? "bg-warning" : "bg-muted",
         pulse &&
           count > 0 &&
