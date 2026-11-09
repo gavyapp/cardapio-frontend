@@ -10,6 +10,8 @@ Estilo: só tokens do protótipo (`text-meta`, `rounded-control`...), nunca valo
 
 Testes do banco: pgTAP em `supabase/tests/database/`, um arquivo por assunto, cenário em `-- Dado:` e descrição `quando → então` (ADR 0002).
 
+Nomes dizem o propósito, não o mecanismo (`NewItemButton`, não `SearchParamButton`); boas práticas de código na ADR 0005.
+
 Nome de arquivo e comentário dizem o assunto, nunca o código da task (T04, B3...). Código de task só no PR, na branch e no commit.
 
 Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo (`formatPhone`, `complement-rules.ts`). Texto de interface, comentários, commits e PRs em pt-BR.
