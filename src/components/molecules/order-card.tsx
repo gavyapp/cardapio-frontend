@@ -2,6 +2,7 @@
 
 import { Clock } from "lucide-react";
 
+import { Badge } from "@/components/atoms/badge";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderActionsMenu } from "@/components/molecules/order-actions-menu";
 import { formatCurrency, pluralize } from "@/lib/format";
@@ -97,12 +98,15 @@ export function OrderCard({
               {order.customerName}
             </span>
             {unseen ? (
-              <span className="ml-auto inline-flex h-6 shrink-0 items-center rounded-control bg-warning px-2 text-caption font-semibold text-warning-foreground motion-safe:animate-soft-pulse">
+              <Badge
+                variant="new"
+                className="ml-auto gap-0 motion-safe:animate-soft-pulse"
+              >
                 Novo
                 <span className="sr-only">
                   , ainda não visto
                 </span>
-              </span>
+              </Badge>
             ) : (
               <span
                 className={cn(

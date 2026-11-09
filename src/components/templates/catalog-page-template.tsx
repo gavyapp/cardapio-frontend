@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 
+import { PageHeader } from "@/components/molecules/page-header";
+
 /**
- * Páginas do catálogo no painel (produtos e complementos): título com a
- * contagem ao lado, ação principal à direita e o conteúdo centralizado em até 1200px.
+ * Páginas do catálogo no painel (produtos e complementos): cabeçalho padrão
+ * e o conteúdo centralizado em até 1200px.
  */
 export function CatalogPageTemplate({
   title,
   count,
   description,
+  search,
   action,
   children,
 }: {
@@ -15,22 +18,18 @@ export function CatalogPageTemplate({
   /** Aparece entre parênteses ao lado do título. */
   count?: number;
   description?: ReactNode;
+  search?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
-      <header className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <h1 className="flex min-w-0 items-baseline gap-2 text-title leading-tight font-semibold">
-          {title}
-          {count === undefined ? null : (
-            <span className="tabular font-normal text-muted-foreground">
-              ({count})
-            </span>
-          )}
-        </h1>
-        {action}
-      </header>
+      <PageHeader
+        title={title}
+        count={count}
+        search={search}
+        action={action}
+      />
       {description ? (
         <p className="text-meta text-muted-foreground">
           {description}
@@ -49,9 +48,7 @@ export function CatalogPageSkeleton({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
-      <h1 className="flex min-h-11 items-center text-title leading-tight font-semibold">
-        {title}
-      </h1>
+      <PageHeader title={title} />
       <div className="flex flex-col gap-4" aria-hidden>
         {[0, 1, 2].map((index) => (
           <div

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -361,11 +362,7 @@ function PaidTag({ order }: { order: ClosedOrder }) {
       </span>
     );
   if (isUnpaid(order))
-    return (
-      <span className="inline-flex h-6 items-center rounded-control bg-warning-soft px-2 text-caption font-semibold text-foreground">
-        Não pago
-      </span>
-    );
+    return <Badge variant="warning">Não pago</Badge>;
   return null;
 }
 

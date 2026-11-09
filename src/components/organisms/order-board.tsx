@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { WifiOff } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { CountChip } from "@/components/atoms/count-chip";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderCard } from "@/components/molecules/order-card";
+import { PageHeaderCount } from "@/components/molecules/page-header";
 import type { AvailabilityTarget } from "@/components/molecules/order-items";
 import {
   OrderReasonDialog,
@@ -459,7 +461,7 @@ function ReadyGroups({
       orders: orders.filter(
         (order) => order.status === "A_CAMINHO",
       ),
-      className: "bg-muted text-foreground",
+      variant: "neutral" as const,
     },
     {
       label: "Pronto para retirada",
@@ -467,23 +469,23 @@ function ReadyGroups({
       orders: orders.filter(
         (order) => order.status === "PRONTO",
       ),
-      className: "bg-success-soft text-success",
+      variant: "success" as const,
     },
   ].filter((group) => group.orders.length > 0);
 
   return groups.map((group, index) => (
     <div key={group.label} className="contents">
-      <p
+      <Badge
+        variant={group.variant}
         className={cn(
-          "tabular flex h-6 shrink-0 items-center gap-1.5 self-start rounded-control px-2 text-caption font-semibold whitespace-nowrap",
-          group.className,
+          "tabular self-start",
           index > 0 && "mt-2",
         )}
       >
         <OrderModeIcon mode={group.mode} />
         {group.label}
         <span>{group.orders.length}</span>
-      </p>
+      </Badge>
       {group.orders.map((order) => (
         <BoardCard
           key={order.id}
@@ -538,9 +540,7 @@ export function TodayOrdersTitle() {
     <>
       Pedidos de hoje
       {live ? (
-        <span className="tabular font-normal text-muted-foreground">
-          ({live.todayCount})
-        </span>
+        <PageHeaderCount>{live.todayCount}</PageHeaderCount>
       ) : null}
     </>
   );

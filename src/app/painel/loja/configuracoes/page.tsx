@@ -56,6 +56,7 @@ async function StoreSettings() {
 
   return (
     <SectionedSettingsTemplate
+      title="Configurações da loja"
       sections={SECTIONS}
       navLabel="Seções das configurações"
       formId="store-profile-form"

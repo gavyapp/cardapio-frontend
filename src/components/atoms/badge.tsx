@@ -6,31 +6,40 @@ import {
 } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+// Selos do protótipo ("Selos de status"): 24px, texto de 12px, canto de 4px.
+// `lg` é o selo maior do detalhe do pedido ("Pago", 28px e 13px).
 const badgeVariants = cva(
-  "group/badge inline-flex h-6 w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-control border border-transparent px-2 text-caption font-semibold whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden rounded-control border border-transparent font-semibold whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:shrink-0",
   {
     variants: {
       variant: {
+        default: "bg-primary text-primary-foreground",
+        // Cinza com texto escuro ("Agendada", "Entregue").
+        neutral: "bg-muted text-foreground",
+        // Cinza com texto apagado ("Em preparo", "Encerrada", "Sugerido").
+        muted: "bg-muted text-muted-foreground",
+        // Fundo claro com texto forte.
+        success: "bg-success-soft text-success",
+        warning: "bg-warning-soft text-foreground",
+        destructive: "bg-destructive-soft text-destructive",
+        // Âmbar médio: "Aguardando aceite".
+        pending: "bg-warning-medium text-foreground",
+        // Sólidos: "Novo", "Pago", "Aberta", "Saiu para entrega".
+        new: "bg-warning text-warning-foreground",
+        "success-solid":
+          "bg-success text-success-foreground",
+        inverse: "bg-foreground text-background",
+        outline: "border-border text-foreground",
+      },
+      size: {
         default:
-          "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
-        secondary:
-          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
-        // Selos de status do protótipo: forte sobre fundo claro.
-        destructive:
-          "bg-destructive-soft text-destructive focus-visible:ring-destructive/20 [a]:hover:bg-destructive/20",
-        success:
-          "bg-success-soft text-success focus-visible:ring-success/20 [a]:hover:bg-success/20",
-        warning:
-          "bg-warning-soft text-warning-foreground focus-visible:ring-warning/20 [a]:hover:bg-warning/30",
-        outline:
-          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
-        ghost:
-          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "h-6 gap-1.5 px-2 text-caption [&>svg:not([class*='size-'])]:size-3",
+        lg: "h-7 gap-1 px-2.5 text-meta [&>svg:not([class*='size-'])]:size-3.5",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   },
 );
@@ -38,6 +47,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = "default",
+  size = "default",
   render,
   ...props
 }: useRender.ComponentProps<"span"> &
@@ -47,7 +57,7 @@ function Badge({
     props: mergeProps<"span">(
       {
         className: cn(
-          badgeVariants({ variant }),
+          badgeVariants({ variant, size }),
           className,
         ),
       },
@@ -61,4 +71,8 @@ function Badge({
   });
 }
 
-export { Badge, badgeVariants };
+type BadgeVariant = NonNullable<
+  VariantProps<typeof badgeVariants>["variant"]
+>;
+
+export { Badge, badgeVariants, type BadgeVariant };

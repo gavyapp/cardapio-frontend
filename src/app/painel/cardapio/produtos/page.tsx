@@ -55,19 +55,19 @@ async function Products() {
     <CatalogPageTemplate
       title="Produtos"
       count={products.length}
+      search={
+        <SearchParamInput
+          name={SEARCH_PARAM}
+          placeholder="Buscar produto"
+        />
+      }
       action={
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-          <SearchParamInput
-            name={SEARCH_PARAM}
-            placeholder="Buscar produto"
-          />
-          <SearchParamButton
-            name={PRODUCT_PARAM}
-            value={NEW_ITEM}
-          >
-            Novo produto
-          </SearchParamButton>
-        </div>
+        <SearchParamButton
+          name={PRODUCT_PARAM}
+          value={NEW_ITEM}
+        >
+          Novo produto
+        </SearchParamButton>
       }
     >
       <ProductList

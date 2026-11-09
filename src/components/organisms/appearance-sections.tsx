@@ -164,7 +164,6 @@ export function AppearanceSections({
           <SettingRow title="Tema">
             <SegmentedControl
               label="Tema do cardápio"
-              variant="solid"
               fullWidth
               value={draft.mode}
               options={[
@@ -186,7 +185,6 @@ export function AppearanceSections({
           <SettingRow title="Layout dos produtos">
             <SegmentedControl
               label="Layout dos produtos"
-              variant="solid"
               fullWidth
               value={draft.layout}
               options={[

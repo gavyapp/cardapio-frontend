@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { PageHeader } from "@/components/molecules/page-header";
 import { SaveBar } from "@/components/molecules/save-bar";
 import {
   SectionNav,
@@ -20,7 +21,7 @@ export function SectionedSettingsTemplate({
   children,
 }: {
   /** Título da página, acima do menu e das seções. */
-  title?: string;
+  title: string;
   sections: readonly NavSection[];
   navLabel: string;
   formId: string;
@@ -30,11 +31,7 @@ export function SectionedSettingsTemplate({
   return (
     <SettingsFormProvider formId={formId}>
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 p-4 sm:p-6">
-        {title ? (
-          <h1 className="text-title leading-tight font-semibold">
-            {title}
-          </h1>
-        ) : null}
+        <PageHeader title={title} />
         <div className="grid items-start gap-4 lg:grid-cols-[280px_1fr]">
           <SectionNav
             sections={sections}

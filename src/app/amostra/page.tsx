@@ -216,15 +216,15 @@ export default function SamplePage() {
 
       <Section title="Selos de status">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="warning">Novo</Badge>
+          <Badge variant="new">Novo</Badge>
           <Badge variant="destructive">Atrasado</Badge>
-          <Badge variant="secondary">Em preparo</Badge>
+          <Badge variant="muted">Em preparo</Badge>
           <Badge variant="success">
             Pronto para retirada
           </Badge>
           <Badge variant="success">Ativa agora</Badge>
-          <Badge variant="outline">Agendada</Badge>
-          <Badge variant="secondary">Encerrada</Badge>
+          <Badge variant="neutral">Agendada</Badge>
+          <Badge variant="muted">Encerrada</Badge>
         </div>
       </Section>
 

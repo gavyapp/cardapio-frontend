@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import {
+  Badge,
+  type BadgeVariant,
+} from "@/components/atoms/badge";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import {
   Sheet,
@@ -196,11 +200,9 @@ function DetailContent({
             <SheetTitle className="tabular text-title leading-[1.1] font-semibold">
               #{order.number}
             </SheetTitle>
-            <span
-              className={cn(
-                "inline-flex h-6 items-center gap-1 rounded-control px-2 text-caption font-semibold whitespace-nowrap",
-                badgeClass(order.status),
-              )}
+            <Badge
+              variant={statusVariant(order.status)}
+              className="gap-1"
             >
               {badgeIcon ? (
                 <OrderModeIcon
@@ -209,7 +211,7 @@ function DetailContent({
                 />
               ) : null}
               {statusBadge(order)}
-            </span>
+            </Badge>
           </div>
           <span className="truncate text-section leading-[1.3] font-semibold">
             {order.customerName}
@@ -330,14 +332,14 @@ function DetailContent({
               {PAYMENT_LABELS[order.paymentMethod]}
             </span>
             {order.isPaid ? (
-              <span className="inline-flex h-7 items-center gap-1 rounded-control bg-success px-2.5 text-meta font-semibold text-success-foreground">
+              <Badge variant="success-solid" size="lg">
                 <Check
                   aria-hidden
                   className="size-3.5"
                   strokeWidth={3}
                 />
                 Pago
-              </span>
+              </Badge>
             ) : null}
           </div>
           {change ? (
@@ -555,18 +557,18 @@ function toneClasses(
   }
 }
 
-function badgeClass(status: OrderStatus): string {
+function statusVariant(status: OrderStatus): BadgeVariant {
   switch (status) {
     case "RECEBIDO":
-      return "bg-[#f7e1b6] text-foreground";
+      return "pending";
     case "PRONTO":
-      return "bg-success-soft text-success";
+      return "success";
     case "A_CAMINHO":
-      return "bg-foreground text-background";
+      return "inverse";
     case "REJEITADO":
     case "CANCELADO":
-      return "bg-destructive-soft text-destructive";
+      return "destructive";
     default:
-      return "bg-muted text-foreground";
+      return "neutral";
   }
 }

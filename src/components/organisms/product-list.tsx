@@ -8,6 +8,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import {
   DropdownMenu,
@@ -233,9 +234,9 @@ export function ProductList({
               )}
             </button>
             {product.isSuggested ? (
-              <span className="rounded-control bg-muted px-2 py-0.5 text-caption font-semibold text-muted-foreground sm:hidden">
+              <Badge variant="muted" className="sm:hidden">
                 Sugerido
-              </span>
+              </Badge>
             ) : null}
           </span>
           <span className="truncate text-meta text-muted-foreground">

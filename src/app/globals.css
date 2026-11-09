@@ -50,6 +50,7 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-soft: var(--warning-soft);
+  --color-warning-medium: var(--warning-medium);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -141,6 +142,12 @@
   --warning: #e39b0b; /* pedido novo */
   --warning-foreground: #16191d;
   --warning-soft: #fcf0d4;
+  /* "Aguardando aceite": 30% do âmbar sobre branco */
+  --warning-medium: color-mix(
+    in oklab,
+    var(--warning) 30%,
+    white
+  );
 
   --chart-1: #16191d;
   --chart-2: #5c636d;
@@ -199,6 +206,7 @@
   --warning: #f2b705;
   --warning-foreground: #111214;
   --warning-soft: rgb(242 183 5 / 18%);
+  --warning-medium: rgb(242 183 5 / 30%);
   --shadow-elevated:
     0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 50%);
   --sidebar: #16191d;

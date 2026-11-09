@@ -367,7 +367,6 @@ function EditorForm({
             O cliente precisa escolher?
           </Label>
           <SegmentedControl
-            variant="solid"
             labelledBy="group-required-label"
             value={isRequired}
             options={[

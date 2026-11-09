@@ -48,7 +48,7 @@ export function PanelHeader({
             </span>
           </p>
           {/* Estado fixo por enquanto; a regra de loja aberta entra depois. */}
-          <Badge className="shrink-0 gap-1.5 bg-success text-success-foreground">
+          <Badge variant="success-solid">
             <span
               aria-hidden
               className="size-1.5 rounded-full bg-current"
