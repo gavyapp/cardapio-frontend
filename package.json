@@ -11,6 +11,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:style": "node scripts/style/check-tokens.mjs",
     "db:link": "supabase link --project-ref evvisoyaehtvgzvqapmv",
     "db:types": "supabase gen types typescript --linked --schema public > src/lib/database.types.ts"
   },

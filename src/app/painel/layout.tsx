@@ -5,7 +5,7 @@ import {
   PanelHeader,
   type HeaderStore,
 } from "@/components/organisms/panel-header";
-import { LiveOrdersProvider } from "@/components/organisms/live-orders-provider";
+import { LiveOrdersProvider } from "@/components/providers/live-orders-provider";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
 import { Toaster } from "@/components/atoms/sonner";
 import { countCatalog } from "@/lib/data/catalog-counts";

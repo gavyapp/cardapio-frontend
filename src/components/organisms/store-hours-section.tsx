@@ -145,7 +145,7 @@ export function StoreHoursSection({
           {draft.map((day) => (
             <div
               key={day.weekday}
-              className="grid gap-4 py-5 md:grid-cols-[200px_1fr] md:items-start"
+              className="grid gap-4 py-5 sm:grid-cols-[200px_1fr] sm:items-start"
             >
               <div className="flex items-center gap-4">
                 <Switch

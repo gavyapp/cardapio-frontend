@@ -18,7 +18,7 @@ Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo 
 
 `src/lib` organizado por assunto, com nome curto porque a pasta dá o contexto (`catalog/types.ts`, `store/theme.ts`): `catalog`, `store`, `panel`, `hooks`, `routing` e, a cada fluxo novo, uma pasta dele (ex.: `orders`). Na raiz ficam só `data/`, `supabase/`, `format.ts`, `utils.ts` e `database.types.ts`.
 
-Componentes em Atomic Design, em `src/components`: `atoms` (primitivos do shadcn e peças indivisíveis), `molecules` (composições pequenas, como campo com rótulo), `organisms` (seções, cabeçalhos, menus), `templates` (esqueleto de página). Rotas em `src/app` só ligam dados ao template; nada de UI reutilizável dentro de `src/app`. O `shadcn add` grava em `atoms` (alias `ui` do `components.json`).
+Componentes em Atomic Design, em `src/components`: `atoms` (primitivos do shadcn e peças indivisíveis), `molecules` (composições pequenas, como campo com rótulo), `organisms` (seções, cabeçalhos, menus), `templates` (esqueleto de página) e `providers` (estado por contexto). Rotas em `src/app` só ligam dados ao template; nada de UI reutilizável dentro de `src/app`. O `shadcn add` grava em `atoms` (alias `ui` do `components.json`).
 
 ## Padrão git
 

@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { Pagination } from "@/components/molecules/pagination";
 import { SearchParamInput } from "@/components/molecules/search-param-input";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 import {
   formatCurrency,
   formatStoreTime,

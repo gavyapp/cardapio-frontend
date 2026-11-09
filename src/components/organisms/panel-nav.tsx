@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 
 const MENU_ITEMS = [
   {

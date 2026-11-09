@@ -21,7 +21,7 @@ import {
 } from "@/lib/store/theme";
 import { cn } from "@/lib/utils";
 
-import { useSettingsForm } from "./settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 export const APPEARANCE_SECTIONS = [
   { id: "logo-e-capa", label: "Logo e capa" },

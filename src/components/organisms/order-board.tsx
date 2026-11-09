@@ -15,7 +15,7 @@ import {
   OrderReasonDialog,
   type ClosingOrder,
 } from "@/components/molecules/order-reason-dialog";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 import {
   OrderDetailPanel,
   type OrderDetailHandlers,

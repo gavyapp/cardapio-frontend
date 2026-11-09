@@ -6,7 +6,7 @@ import {
   SectionNav,
   type NavSection,
 } from "@/components/organisms/section-nav";
-import { SettingsFormProvider } from "@/components/organisms/settings-form-context";
+import { SettingsFormProvider } from "@/components/providers/settings-form-context";
 
 /**
  * Página de configurações: menu lateral fixo, seções empilhadas e barra de

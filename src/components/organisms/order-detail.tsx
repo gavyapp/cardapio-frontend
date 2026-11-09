@@ -535,8 +535,8 @@ function toneClasses(
       };
     case "EM_PREPARO":
       return {
-        stripe: "bg-[#8a9099]",
-        dot: "border-[#8a9099] bg-[#8a9099]",
+        stripe: "bg-subtle",
+        dot: "border-subtle bg-subtle",
       };
     case "PRONTO":
       return {

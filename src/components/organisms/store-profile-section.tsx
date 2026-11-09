@@ -11,7 +11,7 @@ import { PhoneInput } from "@/components/molecules/phone-input";
 import { SectionCard } from "@/components/molecules/section-card";
 import type { ActionResult } from "@/lib/panel/action-result";
 
-import { useSettingsForm } from "./settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 export type StoreProfileValues = {
   name: string;
@@ -69,7 +69,7 @@ export function StoreProfileSection({
         onSubmit={submit}
         className="flex flex-col gap-6 px-6 py-6"
       >
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field id="store-name" label="Nome">
             <Input
               id="store-name"
@@ -88,7 +88,7 @@ export function StoreProfileSection({
           </Field>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-[1fr_140px]">
+        <div className="grid gap-5 sm:grid-cols-[1fr_140px]">
           <Field id="store-street" label="Rua">
             <Input
               id="store-street"
@@ -107,7 +107,7 @@ export function StoreProfileSection({
           </Field>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-[1fr_1fr_120px]">
+        <div className="grid gap-5 sm:grid-cols-[1fr_1fr_120px]">
           <Field id="store-district" label="Bairro">
             <Input
               id="store-district"

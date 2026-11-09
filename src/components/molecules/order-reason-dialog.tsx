@@ -147,7 +147,7 @@ function ReasonForm({
               <span
                 aria-hidden
                 className={cn(
-                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-[#8a9099]",
+                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-subtle",
                   active &&
                     "border-[6px] border-foreground",
                 )}

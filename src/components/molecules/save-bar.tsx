@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { useSettingsForm } from "@/components/organisms/settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 /** Barra no fim da página que submete o formulário dela e mostra o carregamento. */
 export function SaveBar({
