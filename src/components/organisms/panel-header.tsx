@@ -6,6 +6,7 @@ import {
   type MenuStore,
 } from "@/components/organisms/store-menu";
 import { Badge } from "@/components/atoms/badge";
+import { StoreAvatar } from "@/components/atoms/store-avatar";
 import type { CatalogCounts } from "@/lib/data/catalog-counts";
 
 export type HeaderStore = MenuStore;
