@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   ChevronDown,
@@ -53,13 +54,21 @@ export function PanelNav({
   const live = useLiveOrdersContext();
   const newOrders = live?.newCount ?? 0;
   const unseenOrders = live?.unseenCount ?? 0;
+  const { listRef, hidden, updateHidden } =
+    useOverflowHint(pathname);
 
   return (
     <nav
       aria-label="Seções do painel"
       className="border-b border-border"
     >
-      <ul className="flex [scrollbar-width:none] gap-6 overflow-x-auto px-4 sm:px-6">
+      <ul
+        ref={listRef}
+        onScroll={updateHidden}
+        data-hidden-start={hidden.start || undefined}
+        data-hidden-end={hidden.end || undefined}
+        className="flex scroll-px-4 [scrollbar-width:none] gap-6 overflow-x-auto px-4 data-hidden-end:mask-r-from-85% data-hidden-start:mask-l-from-85% sm:scroll-px-6 sm:px-6"
+      >
         <li>
           <Link
             href="/painel/pedidos"
@@ -161,4 +170,47 @@ export function PanelNav({
       </ul>
     </nav>
   );
+}
+
+/**
+ * No celular as abas não cabem: esmaece a borda do lado onde há aba
+ * escondida, para mostrar que a barra rola, e traz a aba atual para a vista.
+ */
+function useOverflowHint(pathname: string) {
+  const listRef = useRef<HTMLUListElement>(null);
+  const [hidden, setHidden] = useState({
+    start: false,
+    end: false,
+  });
+
+  function updateHidden() {
+    const list = listRef.current;
+    if (!list) return;
+    const start = list.scrollLeft > 1;
+    const end =
+      list.scrollLeft + list.clientWidth <
+      list.scrollWidth - 1;
+    setHidden((current) =>
+      current.start === start && current.end === end
+        ? current
+        : { start, end },
+    );
+  }
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    list
+      .querySelector('[data-active="true"]')
+      ?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    updateHidden();
+    const observer = new ResizeObserver(updateHidden);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  return { listRef, hidden, updateHidden };
 }

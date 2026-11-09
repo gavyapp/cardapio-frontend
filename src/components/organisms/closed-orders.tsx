@@ -138,13 +138,13 @@ export function ClosedOrders() {
         </div>
         <SearchParamInput
           name={CLOSED_SEARCH_PARAM}
-          placeholder="Nome, nº ou telefone"
+          placeholder="Buscar concluídos e cancelados"
           label="Buscar nos concluídos e cancelados"
         />
         <div
           role="group"
           aria-label="Filtrar"
-          className="flex max-w-full [scrollbar-width:none] gap-2 overflow-x-auto"
+          className="flex flex-wrap gap-2"
         >
           {CLOSED_FILTERS.map(({ id, label }) => {
             const count = summary.counts[id];

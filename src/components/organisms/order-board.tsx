@@ -306,7 +306,7 @@ export function OrderBoard({
                     aria-selected={active}
                     onClick={() => setMobileColumn(tab.id)}
                     className={cn(
-                      "flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 px-1 text-meta whitespace-nowrap text-muted-foreground",
+                      "flex h-12 min-w-0 flex-auto items-center justify-center gap-1.5 px-2 text-meta whitespace-nowrap text-muted-foreground",
                       active &&
                         "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--foreground)]",
                     )}
