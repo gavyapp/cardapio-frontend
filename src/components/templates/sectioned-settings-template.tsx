@@ -30,7 +30,7 @@ export function SectionedSettingsTemplate({
 }) {
   return (
     <SettingsFormProvider formId={formId}>
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 p-4 sm:p-6">
+      <div className="flex w-full flex-col gap-4 p-4 sm:p-6">
         <PageHeader title={title} />
         <div className="grid items-start gap-4 lg:grid-cols-[280px_1fr]">
           <SectionNav
