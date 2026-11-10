@@ -42,9 +42,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-preparing: var(--preparing);
-  --color-option: var(--option);
-  --color-step-upcoming: var(--step-upcoming);
+  --color-gray-medium: var(--gray-medium);
+  --color-border-strong: var(--border-strong);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -101,12 +100,11 @@
   --popover: #ffffff;
   --popover-foreground: #16191d;
   --border: #d9dce1;
-  --step-upcoming: #c9ced4; /* etapa futura */
+  --border-strong: #c9ced4; /* borda mais marcada que a padrão */
   --input: #d9dce1;
   --muted: #f3f4f6;
   --muted-foreground: #5c636d; /* texto secundário */
-  --preparing: #8a9099; /* etapa em preparo */
-  --option: #8a9099; /* borda da opção de escolha (radio) */
+  --gray-medium: #8a9099; /* cinza médio, entre a borda e o texto secundário */
   --secondary: #f1f2f4;
   --secondary-foreground: #16191d;
   --accent: #f1f2f4;
@@ -162,12 +160,11 @@
   --popover: #16191d;
   --popover-foreground: #f3f4f6;
   --border: rgb(255 255 255 / 12%);
-  --step-upcoming: rgb(255 255 255 / 24%);
+  --border-strong: rgb(255 255 255 / 24%);
   --input: rgb(255 255 255 / 16%);
   --muted: #1f2227;
   --muted-foreground: #9aa1aa;
-  --preparing: #6b727c;
-  --option: #6b727c;
+  --gray-medium: #6b727c;
   --secondary: #1f2227;
   --secondary-foreground: #f3f4f6;
   --accent: #1f2227;

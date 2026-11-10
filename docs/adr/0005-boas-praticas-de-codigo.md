@@ -24,6 +24,7 @@ Componentes, funções, hooks, props, variáveis, constantes e arquivos são nom
 - Booleano se lê como pergunta: `isLate`, `hasPhoto`, `canEdit`.
 - Callback diz o que aconteceu no produto (`onSave`, `markRead`), não o evento do navegador (`handleClick2`).
 - Exceção: peça genérica de verdade, sem assunto do produto, tem o mecanismo como propósito (`useSearchParamState`, `Switch`, `formatCurrency`).
+- Tokens de design (cor, canto, sombra) são feitos para reaproveitar, então têm nome pelo papel na paleta ou pela intensidade (`border-strong`, `gray-medium`, `warning-soft`, `rounded-surface`), nunca por uma tela. O uso fica no código que escolhe o token: `orderTone` diz que a etapa "em preparo" usa `gray-medium`. A escala de texto segue os papéis tipográficos do protótipo (`caption`, `support`, `body`, `section-title`, `page-title`, `big-number`).
 
 ### 2. Nome pelo assunto, nunca pela task
 

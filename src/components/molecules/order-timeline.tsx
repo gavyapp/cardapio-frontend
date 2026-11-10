@@ -39,7 +39,7 @@ export function OrderTimeline({
                       ? currentDotClass
                       : reached
                         ? "border-foreground bg-foreground"
-                        : "border-step-upcoming bg-card",
+                        : "border-border-strong bg-card",
                 )}
               />
               <span

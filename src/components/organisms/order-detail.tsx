@@ -533,8 +533,8 @@ const TONE_CLASSES: Record<
     dot: "border-warning bg-warning",
   },
   preparing: {
-    stripe: "bg-preparing",
-    dot: "border-preparing bg-preparing",
+    stripe: "bg-gray-medium",
+    dot: "border-gray-medium bg-gray-medium",
   },
   ready: {
     stripe: "bg-success",

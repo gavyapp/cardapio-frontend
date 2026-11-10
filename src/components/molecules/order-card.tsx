@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const TONE_STRIPE: Record<OrderTone, string> = {
   late: "border-l-destructive",
   new: "border-l-warning",
-  preparing: "border-l-preparing",
+  preparing: "border-l-gray-medium",
   ready: "border-l-success",
   out: "border-l-foreground",
   stopped: "border-l-destructive",

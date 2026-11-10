@@ -25,7 +25,7 @@ O painel tinha duas linguagens visuais: as telas de pedidos seguiam o protótipo
    | `rounded-surface`    | 8px             | modal, menu, painel, tabela, bloco de lista |
    | `rounded-full`       | círculo         | switch, etapa, avatar                       |
 
-   Pesos: 400, 500 e 600. Espaçamento e alturas em múltiplos de 4 (escala do Tailwind). Controles: 44px (padrão) e 36px no computador (compacto, para cabeçalhos, filtros e cards). Sombra só em modal, menu e toast (`shadow-elevated`). Cores pelos tokens do tema (`text-muted-foreground`, `bg-warning-soft`…), nunca hex.
+   Pesos: 400, 500 e 600. Espaçamento e alturas em múltiplos de 4 (escala do Tailwind). Controles: 44px (padrão) e 36px no computador (compacto, para cabeçalhos, filtros e cards). Sombra só em modal, menu e toast (`shadow-elevated`). Cores pelos tokens do tema (`text-muted-foreground`, `bg-warning-soft`, `border-border-strong`…), nunca hex; token de cor tem nome pelo papel na paleta, não pela tela que o usa (ADR 0005).
 
 3. **Duas superfícies, um conjunto de átomos.** O painel usa os valores acima. O cardápio do cliente sobrescreve as variáveis no layout da loja (`src/lib/store/theme.ts`): cor, fonte e cantos (`--control-radius`, `--surface-radius`). Nenhum componente sabe em qual superfície está.
 
