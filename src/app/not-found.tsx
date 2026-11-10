@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { Button } from "@/components/atoms/button";
+import { PANEL_ROUTE } from "@/lib/panel/access";
+import { redirectGuestToLogin } from "@/lib/panel/guest-redirect";
 
-export default function NotFound() {
+// Só quem está logado vê o 404; visitante vai para o login.
+async function NotFoundContent() {
+  await redirectGuestToLogin();
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 p-8 text-center">
       <p className="tabular text-big-number leading-none font-semibold">
@@ -17,9 +23,17 @@ export default function NotFound() {
           mais disponível.
         </p>
       </div>
-      <Button render={<Link href="/" />}>
-        Ir para o início
+      <Button render={<Link href={PANEL_ROUTE} />}>
+        Ir para o painel
       </Button>
     </main>
+  );
+}
+
+export default function NotFound() {
+  return (
+    <Suspense fallback={null}>
+      <NotFoundContent />
+    </Suspense>
   );
 }
