@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/molecules/page-header";
 
 /**
  * Páginas do catálogo no painel (produtos e complementos): cabeçalho padrão
- * e o conteúdo na largura toda, como as outras páginas do painel.
+ * e o conteúdo centralizado em até 1280px, como as outras páginas do painel.
  */
 export function CatalogPageTemplate({
   title,
@@ -23,7 +23,7 @@ export function CatalogPageTemplate({
   children: ReactNode;
 }) {
   return (
-    <div className="flex w-full flex-col gap-4 px-page pt-4 pb-12 sm:pt-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-page pt-4 pb-12 sm:pt-6">
       <PageHeader
         title={title}
         count={count}
@@ -47,7 +47,7 @@ export function CatalogPageSkeleton({
   title: string;
 }) {
   return (
-    <div className="flex w-full flex-col gap-4 px-page pt-4 pb-12 sm:pt-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-page pt-4 pb-12 sm:pt-6">
       <PageHeader title={title} />
       <div className="flex flex-col gap-4" aria-hidden>
         {[0, 1, 2].map((index) => (

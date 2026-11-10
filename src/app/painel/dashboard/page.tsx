@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 // Página provisória; o conteúdo entra na task da tela.
 export default function DashboardPage() {
   return (
-    <div className="w-full px-page py-4 sm:py-6">
+    <div className="mx-auto w-full max-w-7xl px-page py-4 sm:py-6">
       <PageHeader title="Dashboard" />
     </div>
   );
