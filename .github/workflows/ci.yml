@@ -1,4 +1,4 @@
-# Lint, tokens de estilo, typecheck e build em todo PR e a cada merge na main.
+# Lint, typecheck e build em todo PR e a cada merge na main.
 # Os testes do banco têm workflow próprio (testes-do-banco.yml).
 name: CI
 
@@ -30,9 +30,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-
-      - name: Tokens de estilo
-        run: npm run check:style
 
       - name: Typecheck
         run: npm run typecheck

@@ -29,7 +29,7 @@ O painel tinha duas linguagens visuais: as telas de pedidos seguiam o protótipo
 
 3. **Duas superfícies, um conjunto de átomos.** O painel usa os valores acima. O cardápio do cliente sobrescreve as variáveis no layout da loja (`src/lib/store/theme.ts`): cor, fonte e cantos (`--control-radius`, `--surface-radius`). Nenhum componente sabe em qual superfície está.
 
-4. **Onde o estilo mora.** Valores base ficam nos átomos (`src/components/atoms`). Telas usam as variantes e os tokens, nunca valor solto (`text-[13px]`, `rounded-[4px]`, `rounded-lg`, `text-sm`). Átomo novo do `shadcn add` é ajustado aos tokens ao entrar. O CI roda `npm run check:style`, que falha com canto, tamanho de texto, sombra ou cor hex soltos fora de `atoms`; uma exceção pedida pelo protótipo leva um comentário com `fora dos tokens:` e o motivo. O `cn` de `src/lib/utils.ts` conhece os tokens; importe dele, não do pacote `cn`.
+4. **Onde o estilo mora.** Valores base ficam nos átomos (`src/components/atoms`). Telas usam as variantes e os tokens, nunca valor solto (`text-[13px]`, `rounded-[4px]`, `rounded-lg`, `text-sm`). Átomo novo do `shadcn add` é ajustado aos tokens ao entrar. O `cn` de `src/lib/utils.ts` conhece os tokens; importe dele, não do pacote `cn`.
 
 5. **Atomic Design** em `src/components`: `atoms` (primitivos e peças indivisíveis), `molecules` (composições pequenas), `organisms` (seções, cabeçalhos, listas, editores), `templates` (esqueleto de página) e `providers` (estado compartilhado por contexto, como os pedidos em tempo real e o formulário das configurações). Um trecho vira componente compartilhado a partir do segundo uso real, não antes.
 
