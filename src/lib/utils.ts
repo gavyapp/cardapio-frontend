@@ -2,7 +2,7 @@ import { createCn } from "cn/config";
 
 /**
  * Junta classes do Tailwind resolvendo conflitos. Conhece os tokens do tema
- * (globals.css): sem isso, `text-meta` seria lido como cor e um
+ * (globals.css): sem isso, `text-support` seria lido como cor e um
  * `text-muted-foreground` depois dele apagaria o tamanho.
  */
 export const cn = createCn({
@@ -10,11 +10,11 @@ export const cn = createCn({
     theme: {
       text: [
         "caption",
-        "meta",
+        "support",
         "body",
-        "section",
-        "title",
-        "display",
+        "section-title",
+        "page-title",
+        "big-number",
       ],
       radius: ["control", "surface"],
     },

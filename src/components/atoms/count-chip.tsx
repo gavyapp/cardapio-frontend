@@ -27,7 +27,7 @@ export function CountChip({
       className={cn(
         "tabular inline-flex shrink-0 items-center justify-center rounded-control font-semibold text-foreground",
         large
-          ? "h-7 min-w-8 px-2 text-meta"
+          ? "h-7 min-w-8 px-2 text-support"
           : small
             ? "h-5 min-w-5 px-1 text-caption"
             : "h-5 min-w-6 px-1.5 text-caption",

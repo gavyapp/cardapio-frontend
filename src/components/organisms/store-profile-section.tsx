@@ -139,7 +139,7 @@ export function StoreProfileSection({
         <Separator />
 
         <div className="grid gap-2">
-          <p className="text-meta font-medium">
+          <p className="text-support font-medium">
             Link do cardápio
           </p>
           <div className="flex flex-wrap items-center gap-3">

@@ -14,18 +14,20 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground",
-        // Cinza com texto escuro ("Agendada", "Entregue").
+        // Cinza com texto escuro.
         neutral: "bg-muted text-foreground",
-        // Cinza com texto apagado ("Em preparo", "Encerrada", "Sugerido").
+        // Cinza com texto apagado.
         muted: "bg-muted text-muted-foreground",
         // Fundo claro com texto forte.
         success: "bg-success-soft text-success",
         warning: "bg-warning-soft text-foreground",
         destructive: "bg-destructive-soft text-destructive",
-        // Âmbar médio: "Aguardando aceite".
-        pending: "bg-warning-medium text-foreground",
-        // Sólidos: "Novo", "Pago", "Aberta", "Saiu para entrega".
-        new: "bg-warning text-warning-foreground",
+        // Âmbar médio.
+        "warning-medium":
+          "bg-warning-medium text-foreground",
+        // Sólidos.
+        "warning-solid":
+          "bg-warning text-warning-foreground",
         "success-solid":
           "bg-success text-success-foreground",
         inverse: "bg-foreground text-background",
@@ -34,7 +36,7 @@ const badgeVariants = cva(
       size: {
         default:
           "h-6 gap-1.5 px-2 text-caption [&>svg:not([class*='size-'])]:size-3",
-        lg: "h-7 gap-1 px-2.5 text-meta [&>svg:not([class*='size-'])]:size-3.5",
+        lg: "h-7 gap-1 px-2.5 text-support [&>svg:not([class*='size-'])]:size-3.5",
       },
     },
     defaultVariants: {

@@ -85,8 +85,8 @@ function SheetContent({
       <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Popup
         ref={popupRef}
-        // Foco inicial: o primeiro campo nos editores; sem campo (detalhe do
-        // pedido), o próprio painel, para o botão de fechar não abrir com
+        // Foco inicial: o primeiro campo de texto; num painel sem campo, o
+        // próprio painel, para o botão de fechar não abrir com
         // contorno. No toque o Base UI já foca o painel, sem abrir o teclado.
         initialFocus={(openType) => {
           if (openType === "touch") return true;
@@ -180,7 +180,7 @@ function SheetTitle({
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "font-heading text-section font-semibold text-foreground",
+        "font-heading text-section-title font-semibold text-foreground",
         className,
       )}
       {...props}
@@ -196,7 +196,7 @@ function SheetDescription({
     <SheetPrimitive.Description
       data-slot="sheet-description"
       className={cn(
-        "text-meta text-muted-foreground",
+        "text-support text-muted-foreground",
         className,
       )}
       {...props}

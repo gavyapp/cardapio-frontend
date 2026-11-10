@@ -125,7 +125,7 @@ export function ClosedOrders() {
             className="flex items-baseline gap-2 text-body leading-tight font-semibold"
           >
             Concluídos e cancelados
-            <span className="tabular text-meta font-normal text-muted-foreground">
+            <span className="tabular text-support font-normal text-muted-foreground">
               {state.status === "ready" ? all.length : null}
             </span>
           </h2>
@@ -157,7 +157,7 @@ export function ClosedOrders() {
                 aria-pressed={active}
                 onClick={() => chooseFilter(id)}
                 className={cn(
-                  "flex h-11 shrink-0 items-center gap-2 rounded-control border px-3 text-meta whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 lg:h-9",
+                  "flex h-11 shrink-0 items-center gap-2 rounded-control border px-3 text-support whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 lg:h-9",
                   active
                     ? "border-foreground bg-foreground font-semibold text-background hover:border-foreground"
                     : "bg-card text-foreground",
@@ -210,7 +210,7 @@ export function ClosedOrders() {
           }}
         />
       ) : all.length === 0 ? (
-        <p className="border-b px-4 py-4 text-meta text-muted-foreground lg:px-6">
+        <p className="border-b px-4 py-4 text-support text-muted-foreground lg:px-6">
           Nenhum pedido concluído ainda.
         </p>
       ) : page.items.length === 0 ? (
@@ -287,7 +287,7 @@ function ClosedOrderRow({
       )}
     >
       <span className="tabular">{order.number}</span>
-      <span className="tabular text-meta text-muted-foreground">
+      <span className="tabular text-support text-muted-foreground">
         {formatStoreTime(order.createdAt)}
       </span>
       <span className="flex min-w-0 flex-col">
@@ -296,7 +296,7 @@ function ClosedOrderRow({
         </span>
         <span
           className={cn(
-            "truncate text-meta lg:hidden",
+            "truncate text-support lg:hidden",
             completed
               ? "text-muted-foreground"
               : "text-destructive",
@@ -311,20 +311,20 @@ function ClosedOrderRow({
           ) : null}
         </span>
       </span>
-      <span className="flex items-center gap-1.5 text-meta max-lg:hidden">
+      <span className="flex items-center gap-1.5 text-support max-lg:hidden">
         <OrderModeIcon
           mode={order.mode}
           className="shrink-0 -translate-y-[1px]"
         />
         {MODE_LABELS[order.mode]}
       </span>
-      <span className="flex min-w-0 items-center gap-2 text-meta max-lg:hidden">
+      <span className="flex min-w-0 items-center gap-2 text-support max-lg:hidden">
         {PAYMENT_LABELS[order.paymentMethod]}
         <PaidTag order={order} />
       </span>
       <span
         className={cn(
-          "text-meta max-lg:hidden",
+          "text-support max-lg:hidden",
           completed
             ? "text-muted-foreground"
             : "text-destructive",
@@ -385,7 +385,7 @@ function LoadingRows() {
             <span
               key={cell}
               className={cn(
-                "h-3.5 animate-pulse rounded bg-muted",
+                "rounded h-3.5 animate-pulse bg-muted",
                 cell > 2 && cell < 6 && "max-lg:hidden",
               )}
             />
@@ -408,7 +408,7 @@ function Notice({
   return (
     <div className="flex flex-col items-center gap-1 border-b px-4 py-8 text-center">
       <p className="text-body font-medium">{title}</p>
-      <p className="max-w-80 text-meta leading-snug text-pretty text-muted-foreground">
+      <p className="max-w-80 text-support leading-snug text-pretty text-muted-foreground">
         {text}
       </p>
       <Button

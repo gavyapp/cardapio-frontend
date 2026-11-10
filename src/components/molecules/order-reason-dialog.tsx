@@ -147,7 +147,7 @@ function ReasonForm({
               <span
                 aria-hidden
                 className={cn(
-                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-subtle",
+                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-option",
                   active &&
                     "border-[6px] border-foreground",
                 )}
@@ -173,7 +173,7 @@ function ReasonForm({
         {error ? (
           <p
             role="alert"
-            className="text-meta text-destructive"
+            className="text-support text-destructive"
           >
             {error}
           </p>

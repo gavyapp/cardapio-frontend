@@ -13,17 +13,17 @@ O painel tinha duas linguagens visuais: as telas de pedidos seguiam o protótipo
 
 2. **Tokens** (em `src/app/globals.css`), sempre pelo nome:
 
-   | Token             | Valor no painel | Uso                                         |
-   | ----------------- | --------------- | ------------------------------------------- |
-   | `text-caption`    | 12px            | legenda, cabeçalho de tabela, selo          |
-   | `text-meta`       | 13px            | texto secundário, rótulo, ajuda             |
-   | `text-body`       | 15px            | texto padrão, campos, botões, menus         |
-   | `text-section`    | 18px            | título de seção e de modal                  |
-   | `text-title`      | 24px            | título da página                            |
-   | `text-display`    | 40px            | número grande                               |
-   | `rounded-control` | 4px             | botão, campo, card, selo, miniatura         |
-   | `rounded-surface` | 8px             | modal, menu, painel, tabela, bloco de lista |
-   | `rounded-full`    | círculo         | switch, etapa, avatar                       |
+   | Token                | Valor no painel | Uso                                         |
+   | -------------------- | --------------- | ------------------------------------------- |
+   | `text-caption`       | 12px            | legenda, cabeçalho de tabela, selo          |
+   | `text-support`       | 13px            | texto secundário, rótulo, ajuda             |
+   | `text-body`          | 15px            | texto padrão, campos, botões, menus         |
+   | `text-section-title` | 18px            | título de seção e de modal                  |
+   | `text-page-title`    | 24px            | título da página                            |
+   | `text-big-number`    | 40px            | número grande                               |
+   | `rounded-control`    | 4px             | botão, campo, card, selo, miniatura         |
+   | `rounded-surface`    | 8px             | modal, menu, painel, tabela, bloco de lista |
+   | `rounded-full`       | círculo         | switch, etapa, avatar                       |
 
    Pesos: 400, 500 e 600. Espaçamento e alturas em múltiplos de 4 (escala do Tailwind). Controles: 44px (padrão) e 36px no computador (compacto, para cabeçalhos, filtros e cards). Sombra só em modal, menu e toast (`shadow-elevated`). Cores pelos tokens do tema (`text-muted-foreground`, `bg-warning-soft`…), nunca hex.
 

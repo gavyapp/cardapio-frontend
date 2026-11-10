@@ -26,12 +26,12 @@ export function SectionCard({
         <div>
           <h2
             id={`${id}-title`}
-            className="text-section font-semibold"
+            className="text-section-title font-semibold"
           >
             {title}
           </h2>
           {description ? (
-            <p className="text-meta text-muted-foreground">
+            <p className="text-support text-muted-foreground">
               {description}
             </p>
           ) : null}

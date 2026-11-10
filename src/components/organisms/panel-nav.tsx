@@ -131,7 +131,7 @@ export function PanelNav({
                       {item.label}
                     </span>
                     {catalogCounts ? (
-                      <span className="tabular text-meta font-normal text-muted-foreground">
+                      <span className="tabular text-support font-normal text-muted-foreground">
                         {item.count(catalogCounts)}
                       </span>
                     ) : null}

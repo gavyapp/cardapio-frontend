@@ -15,7 +15,7 @@ export function SettingRow({
       <div>
         <p className="text-body font-medium">{title}</p>
         {description ? (
-          <p className="text-meta text-muted-foreground">
+          <p className="text-support text-muted-foreground">
             {description}
           </p>
         ) : null}

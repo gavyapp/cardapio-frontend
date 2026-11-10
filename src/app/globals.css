@@ -42,8 +42,9 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-subtle: var(--subtle);
-  --color-border-strong: var(--border-strong);
+  --color-preparing: var(--preparing);
+  --color-option: var(--option);
+  --color-step-upcoming: var(--step-upcoming);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -54,25 +55,21 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* Escala de texto do protótipo: use estes nomes, nunca text-[13px]. */
+  /* Escala de texto do protótipo (nomes da página "Componentes do painel");
+     a escala padrão (text-sm, text-lg...) fica desligada. */
+  --text-*: initial;
   --text-caption: 12px; /* legenda, cabeçalho de tabela, selo */
-  --text-meta: 13px; /* texto secundário, rótulo, ajuda */
+  --text-support: 13px; /* texto secundário, rótulo, ajuda */
   --text-body: 15px; /* texto padrão, campos, botões */
-  --text-section: 18px; /* título de seção e de modal */
-  --text-title: 24px; /* título da página */
-  --text-display: 40px; /* número grande */
+  --text-section-title: 18px; /* título de seção e de modal */
+  --text-page-title: 24px; /* título da página */
+  --text-big-number: 40px; /* número grande */
   /* Cantos do protótipo: controle (botão, campo, card, selo) e superfície
-     (modal, menu, painel, tabela). O cardápio do cliente troca os valores. */
+     (modal, menu, painel, tabela). O cardápio do cliente troca os valores.
+     A escala padrão (rounded-sm, rounded-lg...) fica desligada. */
+  --radius-*: initial;
   --radius-control: var(--control-radius);
   --radius-surface: var(--surface-radius);
-  /* Escala do shadcn, mantida para átomos novos; telas usam control/surface. */
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
   --shadow-elevated: var(--shadow-elevated);
   /* Pulso sutil do contador de pedidos novos no menu. */
   --animate-soft-pulse: soft-pulse 1.4s ease-in-out infinite;
@@ -104,11 +101,12 @@
   --popover: #ffffff;
   --popover-foreground: #16191d;
   --border: #d9dce1;
-  --border-strong: #c9ced4; /* etapa ainda não alcançada */
+  --step-upcoming: #c9ced4; /* etapa futura */
   --input: #d9dce1;
   --muted: #f3f4f6;
   --muted-foreground: #5c636d; /* texto secundário */
-  --subtle: #8a9099; /* etapa em preparo, borda de opção */
+  --preparing: #8a9099; /* etapa em preparo */
+  --option: #8a9099; /* borda da opção de escolha (radio) */
   --secondary: #f1f2f4;
   --secondary-foreground: #16191d;
   --accent: #f1f2f4;
@@ -134,7 +132,7 @@
   --warning: #e39b0b; /* pedido novo */
   --warning-foreground: #16191d;
   --warning-soft: #fcf0d4;
-  /* "Aguardando aceite": 30% do âmbar sobre branco */
+  /* âmbar médio: 30% do âmbar sobre branco */
   --warning-medium: color-mix(
     in oklab,
     var(--warning) 30%,
@@ -147,7 +145,6 @@
   --chart-4: #1d7a45;
   --chart-5: #e39b0b;
 
-  --radius: 0.625rem;
   --control-radius: 4px;
   --surface-radius: 8px;
   /* Sombra só em modal, menu e toast. */
@@ -165,11 +162,12 @@
   --popover: #16191d;
   --popover-foreground: #f3f4f6;
   --border: rgb(255 255 255 / 12%);
-  --border-strong: rgb(255 255 255 / 24%);
+  --step-upcoming: rgb(255 255 255 / 24%);
   --input: rgb(255 255 255 / 16%);
   --muted: #1f2227;
   --muted-foreground: #9aa1aa;
-  --subtle: #6b727c;
+  --preparing: #6b727c;
+  --option: #6b727c;
   --secondary: #1f2227;
   --secondary-foreground: #f3f4f6;
   --accent: #1f2227;

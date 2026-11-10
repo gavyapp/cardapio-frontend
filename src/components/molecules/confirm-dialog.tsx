@@ -56,7 +56,7 @@ export function ConfirmDialog({
         {error ? (
           <p
             role="alert"
-            className="text-meta text-destructive"
+            className="text-support text-destructive"
           >
             {error}
           </p>

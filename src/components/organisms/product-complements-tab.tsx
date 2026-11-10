@@ -62,7 +62,7 @@ export function ProductComplementsTab({
         title={
           <>
             Neste produto
-            <span className="tabular ml-2 text-meta font-normal text-muted-foreground">
+            <span className="tabular ml-2 text-support font-normal text-muted-foreground">
               {linked.length}
             </span>
           </>
@@ -148,7 +148,7 @@ export function ProductComplementsTab({
         }
       >
         {pickable.length === 0 ? (
-          <p className="px-4 py-4 text-meta text-muted-foreground sm:px-6">
+          <p className="px-4 py-4 text-support text-muted-foreground sm:px-6">
             {search
               ? `Nenhum grupo encontrado para "${query.trim()}".`
               : groups.length === 0
@@ -217,14 +217,14 @@ function GroupSummary({
       <span className="text-body font-semibold">
         {group.name}
       </span>
-      <span className="text-meta">
+      <span className="text-support">
         {details.join(" · ")}
       </span>
-      <span className="line-clamp-2 text-meta text-muted-foreground">
+      <span className="line-clamp-2 text-support text-muted-foreground">
         {describeGroupOptions(group.options)}
       </span>
       {isLinked && isBlockingGroup(group) ? (
-        <span className="text-meta text-destructive">
+        <span className="text-support text-destructive">
           Todas as opções estão pausadas: o produto não vai
           poder ser pedido.
         </span>

@@ -239,23 +239,23 @@ export function ProductList({
               </Badge>
             ) : null}
           </span>
-          <span className="truncate text-meta text-muted-foreground">
+          <span className="truncate text-support text-muted-foreground">
             {linkedGroups.length
               ? `Complementos: ${linkedGroups.map((group) => group.name).join(", ")}`
               : "Sem complementos"}
           </span>
           {product.badges.length > 0 ? (
-            <span className="text-meta text-muted-foreground">
+            <span className="text-support text-muted-foreground">
               Selos: {product.badges.join(", ")}
             </span>
           ) : null}
           {blocking ? (
-            <span className="text-meta leading-snug text-destructive">
+            <span className="text-support leading-snug text-destructive">
               Não pode ser pedido: &quot;{blocking.name}
               &quot; está sem opções disponíveis
             </span>
           ) : null}
-          <span className="tabular text-meta sm:hidden">
+          <span className="tabular text-support sm:hidden">
             {formatCurrency(product.price)}
           </span>
         </div>
@@ -388,7 +388,7 @@ export function ProductList({
           renderItem={renderRow}
         />
         {inCategory.length === 0 ? (
-          <p className="px-4 py-4 text-meta text-muted-foreground sm:px-6">
+          <p className="px-4 py-4 text-support text-muted-foreground sm:px-6">
             Nenhum produto nesta categoria.
           </p>
         ) : null}

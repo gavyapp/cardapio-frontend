@@ -128,7 +128,7 @@ export function ComplementGroupList({
 
   return (
     <>
-      <p className="rounded-surface border bg-card px-4 py-3 text-meta text-muted-foreground sm:px-6">
+      <p className="rounded-surface border bg-card px-4 py-3 text-support text-muted-foreground sm:px-6">
         Os grupos são compartilhados. O que mudar aqui vale
         para todos os produtos que usam o grupo. Para ligar
         um grupo a um produto, abra o produto.
@@ -184,7 +184,7 @@ export function ComplementGroupList({
                       <span className="truncate text-body font-semibold">
                         {group.name}
                       </span>
-                      <span className="text-meta text-muted-foreground">
+                      <span className="text-support text-muted-foreground">
                         {describeGroupRule(
                           group.minSelect,
                           group.maxSelect,
@@ -237,7 +237,7 @@ export function ComplementGroupList({
 
                 {showUsage.has(group.id) &&
                 usedCount > 0 ? (
-                  <p className="border-t px-4 py-3 text-meta text-muted-foreground">
+                  <p className="border-t px-4 py-3 text-support text-muted-foreground">
                     Usado em:{" "}
                     {group.usedBy
                       .map((product) => product.name)
@@ -246,14 +246,14 @@ export function ComplementGroupList({
                 ) : null}
 
                 {warning ? (
-                  <p className="border-t bg-destructive-soft px-4 py-3 text-meta text-destructive">
+                  <p className="border-t bg-destructive-soft px-4 py-3 text-support text-destructive">
                     {warning}
                   </p>
                 ) : null}
 
                 {isOpen ? (
                   <div className="border-t">
-                    <p className="px-4 pt-3 text-meta text-muted-foreground sm:hidden">
+                    <p className="px-4 pt-3 text-support text-muted-foreground sm:hidden">
                       {usedCount === 0
                         ? "Não usado em produtos"
                         : `Usado em: ${group.usedBy.map((product) => product.name).join(", ")}`}

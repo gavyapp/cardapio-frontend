@@ -61,7 +61,7 @@ function CardDescription({
     <div
       data-slot="card-description"
       className={cn(
-        "text-meta text-muted-foreground",
+        "text-support text-muted-foreground",
         className,
       )}
       {...props}

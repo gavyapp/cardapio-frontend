@@ -64,7 +64,7 @@ export function ProductCategoryTab({
       {error ? (
         <p
           role="alert"
-          className="border-b bg-destructive-soft px-4 py-3 text-meta text-destructive sm:px-6"
+          className="border-b bg-destructive-soft px-4 py-3 text-support text-destructive sm:px-6"
         >
           {error}
         </p>
@@ -103,7 +103,7 @@ export function ProductCategoryTab({
               <span className="flex-1 text-body">
                 {category.name}
               </span>
-              <span className="tabular text-meta text-muted-foreground">
+              <span className="tabular text-support text-muted-foreground">
                 {pluralize(count, "produto", "produtos")}
               </span>
             </button>
@@ -113,7 +113,7 @@ export function ProductCategoryTab({
       <div className="flex flex-col gap-2 px-4 py-4 sm:px-6 sm:pb-6">
         <label
           htmlFor="product-new-category"
-          className="text-meta font-medium"
+          className="text-support font-medium"
         >
           Ou crie uma categoria nova
         </label>

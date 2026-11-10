@@ -23,9 +23,10 @@ import { cn } from "@/lib/utils";
 const TONE_STRIPE: Record<OrderTone, string> = {
   late: "border-l-destructive",
   new: "border-l-warning",
-  preparing: "border-l-subtle",
+  preparing: "border-l-preparing",
   ready: "border-l-success",
   out: "border-l-foreground",
+  stopped: "border-l-destructive",
 };
 
 /**
@@ -69,9 +70,7 @@ export function OrderCard({
       onClick={onOpen}
       className={cn(
         "flex shrink-0 cursor-pointer flex-col rounded-control border border-l-4 bg-card",
-        TONE_STRIPE[
-          orderTone(order, lateAfterMinutes, now)
-        ],
+        TONE_STRIPE[orderTone(order.status, late)],
         selected && "ring-2 ring-foreground",
       )}
     >
@@ -99,7 +98,7 @@ export function OrderCard({
             </span>
             {unseen ? (
               <Badge
-                variant="new"
+                variant="warning-solid"
                 className="ml-auto gap-0 motion-safe:animate-soft-pulse"
               >
                 Novo
@@ -110,7 +109,7 @@ export function OrderCard({
             ) : (
               <span
                 className={cn(
-                  "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-meta whitespace-nowrap",
+                  "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-support whitespace-nowrap",
                   late && "font-semibold text-destructive",
                 )}
               >
@@ -131,7 +130,7 @@ export function OrderCard({
               </span>
             )}
           </span>
-          <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-muted-foreground">
+          <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-support text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-medium text-foreground">
               {/* O desenho pesa para baixo e, em 13px, o centro das
                   maiúsculas fica acima do meio da linha: o ícone sobe um
@@ -157,7 +156,7 @@ export function OrderCard({
           {caption ? (
             <span
               className={cn(
-                "tabular text-meta",
+                "tabular text-support",
                 order.status === "PRONTO"
                   ? "text-success"
                   : "text-muted-foreground",
@@ -177,7 +176,7 @@ export function OrderCard({
                 onAdvance();
               }}
               className={cn(
-                "flex h-11 min-w-0 flex-1 items-center justify-center rounded-control px-3 text-meta font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
+                "flex h-11 min-w-0 flex-1 items-center justify-center rounded-control px-3 text-support font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
                 isNew
                   ? "bg-foreground text-background"
                   : "border bg-card text-foreground",

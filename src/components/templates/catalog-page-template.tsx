@@ -31,7 +31,7 @@ export function CatalogPageTemplate({
         action={action}
       />
       {description ? (
-        <p className="text-meta text-muted-foreground">
+        <p className="text-support text-muted-foreground">
           {description}
         </p>
       ) : null}

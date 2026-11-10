@@ -43,17 +43,17 @@ const STATES = [
 const TYPOGRAPHY = [
   [
     "40 · Número grande",
-    "text-display leading-none font-semibold tabular",
+    "text-big-number leading-none font-semibold tabular",
     "R$ 1.284,50 · #1046",
   ],
   [
     "24 · Título da página",
-    "text-title font-semibold",
+    "text-page-title font-semibold",
     "Pedidos de hoje",
   ],
   [
     "18 · Título de seção",
-    "text-section font-semibold",
+    "text-section-title font-semibold",
     "Mais vendidos",
   ],
   [
@@ -63,7 +63,7 @@ const TYPOGRAPHY = [
   ],
   [
     "13 · Texto secundário",
-    "text-meta text-muted-foreground",
+    "text-support text-muted-foreground",
     "Pedido às 19:42 · Retirada no balcão",
   ],
   [
@@ -90,7 +90,7 @@ function Section({
 }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-section font-semibold">
+      <h2 className="text-section-title font-semibold">
         {title}
       </h2>
       {children}
@@ -105,10 +105,10 @@ export default function SamplePage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 p-6 sm:p-10">
       <header className="flex flex-col gap-1">
-        <h1 className="text-title font-semibold">
+        <h1 className="text-page-title font-semibold">
           Base visual
         </h1>
-        <p className="text-meta text-muted-foreground">
+        <p className="text-support text-muted-foreground">
           Tokens e componentes do protótipo v9. Esta página
           não existe em produção.
         </p>
@@ -121,7 +121,7 @@ export default function SamplePage() {
               <div
                 className={`h-14 rounded-control border ${className}`}
               />
-              <p className="text-meta font-medium">
+              <p className="text-support font-medium">
                 {name}
               </p>
               <p className="text-caption text-muted-foreground">
@@ -137,7 +137,7 @@ export default function SamplePage() {
                 <div className={`flex-1 ${strong}`} />
                 <div className={`flex-1 ${soft}`} />
               </div>
-              <p className="text-meta font-medium">
+              <p className="text-support font-medium">
                 {name}
               </p>
             </div>
@@ -207,7 +207,7 @@ export default function SamplePage() {
               defaultValue="The Classic"
               aria-invalid
             />
-            <p className="text-meta text-destructive">
+            <p className="text-support text-destructive">
               Informe um valor válido.
             </p>
           </div>
@@ -216,7 +216,7 @@ export default function SamplePage() {
 
       <Section title="Selos de status">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="new">Novo</Badge>
+          <Badge variant="warning-solid">Novo</Badge>
           <Badge variant="destructive">Atrasado</Badge>
           <Badge variant="muted">Em preparo</Badge>
           <Badge variant="success">
@@ -272,7 +272,7 @@ export default function SamplePage() {
       </Section>
 
       <Section title="Tema por loja">
-        <p className="-mt-2 text-meta text-muted-foreground">
+        <p className="-mt-2 text-support text-muted-foreground">
           A cor principal vem de stores.settings e vira
           variáveis CSS no layout da loja. O texto sobre ela
           é escolhido pelo contraste.

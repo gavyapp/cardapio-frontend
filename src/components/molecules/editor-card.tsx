@@ -20,7 +20,7 @@ export function EditorCard({
           {title}
         </h3>
         {description ? (
-          <p className="text-meta text-muted-foreground">
+          <p className="text-support text-muted-foreground">
             {description}
           </p>
         ) : null}

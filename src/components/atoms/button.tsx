@@ -31,15 +31,11 @@ const buttonVariants = cva(
         // Compacto do protótipo (cabeçalhos, filtros, cards): 44px no
         // celular e 36px com texto de 13px no computador.
         compact:
-          "h-11 gap-2 px-4 lg:h-9 lg:px-3 lg:text-meta [&_svg:not([class*='size-'])]:lg:size-3.5",
-        xs: "h-6 gap-1 px-2 text-caption has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 gap-1.5 px-3 text-meta has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+          "h-11 gap-2 px-4 lg:h-9 lg:px-3 lg:text-support [&_svg:not([class*='size-'])]:lg:size-3.5",
+        sm: "h-9 gap-1.5 px-3 text-support has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-12 gap-2 px-5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         icon: "size-11",
-        "icon-xs":
-          "size-6 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-9",
-        "icon-lg": "size-12",
       },
     },
     defaultVariants: {

@@ -105,7 +105,7 @@ export function LoginForm({
         <p
           id="login-error"
           role="alert"
-          className="flex items-start gap-2 rounded-control bg-destructive-soft px-3 py-2.5 text-meta text-destructive"
+          className="flex items-start gap-2 rounded-control bg-destructive-soft px-3 py-2.5 text-support text-destructive"
         >
           <CircleAlert className="mt-px size-4 shrink-0" />
           {state.error}

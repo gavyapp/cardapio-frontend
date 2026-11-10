@@ -63,7 +63,7 @@ export function ThemeSample() {
             maxLength={7}
           />
         </div>
-        <p className="text-meta text-muted-foreground">
+        <p className="text-support text-muted-foreground">
           Texto{" "}
           {textColor === "#ffffff" ? "claro" : "escuro"} ·
           contraste{" "}
@@ -94,14 +94,14 @@ export function ThemeSample() {
             </Button>
           ))}
         </div>
-        <div className="rounded-control bg-primary-soft p-3 text-meta font-medium text-primary">
+        <div className="rounded-control bg-primary-soft p-3 text-support font-medium text-primary">
           Entrega grátis em pedidos acima de{" "}
           {formatCurrency(70)}
         </div>
         <div className="flex items-center justify-between rounded-control border p-3">
           <div>
             <p className="font-medium">The Classic</p>
-            <p className="text-meta text-muted-foreground">
+            <p className="text-support text-muted-foreground">
               Pão brioche, blend 160 g, cheddar
             </p>
             <p className="tabular mt-1 flex items-center gap-2">

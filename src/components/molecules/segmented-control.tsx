@@ -44,7 +44,7 @@ export function SegmentedControl<
             aria-checked={selected}
             onClick={() => onChange(optionValue)}
             className={cn(
-              "h-11 px-4 text-meta focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current lg:h-10.5",
+              "h-11 px-4 text-support focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current lg:h-10.5",
               fullWidth && "flex-1",
               selected
                 ? "bg-foreground font-semibold text-background"

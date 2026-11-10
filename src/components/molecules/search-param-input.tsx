@@ -53,7 +53,7 @@ export function SearchParamInput({
         placeholder={placeholder}
         // Busca padrão do painel: altura e texto dos controles compactos
         // (36px e 13px no computador).
-        className="px-9 text-meta lg:h-9 [&::-webkit-search-cancel-button]:hidden"
+        className="px-9 text-support lg:h-9 [&::-webkit-search-cancel-button]:hidden"
         value={value}
         onChange={(event) => change(event.target.value)}
       />

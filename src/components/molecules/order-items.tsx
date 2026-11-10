@@ -82,7 +82,7 @@ function OrderItemRow({
             </span>
           ) : null}
         </div>
-        <span className="tabular text-meta whitespace-nowrap text-muted-foreground">
+        <span className="tabular text-support whitespace-nowrap text-muted-foreground">
           {formatCurrency(item.total)}
         </span>
         {targets.length > 0 ? (
@@ -130,7 +130,7 @@ function OrderItemRow({
         ) : null}
       </div>
       {choices.length > 0 || extras.length > 0 ? (
-        <div className="flex flex-col pl-10 text-meta leading-[1.35] text-muted-foreground">
+        <div className="flex flex-col pl-10 text-support leading-[1.35] text-muted-foreground">
           {choices.length > 0 ? (
             <span>{choices.join(" · ")}</span>
           ) : null}
@@ -140,7 +140,7 @@ function OrderItemRow({
         </div>
       ) : null}
       {item.notes ? (
-        <p className="mt-1 ml-10 rounded-control bg-warning-soft px-3 py-2 text-meta leading-[1.4] font-medium text-warning-foreground">
+        <p className="mt-1 ml-10 rounded-control bg-warning-soft px-3 py-2 text-support leading-[1.4] font-medium text-warning-foreground">
           Obs.: {item.notes}
         </p>
       ) : null}

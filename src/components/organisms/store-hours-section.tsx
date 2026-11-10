@@ -159,7 +159,7 @@ export function StoreHoursSection({
                   <p className="text-body font-medium">
                     {day.label}
                   </p>
-                  <p className="text-meta text-muted-foreground">
+                  <p className="text-support text-muted-foreground">
                     {day.open ? "Aberto" : "Fechado"}
                   </p>
                 </div>

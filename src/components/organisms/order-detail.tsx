@@ -38,6 +38,8 @@ import {
   PAYMENT_LABELS,
   elapsedLabel,
   isLate,
+  orderTone,
+  type OrderTone,
 } from "@/lib/orders/board";
 import {
   addressLines,
@@ -151,7 +153,7 @@ function DetailContent({
     return (
       <>
         <header className="flex items-center gap-3 border-b py-3 pr-3 pl-4 lg:pl-6">
-          <SheetTitle className="flex-1 text-title font-semibold">
+          <SheetTitle className="flex-1 text-page-title font-semibold">
             #{number}
           </SheetTitle>
           <CloseButton onClose={onClose} />
@@ -182,7 +184,7 @@ function DetailContent({
   const whatsApp = whatsAppLink(order, live.storeName);
   const address = addressLines(order.address);
   const change = order.isPaid ? null : changeLabel(order);
-  const tone = toneClasses(order, late);
+  const tone = TONE_CLASSES[orderTone(order.status, late)];
   const badgeIcon =
     order.status === "A_CAMINHO" ||
     (order.status === "PRONTO" &&
@@ -197,7 +199,7 @@ function DetailContent({
       <header className="flex shrink-0 items-start gap-3 border-b pt-3 pr-3 pb-4 pl-4 lg:pl-6">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <SheetTitle className="tabular text-title leading-[1.1] font-semibold">
+            <SheetTitle className="tabular text-page-title leading-[1.1] font-semibold">
               #{order.number}
             </SheetTitle>
             <Badge
@@ -213,12 +215,12 @@ function DetailContent({
               {statusBadge(order)}
             </Badge>
           </div>
-          <span className="truncate text-section leading-[1.3] font-semibold">
+          <span className="truncate text-section-title leading-[1.3] font-semibold">
             {order.customerName}
           </span>
           <SheetDescription
             className={cn(
-              "tabular flex items-center gap-1 text-meta",
+              "tabular flex items-center gap-1 text-support",
               late
                 ? "font-semibold text-destructive"
                 : "text-muted-foreground",
@@ -249,7 +251,7 @@ function DetailContent({
             {pluralize(itemCount, "item", "itens")}
           </SectionLabel>
           {order.notes ? (
-            <p className="rounded-control bg-warning-soft px-3 py-2 text-meta leading-[1.4] font-medium text-warning-foreground">
+            <p className="rounded-control bg-warning-soft px-3 py-2 text-support leading-[1.4] font-medium text-warning-foreground">
               Obs. do pedido: {order.notes}
             </p>
           ) : null}
@@ -278,7 +280,7 @@ function DetailContent({
                   {address.main}
                 </span>
                 {address.extra ? (
-                  <span className="text-meta text-muted-foreground">
+                  <span className="text-support text-muted-foreground">
                     {address.extra}
                   </span>
                 ) : null}
@@ -305,7 +307,7 @@ function DetailContent({
                 href={whatsApp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 items-center gap-2 rounded-control border bg-card px-3 text-meta font-medium whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
+                className="inline-flex h-9 items-center gap-2 rounded-control border bg-card px-3 text-support font-medium whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
               >
                 <MessageCircle
                   aria-hidden
@@ -343,11 +345,11 @@ function DetailContent({
             ) : null}
           </div>
           {change ? (
-            <span className="text-meta text-muted-foreground">
+            <span className="text-support text-muted-foreground">
               {change}
             </span>
           ) : null}
-          <dl className="flex flex-col gap-1 pt-2 text-meta text-muted-foreground">
+          <dl className="flex flex-col gap-1 pt-2 text-support text-muted-foreground">
             <Row label="Subtotal">
               {formatCurrency(order.subtotal)}
             </Row>
@@ -370,7 +372,7 @@ function DetailContent({
               <dt className="text-body font-semibold">
                 Total
               </dt>
-              <dd className="text-section font-semibold whitespace-nowrap">
+              <dd className="text-section-title font-semibold whitespace-nowrap">
                 {formatCurrency(order.total)}
               </dd>
             </div>
@@ -400,7 +402,7 @@ function DetailContent({
             {pending ? "Salvando…" : stepLabel}
           </button>
         ) : (
-          <span className="flex-1 self-center text-meta text-muted-foreground">
+          <span className="flex-1 self-center text-support text-muted-foreground">
             Pedido {statusBadge(order).toLowerCase()}
           </span>
         )}
@@ -517,50 +519,41 @@ function CloseButton({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Cor da faixa no topo e do ponto do passo atual na linha do tempo. */
-function toneClasses(
-  order: Order,
-  late: boolean,
-): { stripe: string; dot: string } {
-  if (late)
-    return {
-      stripe: "bg-destructive",
-      dot: "border-destructive bg-destructive",
-    };
-  switch (order.status) {
-    case "RECEBIDO":
-      return {
-        stripe: "bg-warning",
-        dot: "border-warning bg-warning",
-      };
-    case "EM_PREPARO":
-      return {
-        stripe: "bg-subtle",
-        dot: "border-subtle bg-subtle",
-      };
-    case "PRONTO":
-      return {
-        stripe: "bg-success",
-        dot: "border-success bg-success",
-      };
-    case "A_CAMINHO":
-    case "CONCLUIDO":
-      return {
-        stripe: "bg-foreground",
-        dot: "border-foreground bg-foreground",
-      };
-    default:
-      return {
-        stripe: "bg-destructive",
-        dot: "border-destructive bg-destructive",
-      };
-  }
-}
+/** Classes da faixa no topo e do ponto da etapa atual, pela cor da etapa. */
+const TONE_CLASSES: Record<
+  OrderTone,
+  { stripe: string; dot: string }
+> = {
+  late: {
+    stripe: "bg-destructive",
+    dot: "border-destructive bg-destructive",
+  },
+  new: {
+    stripe: "bg-warning",
+    dot: "border-warning bg-warning",
+  },
+  preparing: {
+    stripe: "bg-preparing",
+    dot: "border-preparing bg-preparing",
+  },
+  ready: {
+    stripe: "bg-success",
+    dot: "border-success bg-success",
+  },
+  out: {
+    stripe: "bg-foreground",
+    dot: "border-foreground bg-foreground",
+  },
+  stopped: {
+    stripe: "bg-destructive",
+    dot: "border-destructive bg-destructive",
+  },
+};
 
 function statusVariant(status: OrderStatus): BadgeVariant {
   switch (status) {
     case "RECEBIDO":
-      return "pending";
+      return "warning-medium";
     case "PRONTO":
       return "success";
     case "A_CAMINHO":

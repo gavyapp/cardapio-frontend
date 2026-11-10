@@ -273,7 +273,7 @@ export function OrderBoard({
       {!live.connected ? (
         <p
           role="status"
-          className="flex items-center gap-2 rounded-surface bg-warning-soft px-4 py-2.5 text-meta text-warning-foreground"
+          className="flex items-center gap-2 rounded-surface bg-warning-soft px-4 py-2.5 text-support text-warning-foreground"
         >
           <WifiOff aria-hidden className="size-4" />
           Sem conexão. Reconectando… Os pedidos novos
@@ -306,7 +306,7 @@ export function OrderBoard({
                     aria-selected={active}
                     onClick={() => setMobileColumn(tab.id)}
                     className={cn(
-                      "flex h-12 min-w-0 flex-auto items-center justify-center gap-1.5 px-2 text-meta whitespace-nowrap text-muted-foreground",
+                      "flex h-12 min-w-0 flex-auto items-center justify-center gap-1.5 px-2 text-support whitespace-nowrap text-muted-foreground",
                       active &&
                         "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--foreground)]",
                     )}
@@ -509,7 +509,7 @@ function EmptyColumn({
       <p className="text-body font-medium">
         {query ? "Nenhum resultado" : column.emptyTitle}
       </p>
-      <p className="max-w-60 text-meta leading-snug text-pretty text-muted-foreground">
+      <p className="max-w-60 text-support leading-snug text-pretty text-muted-foreground">
         {query
           ? `Nada nesta etapa para "${query}".`
           : column.emptyText}

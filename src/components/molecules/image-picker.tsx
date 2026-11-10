@@ -104,7 +104,7 @@ export function ImagePicker({
         </div>
         <p
           className={cn(
-            "text-meta",
+            "text-support",
             error
               ? "text-destructive"
               : "text-muted-foreground",

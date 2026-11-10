@@ -20,7 +20,7 @@ export function PageHeader({
 }) {
   return (
     <header className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-3">
-      <h1 className="mr-auto flex min-w-0 items-baseline gap-2 text-title leading-[1.2] font-semibold">
+      <h1 className="mr-auto flex min-w-0 items-baseline gap-2 text-page-title leading-[1.2] font-semibold">
         {title}
         {count === undefined ? null : (
           <PageHeaderCount>{count}</PageHeaderCount>

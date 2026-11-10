@@ -39,7 +39,7 @@ export function OrderTimeline({
                       ? currentDotClass
                       : reached
                         ? "border-foreground bg-foreground"
-                        : "border-border-strong bg-card",
+                        : "border-step-upcoming bg-card",
                 )}
               />
               <span
@@ -67,12 +67,12 @@ export function OrderTimeline({
                 {step.label}
               </span>
               {step.note ? (
-                <span className="text-meta text-muted-foreground">
+                <span className="text-support text-muted-foreground">
                   Motivo: {step.note}
                 </span>
               ) : null}
             </div>
-            <span className="tabular text-meta leading-[1.6] text-muted-foreground">
+            <span className="tabular text-support leading-[1.6] text-muted-foreground">
               {step.time ?? "—"}
             </span>
           </li>

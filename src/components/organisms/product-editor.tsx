@@ -285,7 +285,7 @@ function EditorForm({
       }}
     >
       <header className="flex min-h-16 shrink-0 items-center gap-2 border-b py-2 pr-4 pl-6">
-        <SheetTitle className="mr-auto min-w-0 truncate text-section font-semibold">
+        <SheetTitle className="mr-auto min-w-0 truncate text-section-title font-semibold">
           {product
             ? `Editar produto · ${product.name}`
             : "Novo produto"}
@@ -393,7 +393,7 @@ function EditorForm({
         {error ? (
           <p
             role="alert"
-            className="text-meta text-destructive"
+            className="text-support text-destructive"
           >
             {error}
           </p>

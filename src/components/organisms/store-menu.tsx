@@ -84,7 +84,7 @@ export function StoreMenu({
               name={store.name}
               primaryColor={store.primaryColor}
               imageUrl={store.logoUrl}
-              className="size-11 text-meta"
+              className="size-11 text-support"
             />
             <div className="min-w-0">
               <p className="truncate text-body font-semibold">
@@ -166,7 +166,7 @@ function PublicHost({ slug }: { slug: string }) {
   );
 
   return (
-    <p className="truncate text-meta text-muted-foreground">
+    <p className="truncate text-support text-muted-foreground">
       {host}
     </p>
   );

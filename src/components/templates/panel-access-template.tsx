@@ -27,7 +27,7 @@ export function PanelAccessTemplate({
       </header>
       <main className="flex flex-1 items-start justify-center px-4 py-10 sm:items-center sm:py-16">
         <section className="w-full max-w-sm rounded-surface border bg-card p-6 sm:p-8">
-          <h1 className="text-section font-semibold">
+          <h1 className="text-section-title font-semibold">
             {title}
           </h1>
           <div className="mt-1.5 text-body text-muted-foreground">

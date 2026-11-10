@@ -112,7 +112,7 @@ export function CategoryList({
         >
           {category.name}
         </span>
-        <span className="tabular text-meta text-muted-foreground">
+        <span className="tabular text-support text-muted-foreground">
           {productCountLabel(category.productCount)}
           {category.isAvailable
             ? ""
@@ -155,7 +155,7 @@ export function CategoryList({
         )}
         <span
           className={cn(
-            "hidden text-meta sm:inline",
+            "hidden text-support sm:inline",
             !category.isAvailable &&
               "text-muted-foreground",
           )}
