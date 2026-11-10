@@ -31,7 +31,7 @@ export function NumberStepper({
       role="group"
       aria-label={label}
       className={cn(
-        "inline-flex h-11 w-fit items-center rounded-lg border",
+        "inline-flex h-11 w-fit items-center rounded-control border",
         invalid &&
           "border-destructive ring-3 ring-destructive/20",
       )}
@@ -47,7 +47,7 @@ export function NumberStepper({
       >
         <Minus />
       </Button>
-      <span className="tabular min-w-20 text-center text-[15px] font-medium">
+      <span className="tabular min-w-20 text-center text-body font-medium">
         {value}
         {unit ? ` ${unit}` : ""}
       </span>

@@ -31,7 +31,7 @@ export default function OrdersPage() {
           <ClosedOrders />
         </Suspense>
       }
-      action={
+      search={
         <Suspense>
           <SearchParamInput
             name={ORDER_SEARCH_PARAM}

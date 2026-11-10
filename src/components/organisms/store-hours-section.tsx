@@ -145,7 +145,7 @@ export function StoreHoursSection({
           {draft.map((day) => (
             <div
               key={day.weekday}
-              className="grid gap-4 py-5 md:grid-cols-[200px_1fr] md:items-start"
+              className="grid gap-4 py-5 sm:grid-cols-[200px_1fr] sm:items-start"
             >
               <div className="flex items-center gap-4">
                 <Switch
@@ -156,10 +156,10 @@ export function StoreHoursSection({
                   }
                 />
                 <div>
-                  <p className="text-[15px] font-medium">
+                  <p className="text-body font-medium">
                     {day.label}
                   </p>
-                  <p className="text-[13px] text-muted-foreground">
+                  <p className="text-support text-muted-foreground">
                     {day.open ? "Aberto" : "Fechado"}
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export function StoreHoursSection({
                       }
                       className="tabular w-36"
                     />
-                    <span className="text-[15px] text-muted-foreground">
+                    <span className="text-body text-muted-foreground">
                       até
                     </span>
                     <Input
@@ -195,14 +195,14 @@ export function StoreHoursSection({
                     />
                   </div>
                 ) : (
-                  <p className="py-2.5 text-[15px] text-muted-foreground">
+                  <p className="py-2.5 text-body text-muted-foreground">
                     Fechado o dia todo
                   </p>
                 )}
                 <button
                   type="button"
                   onClick={() => copyToAllDays(day)}
-                  className="w-fit text-[15px] font-medium hover:underline"
+                  className="w-fit text-body font-medium hover:underline"
                 >
                   Copiar para todos os dias
                 </button>
@@ -217,7 +217,7 @@ export function StoreHoursSection({
             return (
               <div
                 key={day.weekday}
-                className="flex items-center justify-between py-4 text-[15px]"
+                className="flex items-center justify-between py-4 text-body"
               >
                 <dt>{day.label}</dt>
                 <dd

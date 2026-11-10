@@ -123,7 +123,7 @@ function ReasonForm({
         aria-label="Motivo"
         className="flex flex-col gap-2"
       >
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="text-caption font-medium text-muted-foreground">
           Motivo
         </span>
         {reasons.map((option) => {
@@ -139,7 +139,7 @@ function ReasonForm({
                 setError(null);
               }}
               className={cn(
-                "flex min-h-11 items-center gap-3 rounded-[4px] border px-3 text-left text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-foreground",
+                "flex min-h-11 items-center gap-3 rounded-control border px-3 text-left text-body outline-none focus-visible:ring-2 focus-visible:ring-foreground",
                 active &&
                   "border-foreground bg-muted font-semibold",
               )}
@@ -147,7 +147,7 @@ function ReasonForm({
               <span
                 aria-hidden
                 className={cn(
-                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-[#8a9099]",
+                  "size-4.5 shrink-0 rounded-full border-[1.5px] border-gray-medium",
                   active &&
                     "border-[6px] border-foreground",
                 )}
@@ -173,7 +173,7 @@ function ReasonForm({
         {error ? (
           <p
             role="alert"
-            className="text-sm text-destructive"
+            className="text-support text-destructive"
           >
             {error}
           </p>

@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { SearchParamButton } from "@/components/molecules/search-param-button";
+import { NewItemButton } from "@/components/molecules/new-item-button";
 import { ComplementGroupList } from "@/components/organisms/complement-group-list";
 import {
   CatalogPageSkeleton,
   CatalogPageTemplate,
 } from "@/components/templates/catalog-page-template";
-import {
-  GROUP_PARAM,
-  NEW_ITEM,
-} from "@/lib/catalog/params";
+import { GROUP_PARAM } from "@/lib/catalog/params";
 import { listComplementGroups } from "@/lib/data/complement-groups";
 import { requirePanelAccess } from "@/lib/panel/access";
 
@@ -38,12 +35,9 @@ async function ComplementGroups() {
       title="Complementos"
       count={groups.length}
       action={
-        <SearchParamButton
-          name={GROUP_PARAM}
-          value={NEW_ITEM}
-        >
+        <NewItemButton param={GROUP_PARAM}>
           Novo grupo
-        </SearchParamButton>
+        </NewItemButton>
       }
     >
       <ComplementGroupList

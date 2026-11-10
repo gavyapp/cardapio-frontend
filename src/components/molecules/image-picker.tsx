@@ -56,7 +56,7 @@ export function ImagePicker({
     <div className="flex flex-wrap items-center gap-4">
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-muted-foreground",
+          "flex shrink-0 items-center justify-center overflow-hidden rounded-control border bg-muted text-muted-foreground",
           aspect === "square" ? "size-24" : "h-24 w-56",
         )}
       >
@@ -104,7 +104,7 @@ export function ImagePicker({
         </div>
         <p
           className={cn(
-            "text-[13px]",
+            "text-support",
             error
               ? "text-destructive"
               : "text-muted-foreground",

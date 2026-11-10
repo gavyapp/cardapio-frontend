@@ -39,7 +39,7 @@ export function OrderTimeline({
                       ? currentDotClass
                       : reached
                         ? "border-foreground bg-foreground"
-                        : "border-[#c9ced4] bg-card",
+                        : "border-border-strong bg-card",
                 )}
               />
               <span
@@ -57,7 +57,7 @@ export function OrderTimeline({
             <div className="flex flex-col pb-3">
               <span
                 className={cn(
-                  "text-[15px] leading-[1.4]",
+                  "text-body leading-[1.4]",
                   step.state === "current" &&
                     "font-semibold",
                   !reached && "text-muted-foreground",
@@ -67,12 +67,12 @@ export function OrderTimeline({
                 {step.label}
               </span>
               {step.note ? (
-                <span className="text-[13px] text-muted-foreground">
+                <span className="text-support text-muted-foreground">
                   Motivo: {step.note}
                 </span>
               ) : null}
             </div>
-            <span className="tabular text-[13px] leading-[1.6] text-muted-foreground">
+            <span className="tabular text-support leading-[1.6] text-muted-foreground">
               {step.time ?? "—"}
             </span>
           </li>

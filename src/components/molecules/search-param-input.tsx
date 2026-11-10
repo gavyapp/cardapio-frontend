@@ -51,9 +51,9 @@ export function SearchParamInput({
         type="search"
         aria-label={label}
         placeholder={placeholder}
-        // Busca padrão do painel: altura, borda e texto dos botões de
-        // filtro (36px, canto de 4px, 13px no computador).
-        className="rounded-[4px] border-border bg-card px-9 text-[13px] lg:h-9 [&::-webkit-search-cancel-button]:hidden"
+        // Busca padrão do painel: altura e texto dos controles compactos
+        // (36px e 13px no computador).
+        className="px-9 text-support lg:h-9 [&::-webkit-search-cancel-button]:hidden"
         value={value}
         onChange={(event) => change(event.target.value)}
       />
@@ -62,7 +62,7 @@ export function SearchParamInput({
           type="button"
           aria-label="Limpar busca"
           onClick={() => change("")}
-          className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md hover:bg-muted hover:text-foreground"
+          className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-control hover:bg-muted hover:text-foreground"
         >
           <X aria-hidden className="size-4" />
         </button>

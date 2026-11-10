@@ -8,6 +8,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import {
   DropdownMenu,
@@ -191,10 +192,10 @@ export function ProductList({
         {dragHandle}
         <span
           className={cn(
-            "flex size-10 items-center justify-center overflow-hidden rounded-sm",
+            "flex size-10 items-center justify-center overflow-hidden rounded-control",
             product.imageUrl
               ? "bg-muted"
-              : "border border-dashed text-center text-xs leading-none text-muted-foreground",
+              : "border border-dashed text-center text-caption leading-none text-muted-foreground",
             !product.isAvailable && "opacity-60",
           )}
         >
@@ -222,7 +223,7 @@ export function ProductList({
                 event.stopPropagation();
                 open();
               }}
-              className="rounded-sm text-left text-[15px] font-medium outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+              className="rounded-control text-left text-body font-medium outline-none focus-visible:ring-1 focus-visible:ring-foreground"
             >
               {product.name}
               {product.isAvailable ? null : (
@@ -233,32 +234,32 @@ export function ProductList({
               )}
             </button>
             {product.isSuggested ? (
-              <span className="rounded-sm bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground sm:hidden">
+              <Badge variant="muted" className="sm:hidden">
                 Sugerido
-              </span>
+              </Badge>
             ) : null}
           </span>
-          <span className="truncate text-[13px] text-muted-foreground">
+          <span className="truncate text-support text-muted-foreground">
             {linkedGroups.length
               ? `Complementos: ${linkedGroups.map((group) => group.name).join(", ")}`
               : "Sem complementos"}
           </span>
           {product.badges.length > 0 ? (
-            <span className="text-[13px] text-muted-foreground">
+            <span className="text-support text-muted-foreground">
               Selos: {product.badges.join(", ")}
             </span>
           ) : null}
           {blocking ? (
-            <span className="text-[13px] leading-snug text-destructive">
+            <span className="text-support leading-snug text-destructive">
               Não pode ser pedido: &quot;{blocking.name}
               &quot; está sem opções disponíveis
             </span>
           ) : null}
-          <span className="tabular text-[13px] sm:hidden">
+          <span className="tabular text-support sm:hidden">
             {formatCurrency(product.price)}
           </span>
         </div>
-        <span className="tabular hidden text-right text-[15px] sm:block">
+        <span className="tabular hidden text-right text-body sm:block">
           {formatCurrency(product.price)}
         </span>
         <span
@@ -360,7 +361,7 @@ export function ProductList({
       aria-hidden
       className={cn(
         ROW_GRID,
-        "hidden h-10 pr-6 pl-1 text-xs font-medium text-muted-foreground sm:grid",
+        "hidden h-10 pr-6 pl-1 text-caption font-medium text-muted-foreground sm:grid",
       )}
     >
       <span />
@@ -387,7 +388,7 @@ export function ProductList({
           renderItem={renderRow}
         />
         {inCategory.length === 0 ? (
-          <p className="px-4 py-4 text-[13px] text-muted-foreground sm:px-6">
+          <p className="px-4 py-4 text-support text-muted-foreground sm:px-6">
             Nenhum produto nesta categoria.
           </p>
         ) : null}
@@ -420,7 +421,7 @@ export function ProductList({
 
     if (sections.length === 0) {
       return (
-        <p className="rounded-lg border bg-card px-6 py-10 text-center text-[15px] text-muted-foreground">
+        <p className="rounded-surface border bg-card px-6 py-10 text-center text-body text-muted-foreground">
           Nenhum produto encontrado para &quot;
           {(searchParam ?? "").trim()}&quot;.
         </p>
@@ -432,9 +433,9 @@ export function ProductList({
           <section
             key={category.id}
             aria-label={category.name}
-            className="rounded-lg border bg-card"
+            className="rounded-surface border bg-card"
           >
-            <h2 className="flex min-h-14 items-center border-b px-4 text-[15px] font-semibold sm:px-6">
+            <h2 className="flex min-h-14 items-center border-b px-4 text-body font-semibold sm:px-6">
               {category.name}
             </h2>
             {tableHeader}

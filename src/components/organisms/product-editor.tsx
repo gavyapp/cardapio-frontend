@@ -285,7 +285,7 @@ function EditorForm({
       }}
     >
       <header className="flex min-h-16 shrink-0 items-center gap-2 border-b py-2 pr-4 pl-6">
-        <SheetTitle className="mr-auto min-w-0 truncate text-lg font-semibold">
+        <SheetTitle className="mr-auto min-w-0 truncate text-section-title font-semibold">
           {product
             ? `Editar produto · ${product.name}`
             : "Novo produto"}
@@ -307,7 +307,7 @@ function EditorForm({
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-background p-4 sm:p-6 [&>*]:shrink-0">
         <nav
           aria-label="Etapas do produto"
-          className="flex shrink-0 gap-2 overflow-x-auto rounded-lg border bg-card px-2"
+          className="flex shrink-0 gap-2 overflow-x-auto rounded-surface border bg-card px-2"
         >
           {STEPS.map((label, index) => {
             const active = step === index;
@@ -321,7 +321,7 @@ function EditorForm({
                 aria-current={active ? "step" : undefined}
                 onClick={() => goTo(index as Step)}
                 className={cn(
-                  "flex h-11 shrink-0 items-center gap-2 px-2 text-[15px] whitespace-nowrap text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-foreground",
+                  "flex h-11 shrink-0 items-center gap-2 px-2 text-body whitespace-nowrap text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-foreground",
                   active &&
                     "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--color-foreground)]",
                 )}
@@ -329,7 +329,7 @@ function EditorForm({
                 {isWizard ? (
                   <span
                     className={cn(
-                      "tabular flex size-6 items-center justify-center rounded-full border-[1.5px] text-xs font-semibold",
+                      "tabular flex size-6 items-center justify-center rounded-full border-[1.5px] text-caption font-semibold",
                       active || done
                         ? "border-foreground bg-foreground text-background"
                         : "border-border bg-card",
@@ -393,7 +393,7 @@ function EditorForm({
         {error ? (
           <p
             role="alert"
-            className="text-[13px] text-destructive"
+            className="text-support text-destructive"
           >
             {error}
           </p>

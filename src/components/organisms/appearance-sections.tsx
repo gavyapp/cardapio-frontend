@@ -21,7 +21,7 @@ import {
 } from "@/lib/store/theme";
 import { cn } from "@/lib/utils";
 
-import { useSettingsForm } from "./settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 export const APPEARANCE_SECTIONS = [
   { id: "logo-e-capa", label: "Logo e capa" },
@@ -164,7 +164,6 @@ export function AppearanceSections({
           <SettingRow title="Tema">
             <SegmentedControl
               label="Tema do cardápio"
-              variant="solid"
               fullWidth
               value={draft.mode}
               options={[
@@ -186,7 +185,6 @@ export function AppearanceSections({
           <SettingRow title="Layout dos produtos">
             <SegmentedControl
               label="Layout dos produtos"
-              variant="solid"
               fullWidth
               value={draft.layout}
               options={[
@@ -253,7 +251,7 @@ function ColorPalette({
               aria-label={`Cor ${hex}`}
               onClick={() => onChange(hex.toLowerCase())}
               className={cn(
-                "size-11 rounded-lg border-2 border-transparent ring-offset-2 ring-offset-card outline-none focus-visible:ring-2 focus-visible:ring-foreground",
+                "size-11 rounded-control border-2 border-transparent ring-offset-2 ring-offset-card outline-none focus-visible:ring-2 focus-visible:ring-foreground",
                 selected &&
                   "border-foreground ring-2 ring-card ring-inset",
               )}
@@ -266,13 +264,13 @@ function ColorPalette({
       <label
         htmlFor={pickerId}
         className={cn(
-          "flex h-11 cursor-pointer items-center gap-3 rounded-lg border bg-card px-3 text-[15px]",
+          "flex h-11 cursor-pointer items-center gap-3 rounded-control border bg-card px-3 text-body",
           !isPreset && "border-foreground",
         )}
       >
         <span
           aria-hidden
-          className="size-6 rounded-md border"
+          className="size-6 rounded-control border"
           style={{ backgroundColor: value }}
         />
         <span className="font-medium">Outra cor</span>

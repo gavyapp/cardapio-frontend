@@ -43,32 +43,32 @@ const STATES = [
 const TYPOGRAPHY = [
   [
     "40 · Número grande",
-    "text-[40px] leading-none font-semibold tabular",
+    "text-big-number leading-none font-semibold tabular",
     "R$ 1.284,50 · #1046",
   ],
   [
     "24 · Título da página",
-    "text-2xl font-semibold",
+    "text-page-title font-semibold",
     "Pedidos de hoje",
   ],
   [
     "18 · Título de seção",
-    "text-lg font-semibold",
+    "text-section-title font-semibold",
     "Mais vendidos",
   ],
   [
     "15 · Texto padrão",
-    "text-[15px]",
+    "text-body",
     "The Classic · Salvar alterações",
   ],
   [
     "13 · Texto secundário",
-    "text-[13px] text-muted-foreground",
+    "text-support text-muted-foreground",
     "Pedido às 19:42 · Retirada no balcão",
   ],
   [
     "12 · Legenda",
-    "text-xs font-medium text-muted-foreground",
+    "text-caption font-medium text-muted-foreground",
     "Pedidos (7 dias)",
   ],
 ] as const;
@@ -90,7 +90,9 @@ function Section({
 }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">{title}</h2>
+      <h2 className="text-section-title font-semibold">
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -103,10 +105,10 @@ export default function SamplePage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 p-6 sm:p-10">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-page-title font-semibold">
           Base visual
         </h1>
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-support text-muted-foreground">
           Tokens e componentes do protótipo v9. Esta página
           não existe em produção.
         </p>
@@ -117,12 +119,12 @@ export default function SamplePage() {
           {COLORS.map(([name, className, hex]) => (
             <div key={name} className="flex flex-col gap-2">
               <div
-                className={`h-14 rounded-lg border ${className}`}
+                className={`h-14 rounded-control border ${className}`}
               />
-              <p className="text-[13px] font-medium">
+              <p className="text-support font-medium">
                 {name}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 {hex}
               </p>
             </div>
@@ -131,11 +133,11 @@ export default function SamplePage() {
         <div className="grid gap-4 sm:grid-cols-3">
           {STATES.map(([name, strong, soft]) => (
             <div key={name} className="flex flex-col gap-2">
-              <div className="flex h-12 overflow-hidden rounded-lg border">
+              <div className="flex h-12 overflow-hidden rounded-control border">
                 <div className={`flex-1 ${strong}`} />
                 <div className={`flex-1 ${soft}`} />
               </div>
-              <p className="text-[13px] font-medium">
+              <p className="text-support font-medium">
                 {name}
               </p>
             </div>
@@ -144,13 +146,13 @@ export default function SamplePage() {
       </Section>
 
       <Section title="Tipografia">
-        <div className="divide-y divide-border rounded-lg border bg-card">
+        <div className="divide-y divide-border rounded-control border bg-card">
           {TYPOGRAPHY.map(([name, className, example]) => (
             <div
               key={name}
               className="grid items-center gap-2 p-4 sm:grid-cols-[200px_1fr]"
             >
-              <p className="text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 {name}
               </p>
               <p className={className}>{example}</p>
@@ -205,7 +207,7 @@ export default function SamplePage() {
               defaultValue="The Classic"
               aria-invalid
             />
-            <p className="text-[13px] text-destructive">
+            <p className="text-support text-destructive">
               Informe um valor válido.
             </p>
           </div>
@@ -214,15 +216,15 @@ export default function SamplePage() {
 
       <Section title="Selos de status">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="warning">Novo</Badge>
+          <Badge variant="warning-solid">Novo</Badge>
           <Badge variant="destructive">Atrasado</Badge>
-          <Badge variant="secondary">Em preparo</Badge>
+          <Badge variant="muted">Em preparo</Badge>
           <Badge variant="success">
             Pronto para retirada
           </Badge>
           <Badge variant="success">Ativa agora</Badge>
-          <Badge variant="outline">Agendada</Badge>
-          <Badge variant="secondary">Encerrada</Badge>
+          <Badge variant="neutral">Agendada</Badge>
+          <Badge variant="muted">Encerrada</Badge>
         </div>
       </Section>
 
@@ -235,7 +237,7 @@ export default function SamplePage() {
                 formatCurrency
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-1 text-[15px]">
+            <CardContent className="grid grid-cols-2 gap-1 text-body">
               {CURRENCY_SAMPLES.map((v) => (
                 <div key={v} className="contents">
                   <span className="text-muted-foreground">
@@ -253,7 +255,7 @@ export default function SamplePage() {
               <CardTitle>Telefone</CardTitle>
               <CardDescription>formatPhone</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-1 text-[15px]">
+            <CardContent className="grid grid-cols-2 gap-1 text-body">
               {PHONE_SAMPLES.map((t) => (
                 <div key={t} className="contents">
                   <span className="text-muted-foreground">
@@ -270,7 +272,7 @@ export default function SamplePage() {
       </Section>
 
       <Section title="Tema por loja">
-        <p className="-mt-2 text-[13px] text-muted-foreground">
+        <p className="-mt-2 text-support text-muted-foreground">
           A cor principal vem de stores.settings e vira
           variáveis CSS no layout da loja. O texto sobre ela
           é escolhido pelo contraste.

@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Escolha entre poucas opções lado a lado (radiogroup). "pill" é o
- * alternador discreto (Com foto / Sem foto); "solid" destaca a escolhida em
- * preto (Obrigatório / Opcional), como no protótipo.
+ * Escolha entre poucas opções lado a lado (radiogroup), no visual único do
+ * protótipo: blocos colados com 1px de divisão e a opção escolhida em preto.
  */
 export function SegmentedControl<
   T extends string | boolean,
@@ -13,7 +12,6 @@ export function SegmentedControl<
   value,
   options,
   onChange,
-  variant = "pill",
   fullWidth = false,
 }: {
   /** Nome acessível, quando não há rótulo visível. */
@@ -23,7 +21,6 @@ export function SegmentedControl<
   value: T;
   options: [T, string][];
   onChange: (value: T) => void;
-  variant?: "pill" | "solid";
   /** Ocupa a largura disponível, com as opções divididas por igual. */
   fullWidth?: boolean;
 }) {
@@ -33,10 +30,8 @@ export function SegmentedControl<
       aria-label={label}
       aria-labelledby={labelledBy}
       className={cn(
-        fullWidth ? "flex w-full" : "flex w-fit self-start",
-        variant === "pill"
-          ? "rounded-md border bg-muted p-0.5"
-          : "overflow-hidden rounded-md border",
+        "flex gap-px overflow-hidden rounded-control border bg-border",
+        fullWidth ? "w-full" : "w-fit self-start",
       )}
     >
       {options.map(([optionValue, optionLabel]) => {
@@ -49,20 +44,11 @@ export function SegmentedControl<
             aria-checked={selected}
             onClick={() => onChange(optionValue)}
             className={cn(
-              "text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-foreground",
-              fullWidth && "flex-1 text-[15px]",
-              variant === "pill"
-                ? cn(
-                    "h-8 rounded-[5px] px-3 font-medium text-muted-foreground",
-                    selected &&
-                      "bg-card text-foreground shadow-sm",
-                  )
-                : cn(
-                    "h-11 px-4 focus-visible:ring-inset",
-                    selected
-                      ? "bg-foreground font-semibold text-background"
-                      : "bg-card hover:bg-muted",
-                  ),
+              "h-11 px-4 text-support focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current lg:h-10.5",
+              fullWidth && "flex-1",
+              selected
+                ? "bg-foreground font-semibold text-background"
+                : "bg-card text-foreground hover:bg-muted",
             )}
           >
             {optionLabel}

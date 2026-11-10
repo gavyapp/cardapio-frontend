@@ -128,14 +128,14 @@ export function ComplementGroupList({
 
   return (
     <>
-      <p className="rounded-lg border bg-card px-4 py-3 text-[13px] text-muted-foreground sm:px-6">
+      <p className="rounded-surface border bg-card px-4 py-3 text-support text-muted-foreground sm:px-6">
         Os grupos são compartilhados. O que mudar aqui vale
         para todos os produtos que usam o grupo. Para ligar
         um grupo a um produto, abra o produto.
       </p>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border bg-card px-6 py-12 text-center text-[15px] text-muted-foreground">
+        <div className="rounded-surface border bg-card px-6 py-12 text-center text-body text-muted-foreground">
           Nenhum grupo ainda. Crie grupos como &quot;Ponto
           da carne&quot; ou &quot;Adicionais&quot; e ligue
           aos produtos.
@@ -152,13 +152,13 @@ export function ComplementGroupList({
           }
           handleLabel={(group) => `Mover ${group.name}`}
           className="flex flex-col gap-4"
-          itemClassName="rounded-lg"
+          itemClassName="rounded-surface"
           renderItem={(group, dragHandle) => {
             const isOpen = expanded.has(group.id);
             const warning = unavailableWarning(group);
             const usedCount = group.usedBy.length;
             return (
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-surface border">
                 <div className="flex min-h-16 items-center gap-2 py-2 pr-2 pl-1 sm:pr-4">
                   {dragHandle}
                   <button
@@ -171,7 +171,7 @@ export function ComplementGroupList({
                         group.id,
                       )
                     }
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-1 text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-control py-1 text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
                   >
                     <ChevronDown
                       aria-hidden
@@ -181,10 +181,10 @@ export function ComplementGroupList({
                       )}
                     />
                     <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
-                      <span className="truncate text-[15px] font-semibold">
+                      <span className="truncate text-body font-semibold">
                         {group.name}
                       </span>
-                      <span className="text-[13px] text-muted-foreground">
+                      <span className="text-support text-muted-foreground">
                         {describeGroupRule(
                           group.minSelect,
                           group.maxSelect,
@@ -237,7 +237,7 @@ export function ComplementGroupList({
 
                 {showUsage.has(group.id) &&
                 usedCount > 0 ? (
-                  <p className="border-t px-4 py-3 text-[13px] text-muted-foreground">
+                  <p className="border-t px-4 py-3 text-support text-muted-foreground">
                     Usado em:{" "}
                     {group.usedBy
                       .map((product) => product.name)
@@ -246,14 +246,14 @@ export function ComplementGroupList({
                 ) : null}
 
                 {warning ? (
-                  <p className="border-t bg-destructive-soft px-4 py-3 text-[13px] text-destructive">
+                  <p className="border-t bg-destructive-soft px-4 py-3 text-support text-destructive">
                     {warning}
                   </p>
                 ) : null}
 
                 {isOpen ? (
                   <div className="border-t">
-                    <p className="px-4 pt-3 text-[13px] text-muted-foreground sm:hidden">
+                    <p className="px-4 pt-3 text-support text-muted-foreground sm:hidden">
                       {usedCount === 0
                         ? "Não usado em produtos"
                         : `Usado em: ${group.usedBy.map((product) => product.name).join(", ")}`}
@@ -266,7 +266,7 @@ export function ComplementGroupList({
                         >
                           <span
                             className={cn(
-                              "min-w-0 flex-1 truncate text-[15px]",
+                              "min-w-0 flex-1 truncate text-body",
                               !option.isAvailable &&
                                 "text-muted-foreground",
                             )}
@@ -276,7 +276,7 @@ export function ComplementGroupList({
                               ? ""
                               : " · pausada"}
                           </span>
-                          <span className="tabular text-[15px] text-muted-foreground">
+                          <span className="tabular text-body text-muted-foreground">
                             {option.price > 0
                               ? `+ ${formatCurrency(option.price)}`
                               : "Sem custo"}

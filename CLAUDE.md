@@ -6,7 +6,11 @@ Decisões de arquitetura ficam em `docs/adr/`. Banco: só muda por migration, e 
 
 Acesso ao banco só por `src/lib/data/`, nunca Supabase direto em página ou componente (ADR 0003).
 
+Estilo: só tokens do protótipo (`text-support`, `rounded-control`...), nunca valor solto como `text-[13px]` ou `rounded-lg`; painel e cardápio do cliente mudam os valores pelo tema (ADR 0004).
+
 Testes do banco: pgTAP em `supabase/tests/database/`, um arquivo por assunto, cenário em `-- Dado:` e descrição `quando → então` (ADR 0002).
+
+Nomes dizem o propósito, não o mecanismo (`NewItemButton`, não `SearchParamButton`); boas práticas de código na ADR 0005.
 
 Nome de arquivo e comentário dizem o assunto, nunca o código da task (T04, B3...). Código de task só no PR, na branch e no commit.
 
@@ -14,7 +18,7 @@ Código em inglês: funções, variáveis, tipos, constantes e nomes de arquivo 
 
 `src/lib` organizado por assunto, com nome curto porque a pasta dá o contexto (`catalog/types.ts`, `store/theme.ts`): `catalog`, `store`, `panel`, `hooks`, `routing` e, a cada fluxo novo, uma pasta dele (ex.: `orders`). Na raiz ficam só `data/`, `supabase/`, `format.ts`, `utils.ts` e `database.types.ts`.
 
-Componentes em Atomic Design, em `src/components`: `atoms` (primitivos do shadcn e peças indivisíveis), `molecules` (composições pequenas, como campo com rótulo), `organisms` (seções, cabeçalhos, menus), `templates` (esqueleto de página). Rotas em `src/app` só ligam dados ao template; nada de UI reutilizável dentro de `src/app`. O `shadcn add` grava em `atoms` (alias `ui` do `components.json`).
+Componentes em Atomic Design, em `src/components`: `atoms` (primitivos do shadcn e peças indivisíveis), `molecules` (composições pequenas, como campo com rótulo), `organisms` (seções, cabeçalhos, menus), `templates` (esqueleto de página) e `providers` (estado por contexto). Rotas em `src/app` só ligam dados ao template; nada de UI reutilizável dentro de `src/app`. O `shadcn add` grava em `atoms` (alias `ui` do `components.json`).
 
 ## Padrão git
 

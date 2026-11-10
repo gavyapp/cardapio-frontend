@@ -69,5 +69,9 @@ export function themeStyle(
     "--font-sans": `${FONTS[appearance.font]}, ui-sans-serif, system-ui, sans-serif`,
     // O cardápio do cliente é sobre fundo branco; o cinza é do painel.
     "--background": "#ffffff",
+    // Cantos do cardápio do cliente, maiores que os do painel. A jornada do
+    // cliente confirma os valores no protótipo.
+    "--control-radius": "10px",
+    "--surface-radius": "14px",
   } as CSSProperties;
 }

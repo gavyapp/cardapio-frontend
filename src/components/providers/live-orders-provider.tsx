@@ -98,7 +98,7 @@ export function LiveOrdersProvider({
       {alarm.blocked ? (
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 bg-warning px-4 py-2.5 text-sm font-semibold text-warning-foreground"
+          className="flex w-full items-center justify-center gap-2 bg-warning px-4 py-2.5 text-support font-semibold text-warning-foreground"
         >
           <BellRing aria-hidden className="size-4" />
           Toque aqui para ativar o som dos pedidos novos

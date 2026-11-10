@@ -186,7 +186,7 @@ function SortableItem({
       // categoria); o clique nela, ou o espaço do teclado, é só para mover.
       onClick={(event) => event.stopPropagation()}
       aria-label={handleLabel}
-      className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground active:cursor-grabbing"
+      className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-control text-muted-foreground outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground active:cursor-grabbing"
     >
       <GripVertical aria-hidden className="size-4.5" />
     </button>

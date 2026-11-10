@@ -357,25 +357,37 @@ export function stageCaption(
   }
 }
 
-/** Cor da faixa à esquerda do card. */
+/**
+ * Cor da etapa do pedido: a faixa do card no quadro, a faixa do detalhe e o
+ * ponto da etapa atual na linha do tempo. Um lugar só, para as telas não
+ * divergirem.
+ */
 export type OrderTone =
-  "late" | "new" | "preparing" | "ready" | "out";
+  | "late"
+  | "new"
+  | "preparing"
+  | "ready"
+  | "out"
+  | "stopped";
 
 export function orderTone(
-  order: BoardOrder,
-  lateAfterMinutes: number,
-  now: number,
+  status: OrderStatus,
+  late: boolean,
 ): OrderTone {
-  if (isLate(order, lateAfterMinutes, now)) return "late";
-  switch (order.status) {
+  if (late) return "late";
+  switch (status) {
     case "RECEBIDO":
       return "new";
     case "EM_PREPARO":
       return "preparing";
     case "PRONTO":
       return "ready";
-    default:
+    case "A_CAMINHO":
+    case "CONCLUIDO":
       return "out";
+    case "REJEITADO":
+    case "CANCELADO":
+      return "stopped";
   }
 }
 

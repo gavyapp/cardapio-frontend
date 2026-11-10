@@ -5,12 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Tokens do protótipo v9.
+  Tokens do protótipo v9 (regras na ADR 0004).
 
-  Painel: tokens fixos (Archivo, ação primária escura).
-  Cardápio do cliente: o layout da loja sobrescreve --primary,
-  --primary-foreground, --ring e --font-sans com o tema da loja
-  (src/lib/tema-da-loja.ts). Nenhum componente precisa saber disso.
+  Painel: tokens fixos (Archivo, ação primária escura, cantos de 4 e 8px).
+  Cardápio do cliente: o layout da loja sobrescreve cor, fonte e cantos
+  com o tema da loja (src/lib/store/theme.ts). Nenhum componente precisa
+  saber em qual dos dois está.
 */
 
 @theme inline {
@@ -19,18 +19,6 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(
-    --sidebar-accent-foreground
-  );
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(
-    --sidebar-primary-foreground
-  );
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -50,9 +38,12 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-soft: var(--warning-soft);
+  --color-warning-medium: var(--warning-medium);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
+  --color-gray-medium: var(--gray-medium);
+  --color-border-strong: var(--border-strong);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -63,13 +54,24 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Escala de texto do protótipo (nomes da página "Componentes do painel");
+     a escala padrão (text-sm, text-lg...) fica desligada. */
+  --text-*: initial;
+  --text-caption: 12px; /* legenda, cabeçalho de tabela, selo */
+  --text-support: 13px; /* texto secundário, rótulo, ajuda */
+  --text-body: 15px; /* texto padrão, campos, botões */
+  --text-section-title: 18px; /* título de seção e de modal */
+  --text-page-title: 24px; /* título da página */
+  --text-big-number: 40px; /* número grande */
+  /* Margem lateral das páginas do painel (cabeçalho, abas e conteúdo),
+     crescendo com a tela: px-page. */
+  --spacing-page: var(--page-gutter);
+  /* Cantos do protótipo: controle (botão, campo, card, selo) e superfície
+     (modal, menu, painel, tabela). O cardápio do cliente troca os valores.
+     A escala padrão (rounded-sm, rounded-lg...) fica desligada. */
+  --radius-*: initial;
+  --radius-control: var(--control-radius);
+  --radius-surface: var(--surface-radius);
   --shadow-elevated: var(--shadow-elevated);
   /* Pulso sutil do contador de pedidos novos no menu. */
   --animate-soft-pulse: soft-pulse 1.4s ease-in-out infinite;
@@ -101,9 +103,11 @@
   --popover: #ffffff;
   --popover-foreground: #16191d;
   --border: #d9dce1;
+  --border-strong: #c9ced4; /* borda mais marcada que a padrão */
   --input: #d9dce1;
   --muted: #f3f4f6;
   --muted-foreground: #5c636d; /* texto secundário */
+  --gray-medium: #8a9099; /* cinza médio, entre a borda e o texto secundário */
   --secondary: #f1f2f4;
   --secondary-foreground: #16191d;
   --accent: #f1f2f4;
@@ -129,6 +133,12 @@
   --warning: #e39b0b; /* pedido novo */
   --warning-foreground: #16191d;
   --warning-soft: #fcf0d4;
+  /* âmbar médio: 30% do âmbar sobre branco */
+  --warning-medium: color-mix(
+    in oklab,
+    var(--warning) 30%,
+    white
+  );
 
   --chart-1: #16191d;
   --chart-2: #5c636d;
@@ -136,20 +146,13 @@
   --chart-4: #1d7a45;
   --chart-5: #e39b0b;
 
-  --radius: 0.625rem;
+  --page-gutter: 1rem;
+  --control-radius: 4px;
+  --surface-radius: 8px;
   /* Sombra só em modal, menu e toast. */
   --shadow-elevated:
     0 1px 2px rgb(22 25 29 / 6%),
     0 8px 24px rgb(22 25 29 / 10%);
-
-  --sidebar: #ffffff;
-  --sidebar-foreground: #16191d;
-  --sidebar-primary: #16191d;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f2f4;
-  --sidebar-accent-foreground: #16191d;
-  --sidebar-border: #d9dce1;
-  --sidebar-ring: #16191d;
 }
 
 /* Tema escuro: pré-pronto, ainda não usado (modo escuro da loja fica para depois). */
@@ -161,9 +164,11 @@
   --popover: #16191d;
   --popover-foreground: #f3f4f6;
   --border: rgb(255 255 255 / 12%);
+  --border-strong: rgb(255 255 255 / 24%);
   --input: rgb(255 255 255 / 16%);
   --muted: #1f2227;
   --muted-foreground: #9aa1aa;
+  --gray-medium: #6b727c;
   --secondary: #1f2227;
   --secondary-foreground: #f3f4f6;
   --accent: #1f2227;
@@ -185,16 +190,9 @@
   --warning: #f2b705;
   --warning-foreground: #111214;
   --warning-soft: rgb(242 183 5 / 18%);
+  --warning-medium: rgb(242 183 5 / 30%);
   --shadow-elevated:
     0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 50%);
-  --sidebar: #16191d;
-  --sidebar-foreground: #f3f4f6;
-  --sidebar-primary: #f3f4f6;
-  --sidebar-primary-foreground: #16191d;
-  --sidebar-accent: #1f2227;
-  --sidebar-accent-foreground: #f3f4f6;
-  --sidebar-border: rgb(255 255 255 / 12%);
-  --sidebar-ring: #9aa1aa;
 }
 
 @layer base {
@@ -223,5 +221,23 @@
   /* Preço, número de pedido e horário alinham em coluna. */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Margem lateral: 16px no celular, 24px a partir de 640px, 32px a partir de
+   1024px e 40px a partir de 1280px. */
+@media (width >= 40rem) {
+  :root {
+    --page-gutter: 1.5rem;
+  }
+}
+@media (width >= 64rem) {
+  :root {
+    --page-gutter: 2rem;
+  }
+}
+@media (width >= 80rem) {
+  :root {
+    --page-gutter: 2.5rem;
   }
 }

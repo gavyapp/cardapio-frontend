@@ -20,18 +20,18 @@ export function SectionCard({
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="scroll-mt-32 rounded-xl border bg-card"
+      className="scroll-mt-32 rounded-surface border bg-card"
     >
       <header className="flex items-start justify-between gap-4 px-6 py-5">
         <div>
           <h2
             id={`${id}-title`}
-            className="text-lg font-semibold"
+            className="text-section-title font-semibold"
           >
             {title}
           </h2>
           {description ? (
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-support text-muted-foreground">
               {description}
             </p>
           ) : null}

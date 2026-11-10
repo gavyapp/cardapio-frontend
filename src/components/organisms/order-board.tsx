@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/atoms/badge";
+import { Button } from "@/components/atoms/button";
 import { WifiOff } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -7,12 +9,13 @@ import { toast } from "sonner";
 import { CountChip } from "@/components/atoms/count-chip";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderCard } from "@/components/molecules/order-card";
+import { PageHeaderCount } from "@/components/molecules/page-header";
 import type { AvailabilityTarget } from "@/components/molecules/order-items";
 import {
   OrderReasonDialog,
   type ClosingOrder,
 } from "@/components/molecules/order-reason-dialog";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 import {
   OrderDetailPanel,
   type OrderDetailHandlers,
@@ -270,7 +273,7 @@ export function OrderBoard({
       {!live.connected ? (
         <p
           role="status"
-          className="flex items-center gap-2 rounded-lg bg-warning-soft px-4 py-2.5 text-[13px] text-warning-foreground"
+          className="flex items-center gap-2 rounded-surface bg-warning-soft px-4 py-2.5 text-support text-warning-foreground"
         >
           <WifiOff aria-hidden className="size-4" />
           Sem conexão. Reconectando… Os pedidos novos
@@ -284,7 +287,7 @@ export function OrderBoard({
             key={column.id}
             aria-labelledby={`coluna-${column.id}`}
             className={cn(
-              "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border bg-card",
+              "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-surface border bg-card",
               mobileColumn !== column.id && "max-lg:hidden",
             )}
           >
@@ -303,7 +306,7 @@ export function OrderBoard({
                     aria-selected={active}
                     onClick={() => setMobileColumn(tab.id)}
                     className={cn(
-                      "flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 px-1 text-[13px] whitespace-nowrap text-muted-foreground",
+                      "flex h-12 min-w-0 flex-auto items-center justify-center gap-1.5 px-2 text-support whitespace-nowrap text-muted-foreground",
                       active &&
                         "font-semibold text-foreground shadow-[inset_0_-2px_0_var(--foreground)]",
                     )}
@@ -423,12 +426,12 @@ function ColumnHeader({
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
         <h2
           id={`coluna-${column.id}`}
-          className="text-[15px] leading-tight font-semibold whitespace-nowrap"
+          className="text-body leading-tight font-semibold whitespace-nowrap"
         >
           {column.title}
         </h2>
         {average ? (
-          <p className="tabular truncate text-xs text-muted-foreground">
+          <p className="tabular truncate text-caption text-muted-foreground">
             {average}
           </p>
         ) : null}
@@ -458,7 +461,7 @@ function ReadyGroups({
       orders: orders.filter(
         (order) => order.status === "A_CAMINHO",
       ),
-      className: "bg-muted text-foreground",
+      variant: "neutral" as const,
     },
     {
       label: "Pronto para retirada",
@@ -466,23 +469,23 @@ function ReadyGroups({
       orders: orders.filter(
         (order) => order.status === "PRONTO",
       ),
-      className: "bg-success-soft text-success",
+      variant: "success" as const,
     },
   ].filter((group) => group.orders.length > 0);
 
   return groups.map((group, index) => (
     <div key={group.label} className="contents">
-      <p
+      <Badge
+        variant={group.variant}
         className={cn(
-          "tabular flex h-6 shrink-0 items-center gap-1.5 self-start rounded-[4px] px-2 text-xs font-semibold whitespace-nowrap",
-          group.className,
+          "tabular self-start",
           index > 0 && "mt-2",
         )}
       >
         <OrderModeIcon mode={group.mode} />
         {group.label}
         <span>{group.orders.length}</span>
-      </p>
+      </Badge>
       {group.orders.map((order) => (
         <BoardCard
           key={order.id}
@@ -503,26 +506,28 @@ function EmptyColumn({
 }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 py-8 text-center max-lg:min-h-60">
-      <p className="text-[15px] font-medium">
+      <p className="text-body font-medium">
         {query ? "Nenhum resultado" : column.emptyTitle}
       </p>
-      <p className="max-w-60 text-[13px] leading-snug text-pretty text-muted-foreground">
+      <p className="max-w-60 text-support leading-snug text-pretty text-muted-foreground">
         {query
           ? `Nada nesta etapa para "${query}".`
           : column.emptyText}
       </p>
       {query ? (
-        <button
+        <Button
           type="button"
           onClick={() =>
             setSearchParam(ORDER_SEARCH_PARAM, null, {
               replace: true,
             })
           }
-          className="mt-3 flex h-9 items-center rounded-[4px] border bg-card px-3 text-[13px] font-semibold hover:bg-muted"
+          variant="outline"
+          size="sm"
+          className="mt-3 font-semibold"
         >
           Limpar busca
-        </button>
+        </Button>
       ) : null}
     </div>
   );
@@ -535,9 +540,7 @@ export function TodayOrdersTitle() {
     <>
       Pedidos de hoje
       {live ? (
-        <span className="tabular font-normal text-muted-foreground">
-          ({live.todayCount})
-        </span>
+        <PageHeaderCount>{live.todayCount}</PageHeaderCount>
       ) : null}
     </>
   );

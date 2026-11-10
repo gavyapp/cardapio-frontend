@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import {
+  Badge,
+  type BadgeVariant,
+} from "@/components/atoms/badge";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import {
   Sheet,
@@ -34,6 +38,8 @@ import {
   PAYMENT_LABELS,
   elapsedLabel,
   isLate,
+  orderTone,
+  type OrderTone,
 } from "@/lib/orders/board";
 import {
   addressLines,
@@ -107,7 +113,7 @@ export function OrderDetailPanel({
           "gap-0 overflow-hidden",
           desktop
             ? "data-[side=right]:w-full data-[side=right]:sm:max-w-[640px]"
-            : "rounded-t-xl data-[side=bottom]:h-[calc(100dvh-16px)]",
+            : "rounded-t-surface data-[side=bottom]:h-[calc(100dvh-16px)]",
         )}
       >
         {shown.isMounted && shown.value !== null ? (
@@ -147,12 +153,12 @@ function DetailContent({
     return (
       <>
         <header className="flex items-center gap-3 border-b py-3 pr-3 pl-4 lg:pl-6">
-          <SheetTitle className="flex-1 text-2xl font-semibold">
+          <SheetTitle className="flex-1 text-page-title font-semibold">
             #{number}
           </SheetTitle>
           <CloseButton onClose={onClose} />
         </header>
-        <SheetDescription className="px-4 py-6 text-[15px] lg:px-6">
+        <SheetDescription className="px-4 py-6 text-body lg:px-6">
           {state.status === "loading"
             ? "Carregando…"
             : state.status === "not-found"
@@ -178,7 +184,7 @@ function DetailContent({
   const whatsApp = whatsAppLink(order, live.storeName);
   const address = addressLines(order.address);
   const change = order.isPaid ? null : changeLabel(order);
-  const tone = toneClasses(order, late);
+  const tone = TONE_CLASSES[orderTone(order.status, late)];
   const badgeIcon =
     order.status === "A_CAMINHO" ||
     (order.status === "PRONTO" &&
@@ -193,14 +199,12 @@ function DetailContent({
       <header className="flex shrink-0 items-start gap-3 border-b pt-3 pr-3 pb-4 pl-4 lg:pl-6">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <SheetTitle className="tabular text-2xl leading-[1.1] font-semibold">
+            <SheetTitle className="tabular text-page-title leading-[1.1] font-semibold">
               #{order.number}
             </SheetTitle>
-            <span
-              className={cn(
-                "inline-flex h-6 items-center gap-1 rounded-[4px] px-2 text-xs font-semibold whitespace-nowrap",
-                badgeClass(order.status),
-              )}
+            <Badge
+              variant={statusVariant(order.status)}
+              className="gap-1"
             >
               {badgeIcon ? (
                 <OrderModeIcon
@@ -209,14 +213,14 @@ function DetailContent({
                 />
               ) : null}
               {statusBadge(order)}
-            </span>
+            </Badge>
           </div>
-          <span className="truncate text-lg leading-[1.3] font-semibold">
+          <span className="truncate text-section-title leading-[1.3] font-semibold">
             {order.customerName}
           </span>
           <SheetDescription
             className={cn(
-              "tabular flex items-center gap-1 text-[13px]",
+              "tabular flex items-center gap-1 text-support",
               late
                 ? "font-semibold text-destructive"
                 : "text-muted-foreground",
@@ -247,7 +251,7 @@ function DetailContent({
             {pluralize(itemCount, "item", "itens")}
           </SectionLabel>
           {order.notes ? (
-            <p className="rounded-[4px] bg-warning-soft px-3 py-2 text-[13px] leading-[1.4] font-medium text-warning-foreground">
+            <p className="rounded-control bg-warning-soft px-3 py-2 text-support leading-[1.4] font-medium text-warning-foreground">
               Obs. do pedido: {order.notes}
             </p>
           ) : null}
@@ -272,29 +276,29 @@ function DetailContent({
           {order.mode === "ENTREGA" ? (
             address ? (
               <>
-                <span className="text-[15px] font-medium">
+                <span className="text-body font-medium">
                   {address.main}
                 </span>
                 {address.extra ? (
-                  <span className="text-[13px] text-muted-foreground">
+                  <span className="text-support text-muted-foreground">
                     {address.extra}
                   </span>
                 ) : null}
               </>
             ) : (
-              <span className="text-[15px] text-muted-foreground">
+              <span className="text-body text-muted-foreground">
                 Sem endereço no pedido
               </span>
             )
           ) : (
-            <span className="text-[15px] font-medium">
+            <span className="text-body font-medium">
               Cliente retira no balcão
             </span>
           )}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <a
               href={`tel:${order.customerPhone.replace(/\D/g, "")}`}
-              className="tabular text-[15px] whitespace-nowrap underline-offset-4 hover:underline"
+              className="tabular text-body whitespace-nowrap underline-offset-4 hover:underline"
             >
               {formatPhone(order.customerPhone)}
             </a>
@@ -303,7 +307,7 @@ function DetailContent({
                 href={whatsApp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 items-center gap-2 rounded-[4px] border bg-card px-3 text-[13px] font-medium whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
+                className="inline-flex h-9 items-center gap-2 rounded-control border bg-card px-3 text-support font-medium whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
               >
                 <MessageCircle
                   aria-hidden
@@ -326,26 +330,26 @@ function DetailContent({
             </SectionLabel>
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[15px] font-semibold">
+            <span className="text-body font-semibold">
               {PAYMENT_LABELS[order.paymentMethod]}
             </span>
             {order.isPaid ? (
-              <span className="inline-flex h-7 items-center gap-1 rounded-[4px] bg-success px-2.5 text-[13px] font-semibold text-success-foreground">
+              <Badge variant="success-solid" size="lg">
                 <Check
                   aria-hidden
                   className="size-3.5"
                   strokeWidth={3}
                 />
                 Pago
-              </span>
+              </Badge>
             ) : null}
           </div>
           {change ? (
-            <span className="text-[13px] text-muted-foreground">
+            <span className="text-support text-muted-foreground">
               {change}
             </span>
           ) : null}
-          <dl className="flex flex-col gap-1 pt-2 text-[13px] text-muted-foreground">
+          <dl className="flex flex-col gap-1 pt-2 text-support text-muted-foreground">
             <Row label="Subtotal">
               {formatCurrency(order.subtotal)}
             </Row>
@@ -365,10 +369,10 @@ function DetailContent({
               </Row>
             ) : null}
             <div className="flex items-baseline justify-between gap-3 pt-1 text-foreground">
-              <dt className="text-[15px] font-semibold">
+              <dt className="text-body font-semibold">
                 Total
               </dt>
-              <dd className="text-lg font-semibold whitespace-nowrap">
+              <dd className="text-section-title font-semibold whitespace-nowrap">
                 {formatCurrency(order.total)}
               </dd>
             </div>
@@ -393,12 +397,12 @@ function DetailContent({
             type="button"
             disabled={pending}
             onClick={() => handlers.onAdvance(order)}
-            className="flex h-11 min-w-0 flex-1 items-center justify-center rounded-[4px] bg-foreground px-4 text-[15px] font-semibold whitespace-nowrap text-background outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 disabled:opacity-60"
+            className="flex h-11 min-w-0 flex-1 items-center justify-center rounded-control bg-foreground px-4 text-body font-semibold whitespace-nowrap text-background outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 disabled:opacity-60"
           >
             {pending ? "Salvando…" : stepLabel}
           </button>
         ) : (
-          <span className="flex-1 self-center text-sm text-muted-foreground">
+          <span className="flex-1 self-center text-support text-muted-foreground">
             Pedido {statusBadge(order).toLowerCase()}
           </span>
         )}
@@ -461,7 +465,7 @@ function SectionLabel({
   return (
     <h3
       className={cn(
-        "text-xs font-medium text-muted-foreground",
+        "text-caption font-medium text-muted-foreground",
         className,
       )}
     >
@@ -508,65 +512,56 @@ function CloseButton({ onClose }: { onClose: () => void }) {
       type="button"
       onClick={onClose}
       aria-label="Fechar"
-      className="flex size-11 shrink-0 items-center justify-center rounded-[4px] outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
+      className="flex size-11 shrink-0 items-center justify-center rounded-control outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-foreground"
     >
       <X aria-hidden className="size-4" strokeWidth={2.2} />
     </button>
   );
 }
 
-/** Cor da faixa no topo e do ponto do passo atual na linha do tempo. */
-function toneClasses(
-  order: Order,
-  late: boolean,
-): { stripe: string; dot: string } {
-  if (late)
-    return {
-      stripe: "bg-destructive",
-      dot: "border-destructive bg-destructive",
-    };
-  switch (order.status) {
-    case "RECEBIDO":
-      return {
-        stripe: "bg-warning",
-        dot: "border-warning bg-warning",
-      };
-    case "EM_PREPARO":
-      return {
-        stripe: "bg-[#8a9099]",
-        dot: "border-[#8a9099] bg-[#8a9099]",
-      };
-    case "PRONTO":
-      return {
-        stripe: "bg-success",
-        dot: "border-success bg-success",
-      };
-    case "A_CAMINHO":
-    case "CONCLUIDO":
-      return {
-        stripe: "bg-foreground",
-        dot: "border-foreground bg-foreground",
-      };
-    default:
-      return {
-        stripe: "bg-destructive",
-        dot: "border-destructive bg-destructive",
-      };
-  }
-}
+/** Classes da faixa no topo e do ponto da etapa atual, pela cor da etapa. */
+const TONE_CLASSES: Record<
+  OrderTone,
+  { stripe: string; dot: string }
+> = {
+  late: {
+    stripe: "bg-destructive",
+    dot: "border-destructive bg-destructive",
+  },
+  new: {
+    stripe: "bg-warning",
+    dot: "border-warning bg-warning",
+  },
+  preparing: {
+    stripe: "bg-gray-medium",
+    dot: "border-gray-medium bg-gray-medium",
+  },
+  ready: {
+    stripe: "bg-success",
+    dot: "border-success bg-success",
+  },
+  out: {
+    stripe: "bg-foreground",
+    dot: "border-foreground bg-foreground",
+  },
+  stopped: {
+    stripe: "bg-destructive",
+    dot: "border-destructive bg-destructive",
+  },
+};
 
-function badgeClass(status: OrderStatus): string {
+function statusVariant(status: OrderStatus): BadgeVariant {
   switch (status) {
     case "RECEBIDO":
-      return "bg-[#f7e1b6] text-foreground";
+      return "warning-medium";
     case "PRONTO":
-      return "bg-success-soft text-success";
+      return "success";
     case "A_CAMINHO":
-      return "bg-foreground text-background";
+      return "inverse";
     case "REJEITADO":
     case "CANCELADO":
-      return "bg-destructive-soft text-destructive";
+      return "destructive";
     default:
-      return "bg-muted text-foreground";
+      return "neutral";
   }
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   ChevronDown,
@@ -19,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 
 const MENU_ITEMS = [
   {
@@ -36,7 +37,7 @@ const MENU_ITEMS = [
 ];
 
 const tabClass =
-  "relative flex h-12 shrink-0 items-center gap-2 px-1 text-[15px] text-muted-foreground transition-colors hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground data-[active=true]:after:absolute data-[active=true]:after:inset-x-0 data-[active=true]:after:-bottom-px data-[active=true]:after:h-0.5 data-[active=true]:after:bg-foreground [&_svg]:size-4.5";
+  "relative flex h-12 shrink-0 items-center gap-2 px-1 text-body text-muted-foreground transition-colors hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground data-[active=true]:after:absolute data-[active=true]:after:inset-x-0 data-[active=true]:after:-bottom-px data-[active=true]:after:h-0.5 data-[active=true]:after:bg-foreground [&_svg]:size-4.5";
 
 function isActive(pathname: string, href: string) {
   return (
@@ -53,13 +54,21 @@ export function PanelNav({
   const live = useLiveOrdersContext();
   const newOrders = live?.newCount ?? 0;
   const unseenOrders = live?.unseenCount ?? 0;
+  const { listRef, hidden, updateHidden } =
+    useOverflowHint(pathname);
 
   return (
     <nav
       aria-label="Seções do painel"
       className="border-b border-border"
     >
-      <ul className="flex [scrollbar-width:none] gap-6 overflow-x-auto px-4 sm:px-6">
+      <ul
+        ref={listRef}
+        onScroll={updateHidden}
+        data-hidden-start={hidden.start || undefined}
+        data-hidden-end={hidden.end || undefined}
+        className="flex scroll-px-page [scrollbar-width:none] gap-6 overflow-x-auto px-page data-hidden-end:mask-r-from-85% data-hidden-start:mask-l-from-85%"
+      >
         <li>
           <Link
             href="/painel/pedidos"
@@ -114,7 +123,7 @@ export function PanelNav({
                       current ? "page" : undefined
                     }
                     className={cn(
-                      "h-11 cursor-pointer gap-3 rounded-none px-4 text-[15px]",
+                      "h-11 cursor-pointer gap-3 rounded-none px-4 text-body",
                       current && "bg-muted font-semibold",
                     )}
                   >
@@ -122,7 +131,7 @@ export function PanelNav({
                       {item.label}
                     </span>
                     {catalogCounts ? (
-                      <span className="tabular text-[13px] font-normal text-muted-foreground">
+                      <span className="tabular text-support font-normal text-muted-foreground">
                         {item.count(catalogCounts)}
                       </span>
                     ) : null}
@@ -161,4 +170,47 @@ export function PanelNav({
       </ul>
     </nav>
   );
+}
+
+/**
+ * No celular as abas não cabem: esmaece a borda do lado onde há aba
+ * escondida, para mostrar que a barra rola, e traz a aba atual para a vista.
+ */
+function useOverflowHint(pathname: string) {
+  const listRef = useRef<HTMLUListElement>(null);
+  const [hidden, setHidden] = useState({
+    start: false,
+    end: false,
+  });
+
+  function updateHidden() {
+    const list = listRef.current;
+    if (!list) return;
+    const start = list.scrollLeft > 1;
+    const end =
+      list.scrollLeft + list.clientWidth <
+      list.scrollWidth - 1;
+    setHidden((current) =>
+      current.start === start && current.end === end
+        ? current
+        : { start, end },
+    );
+  }
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    list
+      .querySelector('[data-active="true"]')
+      ?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    updateHidden();
+    const observer = new ResizeObserver(updateHidden);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  return { listRef, hidden, updateHidden };
 }

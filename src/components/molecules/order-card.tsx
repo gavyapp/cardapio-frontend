@@ -2,6 +2,7 @@
 
 import { Clock } from "lucide-react";
 
+import { Badge } from "@/components/atoms/badge";
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
 import { OrderActionsMenu } from "@/components/molecules/order-actions-menu";
 import { formatCurrency, pluralize } from "@/lib/format";
@@ -22,9 +23,10 @@ import { cn } from "@/lib/utils";
 const TONE_STRIPE: Record<OrderTone, string> = {
   late: "border-l-destructive",
   new: "border-l-warning",
-  preparing: "border-l-[#8a9099]",
+  preparing: "border-l-gray-medium",
   ready: "border-l-success",
   out: "border-l-foreground",
+  stopped: "border-l-destructive",
 };
 
 /**
@@ -67,10 +69,8 @@ export function OrderCard({
       aria-label={`Pedido ${order.number}`}
       onClick={onOpen}
       className={cn(
-        "flex shrink-0 cursor-pointer flex-col rounded-[4px] border border-l-4 bg-card",
-        TONE_STRIPE[
-          orderTone(order, lateAfterMinutes, now)
-        ],
+        "flex shrink-0 cursor-pointer flex-col rounded-control border border-l-4 bg-card",
+        TONE_STRIPE[orderTone(order.status, late)],
         selected && "ring-2 ring-foreground",
       )}
     >
@@ -82,9 +82,9 @@ export function OrderCard({
             onOpen();
           }}
           aria-label={`Abrir pedido ${order.number} de ${order.customerName}`}
-          className="flex flex-col gap-2 rounded-[4px] text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+          className="flex flex-col gap-2 rounded-control text-left outline-none focus-visible:ring-1 focus-visible:ring-foreground"
         >
-          <span className="flex min-w-0 items-center gap-2 text-[15px]">
+          <span className="flex min-w-0 items-center gap-2 text-body">
             <span className="tabular shrink-0 font-semibold">
               #{order.number}
             </span>
@@ -97,16 +97,19 @@ export function OrderCard({
               {order.customerName}
             </span>
             {unseen ? (
-              <span className="ml-auto inline-flex h-6 shrink-0 items-center rounded-[4px] bg-warning px-2 text-xs font-semibold text-warning-foreground motion-safe:animate-soft-pulse">
+              <Badge
+                variant="warning-solid"
+                className="ml-auto gap-0 motion-safe:animate-soft-pulse"
+              >
                 Novo
                 <span className="sr-only">
                   , ainda não visto
                 </span>
-              </span>
+              </Badge>
             ) : (
               <span
                 className={cn(
-                  "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-[13px] whitespace-nowrap",
+                  "tabular ml-auto flex h-[22px] shrink-0 items-center gap-1 text-support whitespace-nowrap",
                   late && "font-semibold text-destructive",
                 )}
               >
@@ -127,7 +130,7 @@ export function OrderCard({
               </span>
             )}
           </span>
-          <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
+          <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-support text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-medium text-foreground">
               {/* O desenho pesa para baixo e, em 13px, o centro das
                   maiúsculas fica acima do meio da linha: o ícone sobe um
@@ -146,14 +149,14 @@ export function OrderCard({
             <span>
               {PAYMENT_LABELS[order.paymentMethod]}
             </span>
-            <span className="ml-auto text-[15px] font-semibold whitespace-nowrap text-foreground">
+            <span className="ml-auto text-body font-semibold whitespace-nowrap text-foreground">
               {formatCurrency(order.total)}
             </span>
           </span>
           {caption ? (
             <span
               className={cn(
-                "tabular text-[13px]",
+                "tabular text-support",
                 order.status === "PRONTO"
                   ? "text-success"
                   : "text-muted-foreground",
@@ -173,7 +176,7 @@ export function OrderCard({
                 onAdvance();
               }}
               className={cn(
-                "flex h-11 min-w-0 flex-1 items-center justify-center rounded-[4px] px-3 text-[13px] font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
+                "flex h-11 min-w-0 flex-1 items-center justify-center rounded-control px-3 text-support font-semibold whitespace-nowrap outline-none hover:opacity-85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 disabled:opacity-60 lg:h-9",
                 isNew
                   ? "bg-foreground text-background"
                   : "border bg-card text-foreground",

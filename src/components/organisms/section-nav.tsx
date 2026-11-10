@@ -32,7 +32,7 @@ export function SectionNav({
   return (
     <nav
       aria-label={ariaLabel}
-      className="rounded-xl border bg-card p-2 lg:sticky lg:top-32"
+      className="rounded-surface border bg-card p-2 lg:sticky lg:top-32"
     >
       <ul className="flex flex-col gap-0.5">
         {sections.map((section) => (
@@ -49,7 +49,7 @@ export function SectionNav({
                 scrollTo(section.id);
               }}
               className={cn(
-                "block rounded-lg px-4 py-3 text-[15px] transition-colors hover:bg-muted",
+                "block rounded-control px-4 py-3 text-body transition-colors hover:bg-muted",
                 section.id === active
                   ? "bg-muted font-semibold text-foreground"
                   : "text-muted-foreground",

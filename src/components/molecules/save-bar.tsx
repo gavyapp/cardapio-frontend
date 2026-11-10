@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { useSettingsForm } from "@/components/organisms/settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 /** Barra no fim da página que submete o formulário dela e mostra o carregamento. */
 export function SaveBar({
@@ -16,9 +16,9 @@ export function SaveBar({
   const { formId, pending } = useSettingsForm();
 
   return (
-    <div className="rounded-xl border bg-card px-6 py-4">
+    <div className="rounded-surface border bg-card px-6 py-4">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-[15px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           {message}
         </p>
         <Button

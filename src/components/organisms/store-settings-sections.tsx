@@ -13,7 +13,7 @@ import { NumberStepper } from "@/components/molecules/number-stepper";
 import { SectionCard } from "@/components/molecules/section-card";
 import { SettingRow } from "@/components/molecules/setting-row";
 import type { ActionResult } from "@/lib/panel/action-result";
-import { useLiveOrdersContext } from "@/components/organisms/live-orders-provider";
+import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
 import {
   playOrderChime,
   unlockAudio,
@@ -23,7 +23,7 @@ import {
   type OrderAlerts,
 } from "@/lib/orders/board";
 
-import { useSettingsForm } from "./settings-form-context";
+import { useSettingsForm } from "@/components/providers/settings-form-context";
 
 // Seções das configurações da loja. Entrega e pagamento vão para o
 // formulário da página; avisos salvam sozinhos a cada mudança.
@@ -50,7 +50,7 @@ export function DeliverySection({
       title="Entrega e retirada"
       description="Valores e prazos que o cliente vê antes de pedir."
     >
-      <div className="grid gap-5 px-6 py-6 md:grid-cols-3">
+      <div className="grid gap-5 px-6 py-6 sm:grid-cols-3">
         <Field id="delivery-fee" label="Taxa de entrega">
           <CurrencyInput
             id="delivery-fee"
@@ -129,7 +129,7 @@ export function PaymentSection({
           >
             <Label
               htmlFor={`payment-${method.id}`}
-              className="text-[15px] font-normal"
+              className="text-body font-normal"
             >
               {method.label}
             </Label>

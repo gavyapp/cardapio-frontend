@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/atoms/button";
 import { XIcon } from "lucide-react";
@@ -62,6 +62,10 @@ function SheetOverlay({
   );
 }
 
+/** Primeiro campo de texto do painel: onde quem abre um editor vai digitar. */
+const FIRST_TEXT_FIELD =
+  "input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([disabled]), textarea:not([disabled])";
+
 function SheetContent({
   className,
   children,
@@ -74,15 +78,32 @@ function SheetContent({
   showCloseButton?: boolean;
   overlayClassName?: string;
 }) {
+  const popupRef = React.useRef<HTMLDivElement>(null);
+
   return (
     <SheetPortal>
       <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Popup
+        ref={popupRef}
+        // Foco inicial: o primeiro campo de texto; num painel sem campo, o
+        // próprio painel, para o botão de fechar não abrir com
+        // contorno. No toque o Base UI já foca o painel, sem abrir o teclado.
+        initialFocus={(openType) => {
+          if (openType === "touch") return true;
+          const popup = popupRef.current;
+          return (
+            popup?.querySelector<HTMLElement>(
+              FIRST_TEXT_FIELD,
+            ) ??
+            popup ??
+            true
+          );
+        }}
         data-slot="sheet-content"
         data-side={side}
         className={cn(
           // O painel entra e sai deslizando inteiro pelo lado de onde vem.
-          "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-300 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:-translate-x-full data-[side=left]:data-starting-style:-translate-x-full data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-full data-[side=right]:data-starting-style:translate-x-full data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:-translate-y-full data-[side=top]:data-starting-style:-translate-y-full data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm",
+          "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-body text-popover-foreground shadow-elevated transition duration-300 ease-in-out outline-none data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:-translate-x-full data-[side=left]:data-starting-style:-translate-x-full data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-full data-[side=right]:data-starting-style:translate-x-full data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:-translate-y-full data-[side=top]:data-starting-style:-translate-y-full data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm",
           className,
         )}
         {...props}
@@ -114,7 +135,7 @@ function SheetContent({
             }
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
@@ -159,7 +180,7 @@ function SheetTitle({
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "font-heading text-base font-medium text-foreground",
+        "font-heading text-section-title font-semibold text-foreground",
         className,
       )}
       {...props}
@@ -175,7 +196,7 @@ function SheetDescription({
     <SheetPrimitive.Description
       data-slot="sheet-description"
       className={cn(
-        "text-sm text-muted-foreground",
+        "text-support text-muted-foreground",
         className,
       )}
       {...props}

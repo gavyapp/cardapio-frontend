@@ -1,7 +1,7 @@
 "use client";
 
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 // Trilho 44×24 com 2px de folga; polegar branco de 20px com sombra leve.
 // Ligado: trilho na cor primária. Desligado: trilho na cor de borda.
