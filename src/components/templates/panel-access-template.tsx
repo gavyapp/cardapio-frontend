@@ -18,7 +18,7 @@ export function PanelAccessTemplate({
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="bg-foreground text-background">
-        <div className="flex h-16 items-center px-4 sm:px-6">
+        <div className="flex h-16 items-center px-page">
           <PlatformMark
             className="text-body"
             squareClassName="bg-background"

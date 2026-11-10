@@ -26,15 +26,13 @@ export function OrderBoardTemplate({
     <>
       <div
         data-fill-viewport
-        className="flex w-full flex-col gap-4 px-4 pt-4 pb-4 sm:px-6 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6"
+        className="flex w-full flex-col gap-4 px-page pt-4 pb-4 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6"
       >
         <PageHeader title={title} search={search} />
         {children}
       </div>
       {below ? (
-        <div className="w-full px-4 pb-12 sm:px-6">
-          {below}
-        </div>
+        <div className="w-full px-page pb-12">{below}</div>
       ) : null}
     </>
   );

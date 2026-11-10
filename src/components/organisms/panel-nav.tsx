@@ -67,7 +67,7 @@ export function PanelNav({
         onScroll={updateHidden}
         data-hidden-start={hidden.start || undefined}
         data-hidden-end={hidden.end || undefined}
-        className="flex scroll-px-4 [scrollbar-width:none] gap-6 overflow-x-auto px-4 data-hidden-end:mask-r-from-85% data-hidden-start:mask-l-from-85% sm:scroll-px-6 sm:px-6"
+        className="flex scroll-px-page [scrollbar-width:none] gap-6 overflow-x-auto px-page data-hidden-end:mask-r-from-85% data-hidden-start:mask-l-from-85%"
       >
         <li>
           <Link

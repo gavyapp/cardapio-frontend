@@ -24,7 +24,7 @@ export function PanelHeader({
   return (
     <header className="sticky top-0 z-40 bg-card">
       <div className="bg-foreground text-background">
-        <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+        <div className="flex h-16 items-center gap-3 px-page">
           {store ? (
             <StoreAvatar
               name={store.name}

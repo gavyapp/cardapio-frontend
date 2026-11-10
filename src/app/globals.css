@@ -63,6 +63,9 @@
   --text-section-title: 18px; /* título de seção e de modal */
   --text-page-title: 24px; /* título da página */
   --text-big-number: 40px; /* número grande */
+  /* Margem lateral das páginas do painel (cabeçalho, abas e conteúdo),
+     crescendo com a tela: px-page. */
+  --spacing-page: var(--page-gutter);
   /* Cantos do protótipo: controle (botão, campo, card, selo) e superfície
      (modal, menu, painel, tabela). O cardápio do cliente troca os valores.
      A escala padrão (rounded-sm, rounded-lg...) fica desligada. */
@@ -143,6 +146,7 @@
   --chart-4: #1d7a45;
   --chart-5: #e39b0b;
 
+  --page-gutter: 1rem;
   --control-radius: 4px;
   --surface-radius: 8px;
   /* Sombra só em modal, menu e toast. */
@@ -217,5 +221,23 @@
   /* Preço, número de pedido e horário alinham em coluna. */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Margem lateral: 16px no celular, 24px a partir de 640px, 32px a partir de
+   1024px e 40px a partir de 1280px. */
+@media (width >= 40rem) {
+  :root {
+    --page-gutter: 1.5rem;
+  }
+}
+@media (width >= 64rem) {
+  :root {
+    --page-gutter: 2rem;
+  }
+}
+@media (width >= 80rem) {
+  :root {
+    --page-gutter: 2.5rem;
   }
 }

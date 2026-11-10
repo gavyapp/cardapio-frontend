@@ -33,7 +33,7 @@ O painel tinha duas linguagens visuais: as telas de pedidos seguiam o protótipo
 
 5. **Atomic Design** em `src/components`: `atoms` (primitivos e peças indivisíveis), `molecules` (composições pequenas), `organisms` (seções, cabeçalhos, listas, editores), `templates` (esqueleto de página) e `providers` (estado compartilhado por contexto, como os pedidos em tempo real e o formulário das configurações). Um trecho vira componente compartilhado a partir do segundo uso real, não antes.
 
-6. **Breakpoints:** `sm` (640px) para o respiro da página e `lg` (1024px) para o layout de computador.
+6. **Breakpoints:** `sm` (640px) e `lg` (1024px) para o layout de computador. A margem lateral das páginas do painel é `px-page` (16, 24, 32 e 40px, crescendo com a tela), igual no cabeçalho, nas abas e no conteúdo; as páginas ocupam a largura toda.
 
 ## Consequências
 
