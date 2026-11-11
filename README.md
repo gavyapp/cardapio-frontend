@@ -48,4 +48,8 @@ Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` j�
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.
 
-Variáveis de ambiente (Production e Preview): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `SUPABASE_SECRET_KEY` (esta sem `NEXT_PUBLIC_`, nunca vai para o navegador).
+Por enquanto no plano Hobby (gratuito), o que exige o repositório público e não permite uso comercial: antes do piloto rodar, o projeto passa para o Pro (T36). Endereço atual: https://cardapio-frontend-roan.vercel.app (cardápio em `/stack-burguer`, painel em `/painel`, sem domínio próprio até a T36).
+
+Não use a integração Supabase da Vercel: ela cria variáveis com outros nomes e liga um único projeto a todos os ambientes. Cadastre as variáveis abaixo à mão.
+
+Variáveis de ambiente (Production e Preview): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `SUPABASE_SECRET_KEY` (esta sem `NEXT_PUBLIC_`, marcada como Sensitive, nunca vai para o navegador). Hoje as duas apontam para o Supabase de dev; na T36, Production passa para o projeto de produção.
