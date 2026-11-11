@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 import { StoreAvatar } from "@/components/atoms/store-avatar";
-import { menuSectionId } from "@/lib/catalog/menu-sections";
+import { MenuSearchButton } from "@/components/molecules/menu-search-button";
+import {
+  menuSectionId,
+  pickActiveSection,
+} from "@/lib/catalog/menu-sections";
 import { cn } from "@/lib/utils";
 
 export type NavCategory = { id: string; name: string };
@@ -36,6 +40,7 @@ export function MenuCategoryNav({
     categories[0]?.id ?? "",
   );
   const [pastHero, setPastHero] = useState(false);
+  const pinned = useRef<string | null>(null);
 
   useEffect(() => {
     function update() {
@@ -48,33 +53,42 @@ export function MenuCategoryNav({
 
       if (!categories.length) return;
 
-      // No fim da página a última categoria nunca chega à barra.
-      const reachedBottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 1;
-      if (reachedBottom) {
-        setActive(categories[categories.length - 1].id);
+      // Depois de tocar numa aba, ela fica marcada até a pessoa rolar por
+      // conta própria: perto do fim a categoria pode não alcançar o topo.
+      if (pinned.current) {
+        setActive(pinned.current);
         return;
       }
 
       const navBottom =
         navRef.current?.getBoundingClientRect().bottom ?? 0;
-      let current = categories[0].id;
-      for (const { id } of categories) {
-        const section = document.getElementById(
-          menuSectionId(id),
-        );
-        if (!section) continue;
-        if (
-          section.getBoundingClientRect().top -
-            navBottom -
-            SECTION_GAP <=
-          1
-        ) {
-          current = id;
-        }
-      }
-      setActive(current);
+      const current = pickActiveSection({
+        sections: categories.flatMap(({ id }) => {
+          const section = document.getElementById(
+            menuSectionId(id),
+          );
+          return section
+            ? [
+                {
+                  id,
+                  top: section.getBoundingClientRect().top,
+                },
+              ]
+            : [];
+        }),
+        readingLine: navBottom + SECTION_GAP,
+        viewportHeight: window.innerHeight,
+        scrollY: window.scrollY,
+        maxScrollY:
+          document.documentElement.scrollHeight -
+          window.innerHeight,
+      });
+      if (current) setActive(current);
+    }
+
+    // Rolagem feita pela pessoa (roda, toque, teclado ou barra) solta a aba.
+    function unpin() {
+      pinned.current = null;
     }
 
     // Página recarregada já rolada: acerta depois da primeira pintura.
@@ -83,8 +97,22 @@ export function MenuCategoryNav({
       passive: true,
     });
     window.addEventListener("resize", update);
+    const userScrollEvents = [
+      "wheel",
+      "touchmove",
+      "keydown",
+      "pointerdown",
+    ] as const;
+    for (const name of userScrollEvents) {
+      window.addEventListener(name, unpin, {
+        passive: true,
+      });
+    }
     return () => {
       cancelAnimationFrame(frame);
+      for (const name of userScrollEvents) {
+        window.removeEventListener(name, unpin);
+      }
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
@@ -110,6 +138,9 @@ export function MenuCategoryNav({
       menuSectionId(id),
     );
     if (!section) return;
+    // O pointerdown do próprio toque já soltou a aba anterior.
+    pinned.current = id;
+    setActive(id);
     const navHeight = navRef.current?.offsetHeight ?? 0;
     window.scrollTo({
       top:
@@ -137,6 +168,14 @@ export function MenuCategoryNav({
           <p className="truncate text-body font-semibold">
             {store.name}
           </p>
+          <MenuSearchButton
+            variant="icon"
+            className="ml-auto lg:hidden"
+          />
+          <MenuSearchButton
+            variant="field"
+            className="ml-auto hidden lg:flex"
+          />
         </div>
       ) : null}
 
