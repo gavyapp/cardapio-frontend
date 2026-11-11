@@ -49,6 +49,9 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(
+    --primary-soft-foreground
+  );
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
@@ -121,6 +124,8 @@
     var(--primary) 10%,
     white
   );
+  /* Texto sobre o tom claro da cor primária. */
+  --primary-soft-foreground: var(--primary);
   --ring: #16191d;
 
   /* Estados: forte e fundo claro */

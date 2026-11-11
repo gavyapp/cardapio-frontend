@@ -1,14 +1,15 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
-import { findStoreBySlug } from "@/lib/data/store";
+import { findMenu } from "@/lib/data/menu";
 import { redirectGuestToLogin } from "@/lib/panel/guest-redirect";
-import { themeStyle } from "@/lib/store/theme";
+import { themeCss } from "@/lib/store/theme";
 
 type Params = Promise<{ slug: string }>;
 
-// Aplica o tema da store (cor principal, fonte) como variáveis CSS.
-// Tudo dentro herda --primary sem saber de qual store é.
+// Aplica o tema da loja (cor, fonte, cantos e modo claro ou escuro) como
+// variáveis CSS no :root, enquanto a página da loja estiver aberta. Tudo
+// herda --primary sem saber de qual loja é, inclusive o que abre em portal.
 async function StoreTheme({
   params,
   children,
@@ -17,20 +18,18 @@ async function StoreTheme({
   children: React.ReactNode;
 }) {
   const { slug } = await params;
-  const store = await findStoreBySlug(slug);
-  if (!store) {
+  const menu = await findMenu(slug);
+  if (!menu) {
     // Caminho que não é loja: visitante vai para o login; logado vê o 404.
     await redirectGuestToLogin();
     notFound();
   }
 
   return (
-    <div
-      className="flex min-h-full flex-1 flex-col bg-background font-sans text-foreground"
-      style={themeStyle(store.appearance)}
-    >
+    <>
+      <style>{themeCss(menu.store.appearance)}</style>
       {children}
-    </div>
+    </>
   );
 }
 

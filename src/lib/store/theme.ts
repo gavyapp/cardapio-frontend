@@ -1,11 +1,13 @@
 // Tema da loja em variáveis CSS. O layout do cardápio aplica o resultado
-// como style no elemento raiz da loja; botões, abas e destaques seguem
+// no :root da página da loja (themeCss); botões, abas e destaques seguem
 // --primary sem saber de onde a cor veio.
 import type { CSSProperties } from "react";
 
 import {
-  textColorOn,
+  contrastRatio,
+  mixHex,
   normalizeHex,
+  textColorOn,
 } from "@/lib/store/color";
 
 export type StoreFont =
@@ -51,27 +53,116 @@ const FONTS: Record<StoreFont, string> = {
   elegante: "var(--font-figtree)",
 };
 
-/** Variáveis CSS do tema, prontas para o atributo style. */
-export function themeStyle(
-  appearance: Pick<
-    StoreAppearance,
-    "primaryColor" | "font"
-  >,
-): CSSProperties {
+// Neutros do cardápio do cliente no protótipo, um pouco diferentes dos do
+// painel: fundo branco, texto quase preto e bordas mais leves.
+const NEUTRALS = {
+  light: {
+    "--background": "#ffffff",
+    "--foreground": "#18181b",
+    "--card": "#ffffff",
+    "--card-foreground": "#18181b",
+    "--popover": "#ffffff",
+    "--popover-foreground": "#18181b",
+    "--muted": "#f3f3f5",
+    "--muted-foreground": "#5f5f68",
+    "--gray-medium": "#8e8e96",
+    "--secondary": "#f3f3f5",
+    "--secondary-foreground": "#18181b",
+    "--accent": "#f3f3f5",
+    "--accent-foreground": "#18181b",
+    "--border": "#e5e5e9",
+    "--border-strong": "#d4d4da",
+    "--input": "#e5e5e9",
+    "--success": "#177a3d",
+    "--success-soft": "#e4f4ea",
+    "--destructive": "#b42318",
+    "--destructive-soft": "#fdecea",
+    "--shadow-elevated":
+      "0 1px 2px rgb(24 24 27 / 6%), 0 8px 24px rgb(24 24 27 / 10%)",
+  },
+  dark: {
+    "--background": "#111113",
+    "--foreground": "#f4f4f5",
+    "--card": "#1a1a1d",
+    "--card-foreground": "#f4f4f5",
+    "--popover": "#1a1a1d",
+    "--popover-foreground": "#f4f4f5",
+    "--muted": "#26262a",
+    "--muted-foreground": "#a6a6ae",
+    "--gray-medium": "#8e8e96",
+    "--secondary": "#26262a",
+    "--secondary-foreground": "#f4f4f5",
+    "--accent": "#26262a",
+    "--accent-foreground": "#f4f4f5",
+    "--border": "#2f2f35",
+    "--border-strong": "#45454d",
+    "--input": "#2f2f35",
+    "--success": "#4ade80",
+    "--success-soft": "#15291c",
+    "--destructive": "#ff8a7a",
+    "--destructive-soft": "#3a1d1b",
+    "--shadow-elevated":
+      "0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 50%)",
+  },
+} as const;
+
+type ThemeInput = Pick<
+  StoreAppearance,
+  "primaryColor" | "font"
+> & {
+  mode?: StoreAppearance["mode"];
+};
+
+/** Variáveis CSS do tema da loja: cor, fonte, cantos e neutros do modo. */
+export function themeVariables(
+  appearance: ThemeInput,
+): Record<string, string> {
   const primary =
     normalizeHex(appearance.primaryColor) ??
     DEFAULT_APPEARANCE.primaryColor;
+  const neutrals = NEUTRALS[appearance.mode ?? "light"];
+  const background = neutrals["--background"];
+  const foreground = neutrals["--foreground"];
+
+  // Tom claro da cor da loja (faixas e destaques) e o texto sobre ele: a
+  // própria cor quando dá leitura, senão o texto padrão.
+  const soft = mixHex(primary, background, 0.13);
+  const softForeground =
+    contrastRatio(primary, soft) >= 4.5
+      ? primary
+      : foreground;
 
   return {
+    ...neutrals,
     "--primary": primary,
     "--primary-foreground": textColorOn(primary),
+    "--primary-soft": soft,
+    "--primary-soft-foreground": softForeground,
     "--ring": primary,
     "--font-sans": `${FONTS[appearance.font]}, ui-sans-serif, system-ui, sans-serif`,
-    // O cardápio do cliente é sobre fundo branco; o cinza é do painel.
-    "--background": "#ffffff",
-    // Cantos do cardápio do cliente, maiores que os do painel. A jornada do
-    // cliente confirma os valores no protótipo.
+    // Cantos do cardápio do cliente, maiores que os do painel.
     "--control-radius": "10px",
     "--surface-radius": "14px",
-  } as CSSProperties;
+  };
+}
+
+/** O tema como atributo style, para um trecho da página (página de amostra). */
+export function themeStyle(
+  appearance: ThemeInput,
+): CSSProperties {
+  return themeVariables(appearance) as CSSProperties;
+}
+
+/**
+ * O tema como regra CSS no :root, para a página inteira da loja. Diferente
+ * do style num elemento, alcança também o que abre em portal (modal, menu).
+ * Os valores vêm de listas fixas e de uma cor validada, nunca de texto livre.
+ */
+export function themeCss(appearance: ThemeInput): string {
+  const declarations = Object.entries(
+    themeVariables(appearance),
+  )
+    .map(([name, value]) => `${name}:${value}`)
+    .join(";");
+  return `:root{${declarations}}`;
 }
