@@ -10,6 +10,15 @@ cp .env.example .env.local   # preencha URL e publishable key do Supabase de dev
 npm run dev
 ```
 
+## Testes
+
+```bash
+npm test          # testes de unidade (Vitest), uma vez
+npm run test:watch
+```
+
+Testes de unidade ficam ao lado do código, em `src/**/*.test.ts`, e cobrem funções puras de `src/lib`. O CI roda junto com lint, typecheck e build. Os testes do banco são pgTAP (seção Supabase).
+
 ## Git
 
 Branches, commits e PRs seguem o padrão descrito em `CLAUDE.md` (seção "Padrão git"). O `npm install` ativa um hook que avisa quando algo foge do padrão, sem bloquear.
