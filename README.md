@@ -61,6 +61,8 @@ A rota confere um limite de tentativas antes de chamar o banco: 5 em 10 minutos,
 
 Cada recusa do `create_order` leva um código estável no `HINT` do erro (`store_closed`, `item_unavailable`, `minimum_order`…) e, nas recusas de item, o id do produto no `DETAIL`. Recusa nova no banco precisa do código lá e da tradução em `refusalFromDatabase`; um teste de unidade falha se faltar.
 
+O checkout fica em `/<slug>/checkout` (no subdomínio da loja, `/checkout`). As regras do formulário estão em `src/lib/orders/checkout.ts`. Depois do primeiro pedido, nome, celular e último endereço ficam guardados no aparelho (`localStorage`, chave `cardapio:cliente`) para o próximo vir preenchido; nada disso é buscado no servidor.
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.

@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/atoms/button";
 import { useCart } from "@/components/providers/cart-provider";
@@ -9,6 +10,7 @@ import {
   type CartItem,
 } from "@/lib/catalog/cart";
 import { formatCurrency } from "@/lib/format";
+import { checkoutPathFrom } from "@/lib/routing/store-paths";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,7 +26,10 @@ export function CartContents() {
     canOrder,
     nextOpeningLabel,
     addSuggestion,
+    setCartOpen,
   } = useCart();
+  const router = useRouter();
+  const pathname = usePathname();
 
   if (items.length === 0) {
     return (
@@ -162,11 +167,14 @@ export function CartContents() {
         </p>
       ) : null}
 
-      {/* O checkout ainda não existe: o botão fica sem ação. */}
       <Button
         size="lg"
         className="justify-between"
         disabled={!canOrder || Boolean(minimumOrder)}
+        onClick={() => {
+          setCartOpen(false);
+          router.push(checkoutPathFrom(pathname));
+        }}
       >
         <span>Continuar</span>
         <span className="tabular">

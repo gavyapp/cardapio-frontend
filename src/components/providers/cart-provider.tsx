@@ -29,7 +29,8 @@ import type { MenuProduct } from "@/lib/data/menu";
 
 // Pedido que o cliente monta no cardápio. Guarda o carrinho no aparelho, um
 // por loja, e o confere com o cardápio de agora. Também controla o que está
-// aberto: o detalhe de um produto e o carrinho no celular.
+// aberto: o detalhe de um produto e o carrinho no celular. Fica no layout da
+// loja, para o cardápio e o checkout verem o mesmo carrinho.
 
 /** Produto aberto no detalhe; com `editKey`, é um item do carrinho em edição. */
 export type DetailTarget = {
@@ -49,6 +50,8 @@ type CartContextValue = {
 
   save: (line: CartLine, replaceKey?: string) => void;
   setQuantity: (key: string, quantity: number) => void;
+  /** Esvazia o carrinho, depois que o pedido foi enviado. */
+  clear: () => void;
   /** Sugestão: entra direto, ou abre o detalhe se tiver grupo obrigatório. */
   addSuggestion: (product: MenuProduct) => void;
 
@@ -194,6 +197,7 @@ export function CartProvider({
         update((lines) =>
           changeQuantity(lines, key, quantity),
         ),
+      clear: () => update(() => []),
       addSuggestion: (product) => {
         if (hasRequiredGroup(product)) {
           setCartOpen(false);
