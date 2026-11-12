@@ -53,6 +53,14 @@ npx supabase db push --linked --include-seed
 
 Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` já existe, o seed não faz nada.
 
+### Criação de pedido
+
+O cliente cria o pedido por `POST /api/pedidos`, sem login. O contrato de entrada e saída, com os códigos de erro, fica em `src/lib/orders/create-order.ts`; o checkout e a rota importam de lá. O navegador manda só ids e quantidades: preço, taxa e total são calculados pelo `create_order`.
+
+A rota confere um limite de tentativas antes de chamar o banco: 5 em 10 minutos, por IP e por telefone, respondendo 429. As tentativas ficam na tabela `order_attempts`, com IP e telefone embaralhados por um segredo do servidor (a `SUPABASE_SECRET_KEY`), nunca em texto. Trocar essa chave zera os limites em andamento, sem outro efeito.
+
+Cada recusa do `create_order` leva um código estável no `HINT` do erro (`store_closed`, `item_unavailable`, `minimum_order`…) e, nas recusas de item, o id do produto no `DETAIL`. Recusa nova no banco precisa do código lá e da tradução em `refusalFromDatabase`; um teste de unidade falha se faltar.
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.

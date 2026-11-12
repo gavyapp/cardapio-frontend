@@ -876,6 +876,10 @@ export type Database = {
       }
       mark_order_read: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: { p_store_id: string }; Returns: number }
+      register_order_attempt: {
+        Args: { p_keys: string[]; p_limit?: number; p_window?: string }
+        Returns: boolean
+      }
       save_complement_group: {
         Args: {
           p_allow_repeat: boolean
