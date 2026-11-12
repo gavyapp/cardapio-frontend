@@ -10,6 +10,15 @@ cp .env.example .env.local   # preencha URL e publishable key do Supabase de dev
 npm run dev
 ```
 
+## Testes
+
+```bash
+npm test          # testes de unidade (Vitest), uma vez
+npm run test:watch
+```
+
+Testes de unidade ficam ao lado do código, em `src/**/*.test.ts`, e cobrem funções puras de `src/lib`. O CI roda junto com lint, typecheck e build. Os testes do banco são pgTAP (seção Supabase).
+
 ## Git
 
 Branches, commits e PRs seguem o padrão descrito em `CLAUDE.md` (seção "Padrão git"). O `npm install` ativa um hook que avisa quando algo foge do padrão, sem bloquear.
@@ -43,6 +52,16 @@ npx supabase db push --linked --include-seed
 ```
 
 Nunca em produção: a senha está no repositório. Se a loja `stack-burguer` já existe, o seed não faz nada.
+
+### Criação de pedido
+
+O cliente cria o pedido por `POST /api/pedidos`, sem login. O contrato de entrada e saída, com os códigos de erro, fica em `src/lib/orders/create-order.ts`; o checkout e a rota importam de lá. O navegador manda só ids e quantidades: preço, taxa e total são calculados pelo `create_order`.
+
+A rota confere um limite de tentativas antes de chamar o banco: 5 em 10 minutos, por IP e por telefone, respondendo 429. As tentativas ficam na tabela `order_attempts`, com IP e telefone embaralhados por um segredo do servidor (a `SUPABASE_SECRET_KEY`), nunca em texto. Trocar essa chave zera os limites em andamento, sem outro efeito.
+
+Cada recusa do `create_order` leva um código estável no `HINT` do erro (`store_closed`, `item_unavailable`, `minimum_order`…) e, nas recusas de item, o id do produto no `DETAIL`. Recusa nova no banco precisa do código lá e da tradução em `refusalFromDatabase`; um teste de unidade falha se faltar.
+
+O checkout fica em `/<slug>/checkout` (no subdomínio da loja, `/checkout`). As regras do formulário estão em `src/lib/orders/checkout.ts`. Depois do primeiro pedido, nome, celular e último endereço ficam guardados no aparelho (`localStorage`, chave `cardapio:cliente`) para o próximo vir preenchido; nada disso é buscado no servidor.
 
 ## Vercel
 

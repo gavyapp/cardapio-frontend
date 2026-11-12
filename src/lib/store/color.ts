@@ -59,3 +59,24 @@ export function textColorOn(background: string): string {
     ? LIGHT_TEXT
     : DARK_TEXT;
 }
+
+/**
+ * Mistura duas cores: `weight` é quanto da primeira entra (0 a 1).
+ * mixHex("#650000", "#ffffff", 0.13) é o tom claro da cor da loja.
+ */
+export function mixHex(
+  color: string,
+  base: string,
+  weight: number,
+): string {
+  const a = normalizeHex(color) ?? DARK_TEXT;
+  const b = normalizeHex(base) ?? LIGHT_TEXT;
+  const mixed = [1, 3, 5].map((start) => {
+    const from = parseInt(a.slice(start, start + 2), 16);
+    const to = parseInt(b.slice(start, start + 2), 16);
+    return Math.round(from * weight + to * (1 - weight))
+      .toString(16)
+      .padStart(2, "0");
+  });
+  return `#${mixed.join("")}`;
+}

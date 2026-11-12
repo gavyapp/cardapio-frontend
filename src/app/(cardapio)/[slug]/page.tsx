@@ -1,15 +1,34 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
-// Página provisória do cardápio público. A versão real entra com as rotas por loja.
+import { MenuTemplate } from "@/components/templates/menu-template";
+import { findMenu } from "@/lib/data/menu";
+
 type Params = Promise<{ slug: string }>;
 
-async function StoreName({ params }: { params: Params }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
   const { slug } = await params;
-  return (
-    <p className="text-muted-foreground">
-      Cardápio da loja {slug}
-    </p>
-  );
+  const menu = await findMenu(slug);
+  if (!menu) return {};
+  return {
+    // Título próprio da loja, sem o sufixo da plataforma.
+    title: { absolute: `${menu.store.name} · Cardápio` },
+    description:
+      menu.store.appearance.welcome ??
+      `Cardápio da ${menu.store.name}. Peça pelo celular.`,
+  };
+}
+
+async function MenuContent({ params }: { params: Params }) {
+  const { slug } = await params;
+  const menu = await findMenu(slug);
+  // Loja inexistente já foi tratada pelo layout.
+  if (!menu) return null;
+  return <MenuTemplate menu={menu} />;
 }
 
 export default function MenuPage({
@@ -18,16 +37,8 @@ export default function MenuPage({
   params: Params;
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <Suspense
-        fallback={
-          <p className="text-muted-foreground">
-            Carregando cardápio…
-          </p>
-        }
-      >
-        <StoreName params={params} />
-      </Suspense>
-    </main>
+    <Suspense fallback={null}>
+      <MenuContent params={params} />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@
 //   stack-burguer.gavy.com/      → /stack-burguer
 //   painel.gavy.com/pedidos      → /painel/pedidos
 //   gavy.com, www.gavy.com       → sem reescrita
+//   qualquer host, /api/...      → sem reescrita
 //   *.localhost                  → mesma regra, para desenvolvimento
 //   qualquer outro host          → sem reescrita (ex.: previews da Vercel)
 //
@@ -38,6 +39,15 @@ export function subdomainOf(
   return null;
 }
 
+const API_PATH = "/api";
+
+function isApiPath(pathname: string): boolean {
+  return (
+    pathname === API_PATH ||
+    pathname.startsWith(`${API_PATH}/`)
+  );
+}
+
 /** Caminho reescrito para a requisição, ou null quando não há o que reescrever. */
 export function rewritePathFor(
   host: string,
@@ -48,6 +58,9 @@ export function rewritePathFor(
     "localhost",
   ]);
   if (!label || label === "www") return null;
+  // Rotas de API são as mesmas em qualquer endereço: o checkout chama
+  // /api/pedidos a partir do subdomínio da loja.
+  if (isApiPath(pathname)) return null;
 
   if (label === PANEL_SUBDOMAIN) {
     if (

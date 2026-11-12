@@ -1,4 +1,4 @@
-# Lint, typecheck e build em todo PR e a cada merge na main.
+# Lint, typecheck, testes de unidade e build em todo PR e a cada merge na main.
 # Os testes do banco têm workflow próprio (testes-do-banco.yml).
 name: CI
 
@@ -33,6 +33,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Testes de unidade
+        run: npm test
 
       - name: Build
         run: npm run build
