@@ -20,14 +20,11 @@ export function OrderBoardTemplate({
   below?: ReactNode;
 }) {
   // No computador o <main> do painel vira a área que rola nesta página (veja
-  // o layout), com a altura da tela menos o cabeçalho: h-full no primeiro
+  // o layout e o PanelFrame), com a altura da tela menos o cabeçalho: h-full no primeiro
   // bloco ocupa exatamente essa altura. O piso evita colunas espremidas.
   return (
     <>
-      <div
-        data-fill-viewport
-        className="flex w-full flex-col gap-4 px-page pt-4 pb-4 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6"
-      >
+      <div className="flex w-full flex-col gap-4 px-page pt-4 pb-4 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6">
         <PageHeader title={title} search={search} />
         {children}
       </div>

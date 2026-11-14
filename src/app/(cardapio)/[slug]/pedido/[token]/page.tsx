@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
+import { OrderSentPageSkeleton } from "@/components/templates/order-sent-page-skeleton";
 import { OrderSentTemplate } from "@/components/templates/order-sent-template";
 import { findTrackedOrder } from "@/lib/data/order-tracking";
 
@@ -31,7 +32,7 @@ export default function OrderPage({
   params: Params;
 }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<OrderSentPageSkeleton />}>
       <OrderContent params={params} />
     </Suspense>
   );

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { CartProvider } from "@/components/providers/cart-provider";
+import { StorePageSkeleton } from "@/components/templates/store-page-skeleton";
 import { findMenu } from "@/lib/data/menu";
 import { redirectGuestToLogin } from "@/lib/panel/guest-redirect";
 import { themeCss } from "@/lib/store/theme";
@@ -58,7 +59,16 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        // A tela de carregamento depende da página aberta, que só se sabe
+        // na hora do acesso: fica no próprio Suspense para não travar a
+        // parte da página que o Next deixa pronta de antemão.
+        <Suspense fallback={null}>
+          <StorePageSkeleton />
+        </Suspense>
+      }
+    >
       <StoreShell params={params}>{children}</StoreShell>
     </Suspense>
   );

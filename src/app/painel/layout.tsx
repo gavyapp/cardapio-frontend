@@ -7,6 +7,7 @@ import {
 } from "@/components/organisms/panel-header";
 import { LiveOrdersProvider } from "@/components/providers/live-orders-provider";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
+import { PanelFrame } from "@/components/templates/panel-frame";
 import { Toaster } from "@/components/atoms/sonner";
 import { countCatalog } from "@/lib/data/catalog-counts";
 import { findOrderAlerts } from "@/lib/data/order-alerts";
@@ -70,9 +71,10 @@ async function PanelWithAccess({
         catalogCounts={catalogCounts}
         onSignOut={signOut}
       />
-      {/* Na página do quadro, o <main> rola sozinho com a altura da tela
-          menos o cabeçalho, e o quadro ocupa essa primeira tela. */}
-      <main className="flex flex-1 flex-col lg:has-[[data-fill-viewport]]:min-h-0 lg:has-[[data-fill-viewport]]:overflow-y-auto">
+      {/* Na página do quadro (PanelFrame), o <main> rola sozinho com a
+          altura da tela menos o cabeçalho, e o quadro ocupa essa primeira
+          tela. */}
+      <main className="flex flex-1 flex-col lg:group-data-fill-viewport/panel:min-h-0 lg:group-data-fill-viewport/panel:overflow-y-auto">
         {children}
       </main>
     </LiveOrdersProvider>
@@ -83,11 +85,11 @@ export default function PanelLayout({
   children,
 }: LayoutProps<"/painel">) {
   return (
-    <div className="flex min-h-full flex-1 flex-col lg:has-[[data-fill-viewport]]:h-dvh lg:has-[[data-fill-viewport]]:flex-none">
+    <PanelFrame>
       <Suspense fallback={<PanelHeader store={null} />}>
         <PanelWithAccess>{children}</PanelWithAccess>
       </Suspense>
       <Toaster position="bottom-center" />
-    </div>
+    </PanelFrame>
   );
 }
