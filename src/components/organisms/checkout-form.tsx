@@ -18,6 +18,8 @@ import { CurrencyInput } from "@/components/molecules/currency-input";
 import { FieldError } from "@/components/molecules/field-error";
 import { PhoneInput } from "@/components/molecules/phone-input";
 import { RadioCard } from "@/components/molecules/radio-card";
+import { CheckoutFormSkeleton } from "@/components/organisms/checkout-form-skeleton";
+import { OrderSentSkeleton } from "@/components/organisms/order-sent-skeleton";
 import { useCart } from "@/components/providers/cart-provider";
 import type { Enums } from "@/lib/database.types";
 import {
@@ -161,8 +163,8 @@ export function CheckoutForm({
     () => null,
   );
 
-  if (hasSent) return null;
-  if (!isOnDevice) return null;
+  if (hasSent) return <OrderSentSkeleton />;
+  if (!isOnDevice) return <CheckoutFormSkeleton />;
 
   if (items.length === 0) {
     return (

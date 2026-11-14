@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { CheckoutSkeleton } from "@/components/templates/checkout-skeleton";
 import { CheckoutTemplate } from "@/components/templates/checkout-template";
 import { findMenu } from "@/lib/data/menu";
 
@@ -41,7 +42,7 @@ export default function CheckoutPage({
   params: Params;
 }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<CheckoutSkeleton />}>
       <CheckoutContent params={params} />
     </Suspense>
   );
