@@ -63,6 +63,10 @@ Cada recusa do `create_order` leva um código estável no `HINT` do erro (`store
 
 O checkout fica em `/<slug>/checkout` (no subdomínio da loja, `/checkout`). As regras do formulário estão em `src/lib/orders/checkout.ts`. Depois do primeiro pedido, nome, celular e último endereço ficam guardados no aparelho (`localStorage`, chave `cardapio:cliente`) para o próximo vir preenchido; nada disso é buscado no servidor.
 
+Depois de enviar, o cliente vai para `/<slug>/pedido/<public_token>`, a tela do pedido com as etapas. Ela lê o pedido por `get_order_by_token` e, enquanto ele está em andamento, se reconsulta a cada 10 segundos e ao voltar para a aba (`OrderStatusRefresher`); pedido concluído, recusado ou cancelado para de consultar. Recusa do servidor que se resolve no carrinho (loja fechou, item esgotou, complemento mudou, pedido abaixo do mínimo) leva o cliente de volta ao cardápio com o aviso e o item marcado.
+
+Enquanto o pedido está em andamento, o cardápio mostra um atalho para essa tela ("Pedido #1048 · Novo"). Os pedidos enviados ficam guardados no aparelho (`localStorage`, chave `cardapio:pedidos:<storeId>`), e o status vem de `GET /api/pedidos/<token>`, que devolve só o número e o status. Pedido encerrado sai da lista.
+
 ## Vercel
 
 Projeto ligado a este repositório, região `gru1` (São Paulo, ver `vercel.json`). Cada PR ganha um preview; `main` vai para produção.

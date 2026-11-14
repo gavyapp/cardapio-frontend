@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   checkoutPathFrom,
   menuPathFrom,
+  orderPathFrom,
 } from "./store-paths";
 
 describe("caminhos da loja", () => {
@@ -25,5 +26,28 @@ describe("caminhos da loja", () => {
     );
     expect(menuPathFrom("/checkout")).toBe("/");
     expect(menuPathFrom("/checkout/")).toBe("/");
+  });
+
+  it("checkout → tela do pedido enviado, com o token", () => {
+    expect(
+      orderPathFrom("/stack-burguer/checkout", "abc"),
+    ).toBe("/stack-burguer/pedido/abc");
+    expect(orderPathFrom("/checkout", "abc")).toBe(
+      "/pedido/abc",
+    );
+  });
+
+  it("tela do pedido → volta ao cardápio de onde veio", () => {
+    expect(menuPathFrom("/stack-burguer/pedido/abc")).toBe(
+      "/stack-burguer",
+    );
+    expect(menuPathFrom("/pedido/abc")).toBe("/");
+  });
+
+  it("cardápio já é o cardápio", () => {
+    expect(menuPathFrom("/stack-burguer")).toBe(
+      "/stack-burguer",
+    );
+    expect(menuPathFrom("/")).toBe("/");
   });
 });

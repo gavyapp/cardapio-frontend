@@ -8,6 +8,7 @@ import {
   type ComponentProps,
   type FormEvent,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
@@ -17,7 +18,6 @@ import { CurrencyInput } from "@/components/molecules/currency-input";
 import { FieldError } from "@/components/molecules/field-error";
 import { PhoneInput } from "@/components/molecules/phone-input";
 import { RadioCard } from "@/components/molecules/radio-card";
-import { OrderSent } from "@/components/organisms/order-sent";
 import { useCart } from "@/components/providers/cart-provider";
 import type { Enums } from "@/lib/database.types";
 import {
@@ -34,14 +34,22 @@ import {
   parseSavedCustomer,
   prefillCheckout,
   rememberCustomer,
+  returnsToCart,
   validateCheckout,
   type CheckoutErrors,
   type CheckoutField,
   type CheckoutFields,
 } from "@/lib/orders/checkout";
-import type { CreatedOrder } from "@/lib/orders/create-order";
+import {
+  openOrdersStorageKey,
+  parseRememberedOrders,
+  rememberOrder,
+} from "@/lib/orders/open-orders";
 import { sendOrder } from "@/lib/orders/send-order";
-import { cn } from "@/lib/utils";
+import {
+  menuPathFrom,
+  orderPathFrom,
+} from "@/lib/routing/store-paths";
 
 type PaymentMethod = Enums<"payment_method">;
 
@@ -82,6 +90,30 @@ function readSavedCustomer(): string | null {
   }
 }
 
+// Guarda o pedido enviado para o cardápio mostrar o atalho de
+// acompanhamento enquanto ele estiver em andamento.
+function writeOpenOrder(
+  storeId: string,
+  order: { token: string; number: number },
+) {
+  try {
+    const key = openOrdersStorageKey(storeId);
+    window.localStorage.setItem(
+      key,
+      JSON.stringify(
+        rememberOrder(
+          parseRememberedOrders(
+            window.localStorage.getItem(key),
+          ),
+          order,
+        ),
+      ),
+    );
+  } catch {
+    // Sem armazenamento, o atalho só não aparece.
+  }
+}
+
 function writeSavedCustomer(fields: CheckoutFields) {
   try {
     const previous = parseSavedCustomer(
@@ -112,8 +144,9 @@ export function CheckoutForm({
   pickupAddress: string;
 }) {
   const { items } = useCart();
-  const [sentOrder, setSentOrder] =
-    useState<CreatedOrder | null>(null);
+  // Depois do envio o carrinho esvazia e a tela do pedido abre: enquanto
+  // isso, nada de "pedido vazio".
+  const [hasSent, setHasSent] = useState(false);
 
   // Carrinho e dados do cliente vivem no aparelho: no servidor não há nada
   // a mostrar, e a tela só aparece depois de lê-los.
@@ -128,11 +161,7 @@ export function CheckoutForm({
     () => null,
   );
 
-  if (sentOrder) {
-    return (
-      <OrderSent storeName={store.name} order={sentOrder} />
-    );
-  }
+  if (hasSent) return null;
   if (!isOnDevice) return null;
 
   if (items.length === 0) {
@@ -160,7 +189,7 @@ export function CheckoutForm({
       store={store}
       rules={rules}
       pickupAddress={pickupAddress}
-      onSent={setSentOrder}
+      onSent={() => setHasSent(true)}
     />
   );
 }
@@ -176,7 +205,7 @@ function CheckoutFields({
   store: { id: string; name: string };
   rules: CheckoutRules;
   pickupAddress: string;
-  onSent: (order: CreatedOrder) => void;
+  onSent: () => void;
 }) {
   const {
     items,
@@ -184,7 +213,10 @@ function CheckoutFields({
     canOrder,
     nextOpeningLabel,
     clear,
+    reportRefusal,
   } = useCart();
+  const router = useRouter();
+  const pathname = usePathname();
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -193,9 +225,6 @@ function CheckoutFields({
   const [refusal, setRefusal] = useState<string | null>(
     null,
   );
-  const [affectedKeys, setAffectedKeys] = useState<
-    string[]
-  >([]);
   const [isSending, setSending] = useState(false);
 
   const isDelivery = fields.mode === "ENTREGA";
@@ -248,7 +277,6 @@ function CheckoutFields({
     if (isSending || blocked) return;
 
     setRefusal(null);
-    setAffectedKeys([]);
     const validation = validateCheckout(fields, {
       storeId: store.id,
       items,
@@ -265,16 +293,32 @@ function CheckoutFields({
 
     if (response.ok) {
       writeSavedCustomer(fields);
-      onSent(response.order);
+      writeOpenOrder(store.id, {
+        token: response.order.publicToken,
+        number: response.order.number,
+      });
+      onSent();
       clear();
+      router.replace(
+        orderPathFrom(pathname, response.order.publicToken),
+      );
+      return;
+    }
+
+    if (returnsToCart(response.error)) {
+      // O que impede o pedido se resolve no carrinho: volta para lá com a
+      // explicação e o item marcado.
+      reportRefusal({
+        message: response.error.message,
+        itemKeys: affectedItemKeys(response.error, items),
+      });
+      router.push(menuPathFrom(pathname));
+      router.refresh();
       return;
     }
 
     const fromServer = fieldErrorsFromServer(
       response.error,
-    );
-    setAffectedKeys(
-      affectedItemKeys(response.error, items),
     );
     if (Object.keys(fromServer).length) {
       showErrors(fromServer);
@@ -566,9 +610,6 @@ function CheckoutFields({
           </h2>
           <ul className="flex flex-col gap-3">
             {items.map((item) => {
-              const affected = affectedKeys.includes(
-                item.key,
-              );
               const options = item.options
                 .map((option) =>
                   option.quantity > 1
@@ -579,11 +620,7 @@ function CheckoutFields({
               return (
                 <li
                   key={item.key}
-                  className={cn(
-                    "flex items-start justify-between gap-3",
-                    affected &&
-                      "rounded-control bg-destructive-soft p-2",
-                  )}
+                  className="flex items-start justify-between gap-3"
                 >
                   <div className="min-w-0">
                     <p className="text-body">
@@ -600,12 +637,6 @@ function CheckoutFields({
                     {item.notes ? (
                       <p className="text-support text-muted-foreground">
                         Obs.: {item.notes}
-                      </p>
-                    ) : null}
-                    {affected ? (
-                      <p className="text-support font-semibold text-destructive">
-                        Este item precisa ser revisto no
-                        cardápio.
                       </p>
                     ) : null}
                   </div>
