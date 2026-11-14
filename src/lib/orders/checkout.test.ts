@@ -11,6 +11,7 @@ import {
   parseSavedCustomer,
   prefillCheckout,
   rememberCustomer,
+  returnsToCart,
   validateCheckout,
   type CheckoutFields,
 } from "./checkout";
@@ -312,6 +313,35 @@ describe("recusa da rota", () => {
         items,
       ),
     ).toEqual(["fries"]);
+  });
+});
+
+describe("returnsToCart", () => {
+  it("loja fechou, item esgotou, complemento mudou, mínimo → volta ao carrinho", () => {
+    for (const code of [
+      "store_closed",
+      "item_unavailable",
+      "invalid_complement",
+      "minimum_order",
+    ] as const) {
+      expect(returnsToCart({ code, message: "x" })).toBe(
+        true,
+      );
+    }
+  });
+
+  it("erro de campo, limite de tentativas e erro inesperado → fica no checkout", () => {
+    for (const code of [
+      "invalid_request",
+      "invalid_change",
+      "payment_not_accepted",
+      "rate_limited",
+      "unexpected",
+    ] as const) {
+      expect(returnsToCart({ code, message: "x" })).toBe(
+        false,
+      );
+    }
   });
 });
 

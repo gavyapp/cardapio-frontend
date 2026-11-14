@@ -256,6 +256,24 @@ export function fieldErrorsFromServer(
   return errors;
 }
 
+// Recusas que se resolvem no carrinho, não no formulário.
+const CART_REFUSALS = new Set<CreateOrderError["code"]>([
+  "store_closed",
+  "item_unavailable",
+  "invalid_complement",
+  "minimum_order",
+]);
+
+/**
+ * A recusa manda o cliente de volta ao carrinho (loja fechou, item esgotou,
+ * complemento mudou, pedido abaixo do mínimo)? As demais ficam no checkout.
+ */
+export function returnsToCart(
+  error: CreateOrderError,
+): boolean {
+  return CART_REFUSALS.has(error.code);
+}
+
 /** Itens do carrinho apontados pela recusa (mesma ordem do pedido enviado). */
 export function affectedItemKeys(
   error: CreateOrderError,

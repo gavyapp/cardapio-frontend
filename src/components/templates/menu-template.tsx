@@ -3,6 +3,7 @@ import { MenuFooter } from "@/components/organisms/menu-footer";
 import { MenuHero } from "@/components/organisms/menu-hero";
 import { MenuProductList } from "@/components/organisms/menu-product-list";
 import { MobileCart } from "@/components/organisms/mobile-cart";
+import { OpenOrdersNotice } from "@/components/organisms/open-orders-notice";
 import { OrderSummary } from "@/components/organisms/order-summary";
 import { ProductDetail } from "@/components/organisms/product-detail";
 import { StoreInfoDialog } from "@/components/organisms/store-info-dialog";
@@ -90,6 +91,7 @@ export function MenuTemplate({ menu }: { menu: Menu }) {
                   {formatCurrency(rules.freeDeliveryAbove)}
                 </p>
               ) : null}
+              <OpenOrdersNotice storeId={store.id} />
             </div>
 
             <MenuCategoryNav

@@ -27,13 +27,24 @@ export function CartContents() {
     nextOpeningLabel,
     addSuggestion,
     setCartOpen,
+    refusal,
   } = useCart();
   const router = useRouter();
   const pathname = usePathname();
 
+  const refusalNotice = refusal ? (
+    <p
+      role="alert"
+      className="rounded-control bg-destructive-soft px-3 py-2 text-left text-support font-semibold text-destructive"
+    >
+      {refusal.message}
+    </p>
+  ) : null;
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-1 py-4 text-center">
+        {refusalNotice}
         <p className="font-mono text-support">
           — nenhum item ainda —
         </p>
@@ -48,9 +59,16 @@ export function CartContents() {
 
   return (
     <div className="flex flex-col gap-4 text-left">
+      {refusalNotice}
       <ul className="flex flex-col divide-y">
         {items.map((item) => (
-          <CartLineRow key={item.key} item={item} />
+          <CartLineRow
+            key={item.key}
+            item={item}
+            needsReview={
+              refusal?.itemKeys.includes(item.key) ?? false
+            }
+          />
         ))}
       </ul>
 
@@ -185,7 +203,14 @@ export function CartContents() {
   );
 }
 
-function CartLineRow({ item }: { item: CartItem }) {
+function CartLineRow({
+  item,
+  needsReview,
+}: {
+  item: CartItem;
+  /** Item apontado pela recusa do servidor. */
+  needsReview: boolean;
+}) {
   const { setQuantity, openProduct } = useCart();
   const options = item.options
     .map((option) =>
@@ -211,6 +236,11 @@ function CartLineRow({ item }: { item: CartItem }) {
           {item.notes ? (
             <p className="text-support text-muted-foreground">
               Obs.: {item.notes}
+            </p>
+          ) : null}
+          {needsReview ? (
+            <p className="text-support font-semibold text-destructive">
+              Revise ou remova este item.
             </p>
           ) : null}
         </div>

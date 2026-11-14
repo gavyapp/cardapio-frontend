@@ -64,6 +64,17 @@ type CartContextValue = {
 
   isCartOpen: boolean;
   setCartOpen: (open: boolean) => void;
+
+  /** Recusa do servidor ao enviar o pedido, mostrada no carrinho. */
+  refusal: CartRefusal | null;
+  /** Guarda a recusa e abre o carrinho no celular. */
+  reportRefusal: (refusal: CartRefusal) => void;
+};
+
+/** Por que o pedido voltou ao carrinho e quais itens causaram. */
+export type CartRefusal = {
+  message: string;
+  itemKeys: string[];
 };
 
 const CartContext = createContext<CartContextValue | null>(
@@ -159,6 +170,8 @@ export function CartProvider({
     null,
   );
   const [isCartOpen, setCartOpen] = useState(false);
+  const [refusal, setRefusal] =
+    useState<CartRefusal | null>(null);
 
   // Lê o guardado na hora de mudar e leva junto só o que ainda vale no
   // cardápio, para o item que saiu do ar não voltar.
@@ -176,6 +189,8 @@ export function CartProvider({
         ),
       );
       write(storageKey, change(valid));
+      // O cliente mexeu no carrinho: o aviso da recusa já cumpriu o papel.
+      setRefusal(null);
     },
     [storageKey, products],
   );
@@ -218,6 +233,12 @@ export function CartProvider({
 
       isCartOpen,
       setCartOpen,
+
+      refusal,
+      reportRefusal: (reported) => {
+        setRefusal(reported);
+        setCartOpen(true);
+      },
     }),
     [
       products,
@@ -229,6 +250,7 @@ export function CartProvider({
       update,
       detail,
       isCartOpen,
+      refusal,
     ],
   );
 
