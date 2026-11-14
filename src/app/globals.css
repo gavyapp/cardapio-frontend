@@ -246,3 +246,14 @@
     --page-gutter: 2.5rem;
   }
 }
+
+/* Em tela de toque, campo com texto menor que 16px faz o iPhone dar zoom na
+   página ao focar. Fora de camada, para valer sobre text-body (15px) sem
+   mudar o tamanho no computador. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
