@@ -30,6 +30,8 @@ const addressSchema = z.object({
   street: requiredText(120, "Informe a rua."),
   number: requiredText(20, "Informe o número."),
   district: requiredText(80, "Informe o bairro."),
+  /** Bairro cadastrado pela loja; sem ele, vale a taxa de outros locais. */
+  zoneId: z.uuid().optional(),
   complement: optionalText(80),
   reference: optionalText(120),
 });

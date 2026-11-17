@@ -1,5 +1,9 @@
 // O que o cardápio público mostra sobre a loja em "Mais informações" e no
 // rodapé: endereço, contatos, semana de funcionamento e entrega.
+import {
+  hasDeliveryZones,
+  lowestDeliveryFee,
+} from "@/lib/store/delivery-zones";
 import type { Enums } from "@/lib/database.types";
 import type { StoreRules } from "@/lib/data/store-settings";
 import {
@@ -124,15 +128,30 @@ const listFormat = new Intl.ListFormat("pt-BR", {
 
 export type InfoRow = { label: string; value: string };
 
+/**
+ * Taxa de entrega em uma linha: o valor único, ou "a partir de" o menor
+ * quando a loja cobra por bairro.
+ */
+export function deliveryFeeLabel(
+  rules: Pick<StoreRules, "deliveryFee" | "deliveryZones">,
+): string {
+  if (!hasDeliveryZones(rules)) {
+    return rules.deliveryFee > 0
+      ? formatCurrency(rules.deliveryFee)
+      : "Grátis";
+  }
+  const lowest = lowestDeliveryFee(rules);
+  return lowest > 0
+    ? `A partir de ${formatCurrency(lowest)}`
+    : "Grátis em alguns bairros";
+}
+
 /** Linhas da aba "Entrega e pagamento", só com o que a loja configurou. */
 export function deliveryRows(rules: StoreRules): InfoRow[] {
   const rows: InfoRow[] = [
     {
       label: "Taxa de entrega",
-      value:
-        rules.deliveryFee > 0
-          ? formatCurrency(rules.deliveryFee)
-          : "Grátis",
+      value: deliveryFeeLabel(rules),
     },
   ];
   if (rules.deliveryTimeMinutes) {

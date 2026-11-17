@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
+import { NativeSelect } from "@/components/atoms/native-select";
 import { Label } from "@/components/atoms/label";
 import { BackToMenuLink } from "@/components/molecules/back-to-menu-link";
 import { CurrencyInput } from "@/components/molecules/currency-input";
@@ -49,6 +50,12 @@ import {
 } from "@/lib/orders/open-orders";
 import { sendOrder } from "@/lib/orders/send-order";
 import {
+  hasDeliveryZones,
+  lowestDeliveryFee,
+  OTHER_ZONE,
+  type DeliveryZone,
+} from "@/lib/store/delivery-zones";
+import {
   menuPathFrom,
   orderPathFrom,
 } from "@/lib/routing/store-paths";
@@ -57,6 +64,8 @@ type PaymentMethod = Enums<"payment_method">;
 
 type CheckoutRules = {
   deliveryFee: number;
+  /** Bairros com taxa própria; vazio em loja de taxa única. */
+  deliveryZones: DeliveryZone[];
   freeDeliveryAbove: number | null;
   paymentMethods: PaymentMethod[];
   deliveryTimeMinutes: number | null;
@@ -187,7 +196,10 @@ export function CheckoutForm({
       // Os dados guardados chegam depois da primeira leitura: o formulário
       // recomeça já preenchido.
       key={saved ?? "sem-dados-guardados"}
-      initial={prefillCheckout(parseSavedCustomer(saved))}
+      initial={prefillCheckout(
+        parseSavedCustomer(saved),
+        rules.deliveryZones,
+      )}
       store={store}
       rules={rules}
       pickupAddress={pickupAddress}
@@ -234,7 +246,9 @@ function CheckoutFields({
     summary.subtotal,
     rules,
     fields.mode,
+    fields.zoneId,
   );
+  const chargesByZone = hasDeliveryZones(rules);
   const paymentOptions = PAYMENT_OPTIONS.filter((option) =>
     rules.paymentMethods.includes(option.method),
   );
@@ -283,6 +297,7 @@ function CheckoutFields({
       storeId: store.id,
       items,
       total: totals.total,
+      deliveryZones: rules.deliveryZones,
     });
     if (!validation.ok) {
       showErrors(validation.errors);
@@ -331,7 +346,10 @@ function CheckoutFields({
 
   // Propriedades comuns de um campo de texto do formulário.
   function textField(
-    field: Exclude<CheckoutField, "mode" | "paymentMethod">,
+    field: Exclude<
+      CheckoutField,
+      "mode" | "paymentMethod" | "zoneId"
+    >,
   ) {
     const error = errors[field];
     return {
@@ -397,9 +415,13 @@ function CheckoutFields({
               selected={isDelivery}
               title="Entrega"
               description={[
-                rules.deliveryFee > 0
-                  ? `Taxa ${formatCurrency(rules.deliveryFee)}`
-                  : "Sem taxa",
+                chargesByZone
+                  ? lowestDeliveryFee(rules) > 0
+                    ? `A partir de ${formatCurrency(lowestDeliveryFee(rules))}`
+                    : "Taxa por bairro"
+                  : rules.deliveryFee > 0
+                    ? `Taxa ${formatCurrency(rules.deliveryFee)}`
+                    : "Sem taxa",
                 deliveryTime,
               ]
                 .filter(Boolean)
@@ -468,17 +490,74 @@ function CheckoutFields({
                 {fieldError("number")}
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor={`${id}-district`}>
-                Bairro
-              </Label>
-              <Input
-                {...textField("district")}
-                autoComplete="address-level3"
-                maxLength={80}
-              />
-              {fieldError("district")}
-            </div>
+            {chargesByZone ? (
+              <div className="grid gap-2">
+                <Label htmlFor={`${id}-zoneId`}>
+                  Bairro
+                </Label>
+                <NativeSelect
+                  id={`${id}-zoneId`}
+                  name="zoneId"
+                  data-field="zoneId"
+                  value={fields.zoneId}
+                  aria-invalid={
+                    errors.zoneId ? true : undefined
+                  }
+                  aria-describedby={
+                    errors.zoneId
+                      ? `${id}-zoneId-erro`
+                      : undefined
+                  }
+                  onChange={(event) => {
+                    const zoneId = event.target.value;
+                    change("zoneId", zoneId);
+                    // Bairro da lista leva o nome do cadastro; em "Outro
+                    // bairro" o cliente digita o dele.
+                    change(
+                      "district",
+                      rules.deliveryZones.find(
+                        (zone) => zone.id === zoneId,
+                      )?.name ?? "",
+                    );
+                  }}
+                >
+                  <option value="" disabled>
+                    Escolha o bairro
+                  </option>
+                  {rules.deliveryZones.map((zone) => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name} ·{" "}
+                      {zone.fee > 0
+                        ? formatCurrency(zone.fee)
+                        : "Grátis"}
+                    </option>
+                  ))}
+                  <option value={OTHER_ZONE}>
+                    Outro bairro ·{" "}
+                    {rules.deliveryFee > 0
+                      ? formatCurrency(rules.deliveryFee)
+                      : "Grátis"}
+                  </option>
+                </NativeSelect>
+                {fieldError("zoneId")}
+              </div>
+            ) : null}
+            {!chargesByZone ||
+            fields.zoneId === OTHER_ZONE ? (
+              <div className="grid gap-2">
+                <Label htmlFor={`${id}-district`}>
+                  {chargesByZone
+                    ? "Nome do bairro"
+                    : "Bairro"}
+                </Label>
+                <Input
+                  {...textField("district")}
+                  autoComplete="address-level3"
+                  maxLength={80}
+                />
+                {fieldError("district")}
+              </div>
+            ) : null}
             <div className="grid gap-2">
               <Label htmlFor={`${id}-complement`}>
                 Complemento
@@ -677,9 +756,11 @@ function CheckoutFields({
                       )}
                     </s>
                   ) : null}
-                  {totals.deliveryFee > 0
-                    ? formatCurrency(totals.deliveryFee)
-                    : "Grátis"}
+                  {totals.isDeliveryFeePending
+                    ? "Escolha o bairro"
+                    : totals.deliveryFee > 0
+                      ? formatCurrency(totals.deliveryFee)
+                      : "Grátis"}
                 </dd>
               </div>
             ) : null}

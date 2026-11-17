@@ -85,6 +85,7 @@ describe("checkoutTotals", () => {
     expect(checkoutTotals(50, rules, "ENTREGA")).toEqual({
       subtotal: 50,
       deliveryFee: 6,
+      isDeliveryFeePending: false,
       waivedDeliveryFee: null,
       discount: 0,
       total: 56,
