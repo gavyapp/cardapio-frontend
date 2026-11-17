@@ -20,8 +20,9 @@ select ok(not has_function_privilege('anon', 'public.set_order_paid(uuid, boolea
 select ok(not has_function_privilege('anon', 'private.is_store_member(uuid)', 'execute'),
   'anônimo chama is_store_member → sem permissão');
 select ok(not has_function_privilege('anon', 'public.save_product(uuid, uuid, text, numeric, text[], boolean, boolean, uuid[], text, text, uuid)', 'execute')
-      and not has_function_privilege('anon', 'public.save_complement_group(uuid, text, integer, integer, boolean, jsonb, uuid)', 'execute'),
-  'anônimo chama save_product e save_complement_group → sem permissão');
+      and not has_function_privilege('anon', 'public.save_complement_group(uuid, text, integer, integer, boolean, jsonb, uuid)', 'execute')
+      and not has_function_privilege('anon', 'public.set_complement_group_products(uuid, uuid, uuid[])', 'execute'),
+  'anônimo chama save_product, save_complement_group e set_complement_group_products → sem permissão');
 select ok(has_function_privilege('anon', 'public.create_order(uuid, public.order_mode, text, text, public.payment_method, jsonb, jsonb, numeric, text)', 'execute')
       and has_function_privilege('anon', 'public.get_order_by_token(text)', 'execute'),
   'anônimo chama create_order e get_order_by_token → permitido');

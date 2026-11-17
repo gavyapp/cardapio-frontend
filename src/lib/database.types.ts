@@ -880,6 +880,14 @@ export type Database = {
         Args: { p_keys: string[]; p_limit?: number; p_window?: string }
         Returns: boolean
       }
+      set_complement_group_products: {
+        Args: {
+          p_group_id: string
+          p_product_ids: string[]
+          p_store_id: string
+        }
+        Returns: undefined
+      }
       save_complement_group: {
         Args: {
           p_allow_repeat: boolean

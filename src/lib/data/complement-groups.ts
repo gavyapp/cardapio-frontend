@@ -142,6 +142,37 @@ export async function saveComplementGroup(
   return data;
 }
 
+/**
+ * Define em quais produtos o grupo é usado, pela função
+ * set_complement_group_products, numa transação só. Recebe a lista completa:
+ * o grupo sai de quem não está nela e entra em quem ainda não o tinha.
+ */
+export async function setComplementGroupProducts(
+  storeId: string,
+  groupId: string,
+  productIds: string[],
+): Promise<void> {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc(
+    "set_complement_group_products",
+    {
+      p_store_id: storeId,
+      p_group_id: groupId,
+      p_product_ids: productIds,
+    },
+  );
+  if (error) {
+    // P0001: recusa da regra (grupo ou produto que não existe mais), com
+    // mensagem pronta para a tela.
+    if (error.code === "P0001") {
+      throw new UserFacingError(error.message);
+    }
+    throw new Error(
+      `Erro ao ligar o grupo aos produtos: ${error.message}`,
+    );
+  }
+}
+
 /** Pausa ou volta uma opção, direto da lista. */
 export async function setComplementAvailability(
   storeId: string,
