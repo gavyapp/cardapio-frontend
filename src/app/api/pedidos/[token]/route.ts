@@ -1,9 +1,11 @@
 import { findTrackedOrder } from "@/lib/data/order-tracking";
 import type { OrderStatusResponse } from "@/lib/orders/open-orders";
+import { stoppedAt } from "@/lib/orders/tracking";
 
 /**
  * Status de um pedido pelo token do link, para o cardápio mostrar os
- * pedidos em andamento do cliente. Devolve só o número e o status.
+ * pedidos em andamento do cliente. Devolve só o número, o status e a hora
+ * da recusa ou do cancelamento.
  */
 export async function GET(
   _request: Request,
@@ -12,12 +14,17 @@ export async function GET(
   const { token } = await params;
 
   try {
-    const order = await findTrackedOrder(token);
-    if (!order) return new Response(null, { status: 404 });
+    const lookup = await findTrackedOrder(token);
+    // Link vencido responde como pedido inexistente: sai do atalho.
+    if (lookup.state !== "found") {
+      return new Response(null, { status: 404 });
+    }
+    const { order } = lookup;
     return Response.json(
       {
         number: order.number,
         status: order.status,
+        stoppedAt: stoppedAt(order),
       } satisfies OrderStatusResponse,
       { headers: { "Cache-Control": "no-store" } },
     );

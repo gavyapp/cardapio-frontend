@@ -6,7 +6,10 @@ import { z } from "zod";
 import { Constants } from "@/lib/database.types";
 
 import type { OrderStatus } from "./status";
-import { isFinalStatus, isOrderToken } from "./tracking";
+import {
+  isOrderToken,
+  ORDER_LINK_VALID_HOURS,
+} from "./tracking";
 
 /** Chave do localStorage: os pedidos em andamento de uma loja. */
 export function openOrdersStorageKey(
@@ -73,6 +76,8 @@ export function forgetOrders(
 const orderStatusResponse = z.object({
   number: z.number(),
   status: z.enum(Constants.public.Enums.order_status),
+  /** Quando a loja recusou ou cancelou o pedido (ISO); null nos demais. */
+  stoppedAt: z.string().nullable(),
 });
 
 /** O que a consulta de status devolve. */
@@ -118,10 +123,47 @@ const OPEN_STATUS_LABELS: Partial<
   A_CAMINHO: "Saiu para entrega",
 };
 
-/** "Novo", "Em preparo"… Null para pedido que já encerrou. */
-export function openOrderLabel(
-  status: OrderStatus,
-): string | null {
-  if (isFinalStatus(status)) return null;
-  return OPEN_STATUS_LABELS[status] ?? null;
+const STOPPED_STATUS_LABELS: Partial<
+  Record<OrderStatus, string>
+> = {
+  REJEITADO: "Recusado",
+  CANCELADO: "Cancelado",
+};
+
+/**
+ * Por quanto tempo o pedido recusado ou cancelado segue no cardápio, para
+ * o cliente abrir e ver o motivo: enquanto o link dele for válido.
+ */
+export const STOPPED_ORDER_VISIBLE_HOURS =
+  ORDER_LINK_VALID_HOURS;
+
+export type OrderShortcut = {
+  /** "Novo", "Em preparo"… ou "Recusado", "Cancelado". */
+  label: string;
+  /** Recusado ou cancelado: aparece em vermelho. */
+  stopped: boolean;
+};
+
+/**
+ * O que o cardápio mostra para um pedido do cliente. Em andamento, o status
+ * de agora. Recusado ou cancelado, o aviso por algumas horas, para ele ver
+ * o motivo. Null quando o pedido sai da lista: concluído, ou recusado ou
+ * cancelado há mais tempo.
+ */
+export function orderShortcut(
+  order: Pick<OrderStatusResponse, "status" | "stoppedAt">,
+  now: Date,
+): OrderShortcut | null {
+  const open = OPEN_STATUS_LABELS[order.status];
+  if (open) return { label: open, stopped: false };
+
+  const stopped = STOPPED_STATUS_LABELS[order.status];
+  if (!stopped || !order.stoppedAt) return null;
+  const hours =
+    (now.getTime() - new Date(order.stoppedAt).getTime()) /
+    3_600_000;
+  // Hora inválida vira NaN e cai fora da janela.
+  return hours < STOPPED_ORDER_VISIBLE_HOURS
+    ? { label: stopped, stopped: true }
+    : null;
 }
