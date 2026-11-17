@@ -37,8 +37,8 @@ export type DetailTarget = {
   productId: string;
   editKey?: string;
   /**
-   * Aberto a partir do carrinho no celular (sugestão que pede uma escolha):
-   * ao fechar o detalhe, o carrinho volta a aparecer.
+   * Aberto a partir do carrinho no celular (editar um item, ou sugestão que
+   * pede uma escolha): ao fechar o detalhe, o carrinho volta a aparecer.
    */
   returnsToCart?: boolean;
 };
@@ -236,8 +236,14 @@ export function CartProvider({
 
       detail,
       openProduct: (productId, editKey) => {
+        // Aberto de dentro do carrinho (editar um item): ao salvar ou
+        // fechar, o carrinho volta a aparecer.
+        setDetail({
+          productId,
+          editKey,
+          returnsToCart: isCartOpen,
+        });
         setCartOpen(false);
-        setDetail({ productId, editKey });
       },
       closeProduct: () => {
         if (detail?.returnsToCart) setCartOpen(true);
