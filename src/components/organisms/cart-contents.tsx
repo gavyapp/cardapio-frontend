@@ -107,40 +107,34 @@ export function CartContents() {
 
       {suggestions.length > 0 ? (
         <section className="flex flex-col gap-2">
-          <h3 className="text-support font-semibold">
+          <h3 className="text-body font-semibold">
             Peça também
           </h3>
-          <ul className="flex flex-col gap-2">
+          {/* Cartões lado a lado, com rolagem horizontal: o último aparece
+              cortado para mostrar que há mais. */}
+          <ul className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
             {suggestions.map((product) => (
               <li
                 key={product.id}
-                className="flex items-center gap-3 rounded-control border p-2"
+                className="flex w-36 shrink-0 snap-start flex-col justify-between gap-4 rounded-surface border bg-card p-3"
               >
-                {product.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.imageUrl}
-                    alt=""
-                    className="size-11 shrink-0 rounded-control bg-muted object-cover"
-                  />
-                ) : null}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-support font-semibold">
-                    {product.name}
-                  </p>
-                  <p className="tabular text-caption text-muted-foreground">
+                <p className="line-clamp-2 text-support font-semibold">
+                  {product.name}
+                </p>
+                <div className="flex items-end justify-between gap-2">
+                  <p className="tabular text-support font-semibold">
                     {formatCurrency(product.price)}
                   </p>
+                  <Button
+                    size="icon-sm"
+                    className="rounded-full"
+                    aria-label={`Adicionar ${product.name}`}
+                    disabled={!canOrder}
+                    onClick={() => addSuggestion(product)}
+                  >
+                    <Plus />
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={`Adicionar ${product.name}`}
-                  disabled={!canOrder}
-                  onClick={() => addSuggestion(product)}
-                >
-                  <Plus />
-                </Button>
               </li>
             ))}
           </ul>
@@ -223,83 +217,75 @@ function CartLineRow({
 
   return (
     <li className="flex flex-col gap-2 py-3 first:pt-0">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-body font-semibold">
-            {item.product.name}
-          </p>
-          {options ? (
-            <p className="text-support text-muted-foreground">
-              {options}
-            </p>
-          ) : null}
-          {item.notes ? (
-            <p className="text-support text-muted-foreground">
-              Obs.: {item.notes}
-            </p>
-          ) : null}
-          {needsReview ? (
-            <p className="text-support font-semibold text-destructive">
-              Revise ou remova este item.
-            </p>
-          ) : null}
-        </div>
-        <p className="tabular shrink-0 text-body font-semibold">
-          {formatCurrency(item.total)}
+      <div className="min-w-0">
+        <p className="text-body font-semibold">
+          {item.product.name}
         </p>
+        {options ? (
+          <p className="text-support text-muted-foreground">
+            {options}
+          </p>
+        ) : null}
+        {item.notes ? (
+          <p className="text-support text-muted-foreground">
+            Obs.: {item.notes}
+          </p>
+        ) : null}
+        {needsReview ? (
+          <p className="text-support font-semibold text-destructive">
+            Revise ou remova este item.
+          </p>
+        ) : null}
       </div>
 
-      <div className="flex items-center gap-2">
-        <div
-          role="group"
-          aria-label={`Quantidade de ${item.product.name}`}
-          className="flex h-9 items-center rounded-control border"
-        >
-          <button
-            type="button"
-            aria-label={
-              single ? "Remover item" : "Diminuir"
-            }
+      {/* Preço à esquerda; editar e quantidade à direita. */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="tabular text-body font-semibold">
+          {formatCurrency(item.total)}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() =>
-              setQuantity(item.key, item.quantity - 1)
+              openProduct(item.product.id, item.key)
             }
-            className="flex size-9 items-center justify-center rounded-control outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground [&_svg]:size-4"
           >
-            {single ? <Trash2 /> : <Minus />}
-          </button>
-          <span className="tabular w-7 text-center text-support font-semibold">
-            {item.quantity}
-          </span>
-          <button
-            type="button"
-            aria-label="Aumentar"
-            disabled={item.quantity >= MAX_ITEM_QUANTITY}
-            onClick={() =>
-              setQuantity(item.key, item.quantity + 1)
-            }
-            className="flex size-9 items-center justify-center rounded-control outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground disabled:opacity-35 [&_svg]:size-4"
+            Editar
+          </Button>
+          <div
+            role="group"
+            aria-label={`Quantidade de ${item.product.name}`}
+            className="flex h-9 items-center rounded-control border bg-card"
           >
-            <Plus />
-          </button>
+            <button
+              type="button"
+              aria-label={
+                single ? "Remover item" : "Diminuir"
+              }
+              onClick={() =>
+                setQuantity(item.key, item.quantity - 1)
+              }
+              className="flex size-9 items-center justify-center rounded-control outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground [&_svg]:size-4"
+            >
+              {single ? <Trash2 /> : <Minus />}
+            </button>
+            <span className="tabular w-7 text-center text-support font-semibold">
+              {item.quantity}
+            </span>
+            <button
+              type="button"
+              aria-label="Aumentar"
+              disabled={item.quantity >= MAX_ITEM_QUANTITY}
+              onClick={() =>
+                setQuantity(item.key, item.quantity + 1)
+              }
+              className="flex size-9 items-center justify-center rounded-control outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-foreground disabled:opacity-35 [&_svg]:size-4"
+            >
+              <Plus />
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() =>
-            openProduct(item.product.id, item.key)
-          }
-          className="h-9 rounded-control px-2 text-support font-semibold outline-none hover:underline focus-visible:ring-1 focus-visible:ring-foreground"
-        >
-          Editar
-        </button>
-        {single ? null : (
-          <button
-            type="button"
-            onClick={() => setQuantity(item.key, 0)}
-            className="h-9 rounded-control px-2 text-support font-semibold text-muted-foreground outline-none hover:underline focus-visible:ring-1 focus-visible:ring-foreground"
-          >
-            Remover
-          </button>
-        )}
       </div>
     </li>
   );

@@ -17,6 +17,10 @@ import {
   type OrderAlerts,
 } from "@/lib/orders/board";
 import {
+  deliveryFeeFor,
+  type DeliveryZone,
+} from "@/lib/store/delivery-zones";
+import {
   DEFAULT_APPEARANCE,
   type StoreAppearance,
 } from "@/lib/store/theme";
@@ -68,6 +72,18 @@ export const storeSettingsSchema = z.object({
   min_order: amountInReais.optional(),
   // Taxa de entrega cobrada em pedidos ENTREGA. Sem a chave: 0.
   delivery_fee: amountInReais.optional(),
+  // Taxa por bairro. Com a lista, delivery_fee vale para os outros
+  // locais. Sem a chave ou vazia: delivery_fee para todos.
+  delivery_zones: z
+    .array(
+      z.object({
+        id: z.uuid(),
+        name: z.string().trim().min(1).max(60),
+        fee: amountInReais,
+      }),
+    )
+    .max(100)
+    .optional(),
   // A partir deste subtotal a entrega sai grátis. Sem a chave: nunca.
   free_delivery_above: amountInReais.nullable().optional(),
   // Formas de pagamento aceitas. Sem a chave: todas.
@@ -89,7 +105,10 @@ export type StoreSettings = z.infer<
 /** Configurações com os padrões do create_order já aplicados. */
 export type StoreRules = {
   minimumOrder: number;
+  /** Taxa de outros locais; taxa única quando não há bairros. */
   deliveryFee: number;
+  /** Bairros com taxa própria. Vazio: a taxa única vale para todos. */
+  deliveryZones: DeliveryZone[];
   freeDeliveryAbove: number | null;
   paymentMethods: Enums<"payment_method">[];
   deliveryTimeMinutes: number | null;
@@ -106,6 +125,7 @@ export function readStoreRules(settings: Json): StoreRules {
   return {
     minimumOrder: parsed.min_order ?? 0,
     deliveryFee: parsed.delivery_fee ?? 0,
+    deliveryZones: parsed.delivery_zones ?? [],
     freeDeliveryAbove: parsed.free_delivery_above ?? null,
     paymentMethods: parsed.payment_methods ?? [
       ...paymentMethods,
@@ -139,11 +159,16 @@ export function readStoreAppearance(
   };
 }
 
-/** Taxa de entrega de um pedido, pela mesma regra do create_order. */
+/**
+ * Taxa de entrega de um pedido, pela mesma regra do create_order: a do
+ * bairro escolhido, ou a de outros locais; zero em retirada e quando o
+ * subtotal alcança a entrega grátis.
+ */
 export function calculateDeliveryFee(
   rules: StoreRules,
   mode: Enums<"order_mode">,
   subtotal: number,
+  zoneId?: string | null,
 ): number {
   if (mode !== "ENTREGA") return 0;
   if (
@@ -152,7 +177,7 @@ export function calculateDeliveryFee(
   ) {
     return 0;
   }
-  return rules.deliveryFee;
+  return deliveryFeeFor(rules, zoneId);
 }
 
 /** Avisos do quadro com os padrões aplicados. Settings inválido cai no padrão. */

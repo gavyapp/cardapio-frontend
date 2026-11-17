@@ -9,6 +9,12 @@ import {
   formatCurrency,
   parseAmountInput,
 } from "@/lib/format";
+import {
+  deliveryFeeFor,
+  findZoneByName,
+  OTHER_ZONE,
+  type DeliveryZone,
+} from "@/lib/store/delivery-zones";
 
 import {
   createOrderSchema,
@@ -27,6 +33,13 @@ export type CheckoutFields = {
   phone: string;
   street: string;
   number: string;
+  /**
+   * Bairro escolhido na lista da loja: id do bairro, OTHER_ZONE para "Outro
+   * bairro" ou "" enquanto não escolheu. Só vale em loja que cobra por
+   * bairro.
+   */
+  zoneId: string;
+  /** Nome do bairro: o do cadastro, ou o que o cliente digitou. */
   district: string;
   complement: string;
   reference: string;
@@ -47,6 +60,7 @@ export const EMPTY_CHECKOUT: CheckoutFields = {
   phone: "",
   street: "",
   number: "",
+  zoneId: "",
   district: "",
   complement: "",
   reference: "",
@@ -61,6 +75,11 @@ export const EMPTY_CHECKOUT: CheckoutFields = {
 export type CheckoutTotals = {
   subtotal: number;
   deliveryFee: number;
+  /**
+   * A loja cobra por bairro e o cliente ainda não escolheu o dele: a taxa
+   * não entrou no total.
+   */
+  isDeliveryFeePending: boolean;
   /** Taxa que deixou de ser cobrada pela entrega grátis; null se não houve. */
   waivedDeliveryFee: number | null;
   discount: number;
@@ -76,23 +95,39 @@ export function checkoutTotals(
   rules: {
     deliveryFee: number;
     freeDeliveryAbove: number | null;
+    deliveryZones?: readonly DeliveryZone[];
   },
   mode: OrderMode,
+  zoneId = "",
 ): CheckoutTotals {
+  const zones = rules.deliveryZones ?? [];
+  const delivery = mode === "ENTREGA";
   const isFree =
     rules.freeDeliveryAbove !== null &&
     subtotal >= rules.freeDeliveryAbove;
+  const needsZone = zones.length > 0 && zoneId === "";
+  const isDeliveryFeePending =
+    delivery && !isFree && needsZone;
+  const zoneFee = deliveryFeeFor(
+    {
+      deliveryFee: rules.deliveryFee,
+      deliveryZones: zones,
+    },
+    zoneId,
+  );
   const deliveryFee =
-    mode === "ENTREGA" && !isFree ? rules.deliveryFee : 0;
+    delivery && !isFree && !needsZone ? zoneFee : 0;
   // Ainda não há cupom nem promoção: o desconto é sempre zero.
   const discount = 0;
 
   return {
     subtotal,
     deliveryFee,
+    isDeliveryFeePending,
+    // Sem bairro escolhido não dá para dizer quanto deixou de ser cobrado.
     waivedDeliveryFee:
-      mode === "ENTREGA" && isFree && rules.deliveryFee > 0
-        ? rules.deliveryFee
+      delivery && isFree && !needsZone && zoneFee > 0
+        ? zoneFee
         : null,
     discount,
     total: round(subtotal + deliveryFee - discount),
@@ -136,6 +171,7 @@ const FIELD_BY_PATH: Record<string, CheckoutField> = {
   "address.street": "street",
   "address.number": "number",
   "address.district": "district",
+  "address.zoneId": "zoneId",
   "address.complement": "complement",
   "address.reference": "reference",
   paymentMethod: "paymentMethod",
@@ -168,9 +204,25 @@ export function validateCheckout(
     storeId: string;
     items: readonly CartItem[];
     total: number;
+    /** Bairros com taxa própria; vazio em loja de taxa única. */
+    deliveryZones?: readonly DeliveryZone[];
   },
 ): CheckoutValidation {
   const errors: CheckoutErrors = {};
+  const zones = order.deliveryZones ?? [];
+  const zone = zones.find(
+    (candidate) => candidate.id === fields.zoneId,
+  );
+
+  // Em loja que cobra por bairro, o bairro sai da lista (ou "Outro bairro").
+  if (
+    fields.mode === "ENTREGA" &&
+    zones.length > 0 &&
+    !zone &&
+    fields.zoneId !== OTHER_ZONE
+  ) {
+    errors.zoneId = "Escolha o bairro.";
+  }
 
   if (!fields.paymentMethod) {
     errors.paymentMethod = "Escolha a forma de pagamento.";
@@ -200,7 +252,14 @@ export function validateCheckout(
         ? {
             street: fields.street,
             number: fields.number,
-            district: fields.district,
+            // Bairro da lista vai com o nome do cadastro; se ainda falta
+            // escolher, o erro já está acima e o texto só evita outro.
+            district: zone
+              ? zone.name
+              : errors.zoneId
+                ? "—"
+                : fields.district,
+            zoneId: zone?.id,
             complement: fields.complement,
             reference: fields.reference,
           }
@@ -231,6 +290,7 @@ export const CHECKOUT_FIELD_ORDER: CheckoutField[] = [
   "phone",
   "street",
   "number",
+  "zoneId",
   "district",
   "complement",
   "reference",
@@ -344,15 +404,26 @@ export function rememberCustomer(
   };
 }
 
-/** Formulário inicial: vazio, ou com os dados do último pedido. */
+/**
+ * Formulário inicial: vazio, ou com os dados do último pedido. Em loja que
+ * cobra por bairro, o bairro guardado como texto vira o da lista quando o
+ * nome bate; senão, cai em "Outro bairro" com o texto dele.
+ */
 export function prefillCheckout(
   saved: SavedCustomer | null,
+  zones: readonly DeliveryZone[] = [],
 ): CheckoutFields {
   if (!saved) return EMPTY_CHECKOUT;
-  return {
+  const fields: CheckoutFields = {
     ...EMPTY_CHECKOUT,
     name: saved.name,
     phone: saved.phone,
     ...saved.address,
   };
+  if (zones.length === 0 || !fields.district) return fields;
+
+  const zone = findZoneByName(zones, fields.district);
+  return zone
+    ? { ...fields, zoneId: zone.id, district: zone.name }
+    : { ...fields, zoneId: OTHER_ZONE };
 }

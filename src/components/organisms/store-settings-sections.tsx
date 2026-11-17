@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Switch } from "@/components/atoms/switch";
 import { CurrencyInput } from "@/components/molecules/currency-input";
@@ -28,8 +30,16 @@ import { useSettingsForm } from "@/components/providers/settings-form-context";
 // Seções das configurações da loja. Entrega e pagamento vão para o
 // formulário da página; avisos salvam sozinhos a cada mudança.
 
+/** Um bairro na tabela de taxas, com o valor como está no campo. */
+export type DeliveryZoneDraft = {
+  id: string;
+  name: string;
+  fee: string;
+};
+
 export type DeliveryValues = {
   deliveryFee: string;
+  deliveryZones: DeliveryZoneDraft[];
   deliveryTimeMinutes: number | null;
   pickupTimeMinutes: number | null;
 };
@@ -43,6 +53,19 @@ export function DeliverySection({
   values: DeliveryValues;
 }) {
   const { formId } = useSettingsForm();
+  const [zones, setZones] = useState(values.deliveryZones);
+  const hasZones = zones.length > 0;
+
+  function updateZone(
+    zoneId: string,
+    patch: Partial<DeliveryZoneDraft>,
+  ) {
+    setZones((current) =>
+      current.map((zone) =>
+        zone.id === zoneId ? { ...zone, ...patch } : zone,
+      ),
+    );
+  }
 
   return (
     <SectionCard
@@ -51,7 +74,14 @@ export function DeliverySection({
       description="Valores e prazos que o cliente vê antes de pedir."
     >
       <div className="grid gap-5 px-6 py-6 sm:grid-cols-3">
-        <Field id="delivery-fee" label="Taxa de entrega">
+        <Field
+          id="delivery-fee"
+          label={
+            hasZones
+              ? "Taxa de outros locais"
+              : "Taxa de entrega"
+          }
+        >
           <CurrencyInput
             id="delivery-fee"
             name="deliveryFee"
@@ -75,6 +105,94 @@ export function DeliverySection({
             defaultValue={values.pickupTimeMinutes ?? ""}
           />
         </Field>
+      </div>
+
+      <div className="flex flex-col gap-4 border-t px-6 py-6">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-body font-semibold">
+            Taxa por bairro
+          </h3>
+          <p className="text-support text-muted-foreground">
+            {hasZones
+              ? "O cliente escolhe o bairro no checkout. Bairro fora da lista paga a taxa de outros locais."
+              : "Cadastre os bairros que têm um valor próprio. Sem bairros, todos pagam a taxa de entrega."}
+          </p>
+        </div>
+
+        {hasZones ? (
+          <ul className="flex max-w-xl flex-col gap-2">
+            {zones.map((zone, index) => (
+              <li
+                key={zone.id}
+                className="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-center gap-2"
+              >
+                <Input
+                  aria-label={`Nome do bairro ${index + 1}`}
+                  placeholder="Nome do bairro"
+                  maxLength={60}
+                  value={zone.name}
+                  onChange={(event) =>
+                    updateZone(zone.id, {
+                      name: event.target.value,
+                    })
+                  }
+                />
+                <CurrencyInput
+                  aria-label={`Taxa do bairro ${zone.name || index + 1}`}
+                  placeholder="0,00"
+                  value={zone.fee}
+                  onChange={(event) =>
+                    updateZone(zone.id, {
+                      fee: event.target.value,
+                    })
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remover ${zone.name || `bairro ${index + 1}`}`}
+                  onClick={() =>
+                    setZones((current) =>
+                      current.filter(
+                        (other) => other.id !== zone.id,
+                      ),
+                    )
+                  }
+                >
+                  <Trash2 aria-hidden />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <Button
+          type="button"
+          variant="outline"
+          className="self-start"
+          onClick={() =>
+            setZones((current) => [
+              ...current,
+              {
+                id: crypto.randomUUID(),
+                name: "",
+                fee: "",
+              },
+            ])
+          }
+        >
+          <Plus aria-hidden />
+          Adicionar bairro
+        </Button>
+
+        {/* A tabela vai para o formulário da página como um campo só. */}
+        <input
+          type="hidden"
+          name="deliveryZones"
+          form={formId}
+          value={JSON.stringify(zones)}
+        />
       </div>
     </SectionCard>
   );

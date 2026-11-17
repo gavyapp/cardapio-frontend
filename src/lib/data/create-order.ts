@@ -84,7 +84,15 @@ export async function createOrder(
           quantity: complement.quantity,
         })),
       })),
-      p_address: input.address,
+      // zone_id é o que o banco usa para achar a taxa do bairro.
+      p_address: input.address && {
+        street: input.address.street,
+        number: input.address.number,
+        district: input.address.district,
+        complement: input.address.complement,
+        reference: input.address.reference,
+        zone_id: input.address.zoneId,
+      },
       p_change_for: input.changeFor,
       p_notes: input.notes,
     },

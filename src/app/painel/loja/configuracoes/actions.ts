@@ -9,7 +9,10 @@ import {
   updateStoreSettings,
 } from "@/lib/data/store-details";
 import { paymentMethods } from "@/lib/data/store-settings";
-import { parseAmountInput } from "@/lib/format";
+import {
+  normalizeSearch,
+  parseAmountInput,
+} from "@/lib/format";
 import { updateOrderAlerts } from "@/lib/data/order-alerts";
 import { requireStoreForAction } from "@/lib/panel/access";
 import {
@@ -140,6 +143,39 @@ const delivery = z.object({
   pickupTimeMinutes: minutesField,
 });
 
+// Tabela de taxa por bairro, enviada pelo formulário como um campo JSON.
+const zones = z
+  .array(
+    z.object({
+      id: z.uuid(),
+      name: z
+        .string()
+        .trim()
+        .min(1, "Dê um nome a cada bairro.")
+        .max(
+          60,
+          "Use até 60 caracteres no nome do bairro.",
+        ),
+      fee: amount,
+    }),
+  )
+  .max(100, "Cadastre até 100 bairros.")
+  .refine(
+    (list) =>
+      new Set(
+        list.map((zone) => normalizeSearch(zone.name)),
+      ).size === list.length,
+    "Há bairros com o mesmo nome.",
+  );
+
+function parseZones(raw: string): unknown {
+  try {
+    return JSON.parse(raw || "[]");
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Grava o formulário da página: cadastro da loja (colunas de stores) e
  * entrega e retirada (chaves em settings).
@@ -170,6 +206,12 @@ export async function saveStoreSettingsAction(
   if (!shipping.success)
     return validationError(shipping.error);
 
+  const deliveryZones = zones.safeParse(
+    parseZones(text("deliveryZones")),
+  );
+  if (!deliveryZones.success)
+    return validationError(deliveryZones.error);
+
   const accepted = payment.safeParse(
     formData.getAll("paymentMethods"),
   );
@@ -181,6 +223,7 @@ export async function saveStoreSettingsAction(
     await updateStoreProfile(store.id, profile.data);
     await updateStoreSettings(store.id, {
       delivery_fee: shipping.data.deliveryFee,
+      delivery_zones: deliveryZones.data,
       delivery_time_minutes:
         shipping.data.deliveryTimeMinutes,
       pickup_time_minutes: shipping.data.pickupTimeMinutes,

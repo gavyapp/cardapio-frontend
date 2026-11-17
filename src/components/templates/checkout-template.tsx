@@ -20,6 +20,7 @@ export function CheckoutTemplate({ menu }: { menu: Menu }) {
           store={{ id: store.id, name: store.name }}
           rules={{
             deliveryFee: rules.deliveryFee,
+            deliveryZones: rules.deliveryZones,
             freeDeliveryAbove: rules.freeDeliveryAbove,
             paymentMethods: rules.paymentMethods,
             deliveryTimeMinutes: rules.deliveryTimeMinutes,

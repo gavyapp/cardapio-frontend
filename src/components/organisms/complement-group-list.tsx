@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
 import { ConfirmDialog } from "@/components/molecules/confirm-dialog";
+import { ComplementGroupProductsDialog } from "@/components/organisms/complement-group-products-dialog";
 import { SortableList } from "@/components/molecules/sortable-list";
 import { ComplementGroupEditor } from "@/components/organisms/complement-group-editor";
 import type {
@@ -25,6 +26,7 @@ import {
 import { describeGroupRule } from "@/lib/catalog/complement-rules";
 import { formatCurrency, pluralize } from "@/lib/format";
 import { useOptimisticList } from "@/lib/hooks/use-optimistic-list";
+import type { ProductChoiceCategory } from "@/lib/catalog/group-products";
 import { useSearchParamState } from "@/lib/hooks/use-search-param-state";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,11 @@ export type ComplementGroupActions = {
   ) => Promise<ActionResult>;
   reorder: (orderedIds: string[]) => Promise<ActionResult>;
   remove: (groupId: string) => Promise<ActionResult>;
+  /** Define a lista completa dos produtos que usam o grupo. */
+  setProducts: (
+    groupId: string,
+    productIds: string[],
+  ) => Promise<ActionResult>;
 };
 
 function toEditable(
@@ -58,21 +65,28 @@ function unavailableWarning(group: ComplementGroupItem) {
 
 /**
  * Grupos de complementos: arrastar para reordenar, abrir para ver e pausar
- * opções, ver onde o grupo é usado, editar e excluir.
+ * opções, escolher os produtos que usam o grupo, editar e excluir.
  */
 export function ComplementGroupList({
   groups,
+  productCategories,
   actions,
 }: {
   groups: ComplementGroupItem[];
+  /** Produtos da loja por categoria, para escolher onde o grupo é usado. */
+  productCategories: ProductChoiceCategory[];
   actions: ComplementGroupActions;
 }) {
   const { items, optimistic } = useOptimisticList(groups);
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(),
   );
-  const [showUsage, setShowUsage] = useState<Set<string>>(
-    () => new Set(),
+  // Grupo com a janela de escolha de produtos aberta.
+  const [choosingId, setChoosingId] = useState<
+    string | null
+  >(null);
+  const choosing = items.find(
+    (group) => group.id === choosingId,
   );
   // "?grupo=novo" ou "?grupo=<id>" abre o editor.
   const [editingParam, setEditingParam] =
@@ -202,18 +216,10 @@ export function ComplementGroupList({
                     variant="ghost"
                     size="sm"
                     className="hidden sm:inline-flex"
-                    aria-expanded={showUsage.has(group.id)}
-                    disabled={usedCount === 0}
-                    onClick={() =>
-                      toggleIn(
-                        showUsage,
-                        setShowUsage,
-                        group.id,
-                      )
-                    }
+                    onClick={() => setChoosingId(group.id)}
                   >
                     {usedCount === 0
-                      ? "Não usado"
+                      ? "Ligar a produtos"
                       : `Usado em ${pluralize(usedCount, "produto", "produtos")}`}
                   </Button>
                   <Button
@@ -235,16 +241,6 @@ export function ComplementGroupList({
                   </Button>
                 </div>
 
-                {showUsage.has(group.id) &&
-                usedCount > 0 ? (
-                  <p className="border-t px-4 py-3 text-support text-muted-foreground">
-                    Usado em:{" "}
-                    {group.usedBy
-                      .map((product) => product.name)
-                      .join(", ")}
-                  </p>
-                ) : null}
-
                 {warning ? (
                   <p className="border-t bg-destructive-soft px-4 py-3 text-support text-destructive">
                     {warning}
@@ -253,11 +249,22 @@ export function ComplementGroupList({
 
                 {isOpen ? (
                   <div className="border-t">
-                    <p className="px-4 pt-3 text-support text-muted-foreground sm:hidden">
-                      {usedCount === 0
-                        ? "Não usado em produtos"
-                        : `Usado em: ${group.usedBy.map((product) => product.name).join(", ")}`}
-                    </p>
+                    <div className="flex flex-col items-start gap-2 px-4 pt-3 sm:hidden">
+                      <p className="text-support text-muted-foreground">
+                        {usedCount === 0
+                          ? "Não usado em produtos"
+                          : `Usado em: ${group.usedBy.map((product) => product.name).join(", ")}`}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setChoosingId(group.id)
+                        }
+                      >
+                        Escolher produtos
+                      </Button>
+                    </div>
                     <ul className="divide-y">
                       {group.options.map((option) => (
                         <li
@@ -323,6 +330,33 @@ export function ComplementGroupList({
             );
           }
           return result;
+        }}
+      />
+
+      <ComplementGroupProductsDialog
+        group={
+          choosing
+            ? {
+                id: choosing.id,
+                name: choosing.name,
+                productIds: choosing.usedBy.map(
+                  (product) => product.id,
+                ),
+              }
+            : null
+        }
+        categories={productCategories}
+        onOpenChange={(open) =>
+          !open && setChoosingId(null)
+        }
+        onSave={async (groupId, productIds) => {
+          const result = await actions.setProducts(
+            groupId,
+            productIds,
+          );
+          if (!result.ok) return result.error;
+          toast.success("Produtos do grupo atualizados");
+          return null;
         }}
       />
 

@@ -13,6 +13,7 @@ import {
   reorderComplementGroups,
   saveComplementGroup,
   setComplementAvailability,
+  setComplementGroupProducts,
 } from "@/lib/data/complement-groups";
 import { afterMenuChange } from "@/lib/catalog/menu-cache";
 import { requireStoreForAction } from "@/lib/panel/access";
@@ -142,6 +143,37 @@ export async function deleteComplementGroupAction(
       error: errorMessage(
         error,
         "Não foi possível excluir. Tente de novo.",
+      ),
+    };
+  }
+}
+
+export async function setComplementGroupProductsAction(
+  groupId: string,
+  productIds: string[],
+): Promise<ActionResult> {
+  const parsed = z
+    .object({
+      groupId: id,
+      productIds: z.array(id).max(1000),
+    })
+    .safeParse({ groupId, productIds });
+  if (!parsed.success) return validationError(parsed.error);
+  try {
+    const store = await requireStoreForAction();
+    await setComplementGroupProducts(
+      store.id,
+      parsed.data.groupId,
+      parsed.data.productIds,
+    );
+    afterMenuChange(store.id);
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: errorMessage(
+        error,
+        "Não foi possível salvar os produtos do grupo. Tente de novo.",
       ),
     };
   }

@@ -8,7 +8,10 @@ import {
   CatalogPageTemplate,
 } from "@/components/templates/catalog-page-template";
 import { GROUP_PARAM } from "@/lib/catalog/params";
+import { productChoices } from "@/lib/catalog/group-products";
+import { listPanelCategories } from "@/lib/data/categories";
 import { listComplementGroups } from "@/lib/data/complement-groups";
+import { listPanelProducts } from "@/lib/data/products";
 import { requirePanelAccess } from "@/lib/panel/access";
 
 import {
@@ -16,6 +19,7 @@ import {
   reorderComplementGroupsAction,
   saveComplementGroupAction,
   setComplementAvailabilityAction,
+  setComplementGroupProductsAction,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Complementos" };
@@ -26,9 +30,11 @@ async function ComplementGroups() {
   const access = await requirePanelAccess(ROUTE);
   if (access.status !== "with-store") return null;
 
-  const groups = await listComplementGroups(
-    access.store.id,
-  );
+  const [groups, categories, products] = await Promise.all([
+    listComplementGroups(access.store.id),
+    listPanelCategories(access.store.id),
+    listPanelProducts(access.store.id),
+  ]);
 
   return (
     <CatalogPageTemplate
@@ -42,12 +48,17 @@ async function ComplementGroups() {
     >
       <ComplementGroupList
         groups={groups}
+        productCategories={productChoices(
+          categories,
+          products,
+        )}
         actions={{
           save: saveComplementGroupAction,
           setOptionAvailability:
             setComplementAvailabilityAction,
           reorder: reorderComplementGroupsAction,
           remove: deleteComplementGroupAction,
+          setProducts: setComplementGroupProductsAction,
         }}
       />
     </CatalogPageTemplate>

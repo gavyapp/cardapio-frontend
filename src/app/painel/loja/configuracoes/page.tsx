@@ -87,6 +87,13 @@ async function StoreSettings() {
           deliveryFee: deliveryFeeView(
             store.rules.deliveryFee,
           ),
+          deliveryZones: store.rules.deliveryZones.map(
+            (zone) => ({
+              id: zone.id,
+              name: zone.name,
+              fee: deliveryFeeView(zone.fee),
+            }),
+          ),
           deliveryTimeMinutes:
             store.rules.deliveryTimeMinutes,
           pickupTimeMinutes: store.rules.pickupTimeMinutes,
