@@ -36,6 +36,11 @@ import type { MenuProduct } from "@/lib/data/menu";
 export type DetailTarget = {
   productId: string;
   editKey?: string;
+  /**
+   * Aberto a partir do carrinho no celular (sugestão que pede uma escolha):
+   * ao fechar o detalhe, o carrinho volta a aparecer.
+   */
+  returnsToCart?: boolean;
 };
 
 type CartContextValue = {
@@ -215,8 +220,13 @@ export function CartProvider({
       clear: () => update(() => []),
       addSuggestion: (product) => {
         if (hasRequiredGroup(product)) {
+          // Precisa de uma escolha antes de entrar: abre o detalhe e,
+          // depois, volta ao carrinho, como a sugestão que entra direto.
+          setDetail({
+            productId: product.id,
+            returnsToCart: isCartOpen,
+          });
           setCartOpen(false);
-          setDetail({ productId: product.id });
           return;
         }
         update((lines) =>
@@ -229,7 +239,10 @@ export function CartProvider({
         setCartOpen(false);
         setDetail({ productId, editKey });
       },
-      closeProduct: () => setDetail(null),
+      closeProduct: () => {
+        if (detail?.returnsToCart) setCartOpen(true);
+        setDetail(null);
+      },
 
       isCartOpen,
       setCartOpen,

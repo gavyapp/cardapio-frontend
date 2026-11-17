@@ -107,40 +107,34 @@ export function CartContents() {
 
       {suggestions.length > 0 ? (
         <section className="flex flex-col gap-2">
-          <h3 className="text-support font-semibold">
+          <h3 className="text-body font-semibold">
             Peça também
           </h3>
-          <ul className="flex flex-col gap-2">
+          {/* Cartões lado a lado, com rolagem horizontal: o último aparece
+              cortado para mostrar que há mais. */}
+          <ul className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
             {suggestions.map((product) => (
               <li
                 key={product.id}
-                className="flex items-center gap-3 rounded-control border p-2"
+                className="flex w-36 shrink-0 snap-start flex-col justify-between gap-4 rounded-surface border bg-card p-3"
               >
-                {product.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.imageUrl}
-                    alt=""
-                    className="size-11 shrink-0 rounded-control bg-muted object-cover"
-                  />
-                ) : null}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-support font-semibold">
-                    {product.name}
-                  </p>
-                  <p className="tabular text-caption text-muted-foreground">
+                <p className="line-clamp-2 text-support font-semibold">
+                  {product.name}
+                </p>
+                <div className="flex items-end justify-between gap-2">
+                  <p className="tabular text-support font-semibold">
                     {formatCurrency(product.price)}
                   </p>
+                  <Button
+                    size="icon-sm"
+                    className="rounded-full"
+                    aria-label={`Adicionar ${product.name}`}
+                    disabled={!canOrder}
+                    onClick={() => addSuggestion(product)}
+                  >
+                    <Plus />
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={`Adicionar ${product.name}`}
-                  disabled={!canOrder}
-                  onClick={() => addSuggestion(product)}
-                >
-                  <Plus />
-                </Button>
               </li>
             ))}
           </ul>
