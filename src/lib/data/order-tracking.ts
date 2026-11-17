@@ -4,18 +4,19 @@ import "server-only";
 import {
   isOrderToken,
   parseTrackedOrder,
-  type TrackedOrder,
+  type TrackedOrderLookup,
 } from "@/lib/orders/tracking";
 import { createAnonymousSupabase } from "@/lib/supabase/anonymous";
 
 /**
- * Pedido pelo token do link. Null se o token não tem o formato esperado ou
- * não há pedido com ele. Sem cache: o status muda a qualquer momento.
+ * Pedido pelo token do link: encontrado, com o link vencido (encerrou há
+ * mais de 4 horas) ou inexistente, que inclui o token fora do formato. Sem
+ * cache: o status muda a qualquer momento.
  */
 export async function findTrackedOrder(
   token: string,
-): Promise<TrackedOrder | null> {
-  if (!isOrderToken(token)) return null;
+): Promise<TrackedOrderLookup> {
+  if (!isOrderToken(token)) return { state: "missing" };
 
   const supabase = createAnonymousSupabase();
   const { data, error } = await supabase.rpc(

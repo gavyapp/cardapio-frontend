@@ -14,8 +14,12 @@ export async function GET(
   const { token } = await params;
 
   try {
-    const order = await findTrackedOrder(token);
-    if (!order) return new Response(null, { status: 404 });
+    const lookup = await findTrackedOrder(token);
+    // Link vencido responde como pedido inexistente: sai do atalho.
+    if (lookup.state !== "found") {
+      return new Response(null, { status: 404 });
+    }
+    const { order } = lookup;
     return Response.json(
       {
         number: order.number,

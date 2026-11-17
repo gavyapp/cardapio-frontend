@@ -104,12 +104,38 @@ export type TrackedOrder = z.output<
   typeof trackedOrderSchema
 >;
 
-/** Lê a resposta do banco. Null quando o pedido não existe. */
+/**
+ * Por quantas horas o link do pedido segue válido depois de o pedido
+ * encerrar. Quem aplica é o banco (get_order_by_token); aqui o valor serve
+ * ao atalho do cardápio. Mudou lá, muda aqui.
+ */
+export const ORDER_LINK_VALID_HOURS = 4;
+
+/** Resultado da consulta de um pedido pelo token do link. */
+export type TrackedOrderLookup =
+  | { state: "found"; order: TrackedOrder }
+  /** O pedido encerrou há mais tempo que a validade do link. */
+  | { state: "expired" }
+  | { state: "missing" };
+
+const expiredSchema = z.object({
+  expired: z.literal(true),
+});
+
+/** Lê a resposta do banco: o pedido, o aviso de link vencido ou nada. */
 export function parseTrackedOrder(
   data: unknown,
-): TrackedOrder | null {
-  if (data === null || data === undefined) return null;
-  return trackedOrderSchema.parse(data);
+): TrackedOrderLookup {
+  if (data === null || data === undefined) {
+    return { state: "missing" };
+  }
+  if (expiredSchema.safeParse(data).success) {
+    return { state: "expired" };
+  }
+  return {
+    state: "found",
+    order: trackedOrderSchema.parse(data),
+  };
 }
 
 /** Status que não muda mais: a tela para de reconsultar. */

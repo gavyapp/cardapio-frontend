@@ -68,9 +68,20 @@ const fromDatabase = {
   ],
 };
 
+/** O pedido lido, para os casos em que ele existe e o link vale. */
+function found(data: unknown) {
+  const lookup = parseTrackedOrder(data);
+  if (lookup.state !== "found") {
+    throw new Error(
+      `pedido não encontrado: ${lookup.state}`,
+    );
+  }
+  return lookup.order;
+}
+
 describe("parseTrackedOrder", () => {
   it("resposta do banco → pedido com os valores gravados", () => {
-    const order = parseTrackedOrder(fromDatabase);
+    const order = found(fromDatabase);
     expect(order).toMatchObject({
       number: 1047,
       status: "EM_PREPARO",
@@ -88,13 +99,21 @@ describe("parseTrackedOrder", () => {
         },
       ],
     });
-    expect(order?.items[0].complements).toEqual([
+    expect(order.items[0].complements).toEqual([
       { name: "Bacon", quantity: 1 },
     ]);
   });
 
-  it("token sem pedido (null) → null", () => {
-    expect(parseTrackedOrder(null)).toBeNull();
+  it("token sem pedido (null) → inexistente", () => {
+    expect(parseTrackedOrder(null)).toEqual({
+      state: "missing",
+    });
+  });
+
+  it("link vencido → só o aviso, sem pedido", () => {
+    expect(parseTrackedOrder({ expired: true })).toEqual({
+      state: "expired",
+    });
   });
 
   it("resposta fora do formato → erro", () => {
@@ -105,7 +124,7 @@ describe("parseTrackedOrder", () => {
 });
 
 describe("etapas do pedido", () => {
-  const order = parseTrackedOrder(fromDatabase)!;
+  const order = found(fromDatabase);
 
   it("entrega em preparo → recebido feito, preparo atual, o resto por vir", () => {
     expect(
@@ -122,7 +141,7 @@ describe("etapas do pedido", () => {
   });
 
   it("status muda para a caminho → a etapa atual anda", () => {
-    const onTheWay = parseTrackedOrder({
+    const onTheWay = found({
       ...fromDatabase,
       status: "A_CAMINHO",
       events: [
@@ -133,7 +152,7 @@ describe("etapas do pedido", () => {
           created_at: "2026-11-14T23:05:00Z",
         },
       ],
-    })!;
+    });
     const current = timelineSteps(onTheWay).find(
       (step) => step.state === "current",
     );
@@ -144,7 +163,7 @@ describe("etapas do pedido", () => {
   });
 
   it("pedido recusado → linha encerra com o motivo", () => {
-    const rejected = parseTrackedOrder({
+    const rejected = found({
       ...fromDatabase,
       status: "REJEITADO",
       rejection_reason: "Item indisponível",
@@ -155,7 +174,7 @@ describe("etapas do pedido", () => {
           created_at: "2026-11-14T22:41:00Z",
         },
       ],
-    })!;
+    });
     expect(timelineSteps(rejected).at(-1)).toMatchObject({
       label: "Recusado",
       stopped: true,
@@ -166,7 +185,7 @@ describe("etapas do pedido", () => {
 
 describe("stoppedAt", () => {
   it("pedido cancelado → hora do cancelamento", () => {
-    const cancelled = parseTrackedOrder({
+    const cancelled = found({
       ...fromDatabase,
       status: "CANCELADO",
       events: [
@@ -177,16 +196,14 @@ describe("stoppedAt", () => {
           created_at: "2026-11-14T23:10:00Z",
         },
       ],
-    })!;
+    });
     expect(stoppedAt(cancelled)).toBe(
       "2026-11-14T23:10:00Z",
     );
   });
 
   it("pedido em andamento → null", () => {
-    expect(
-      stoppedAt(parseTrackedOrder(fromDatabase)!),
-    ).toBeNull();
+    expect(stoppedAt(found(fromDatabase))).toBeNull();
   });
 });
 

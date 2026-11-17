@@ -6,7 +6,10 @@ import { z } from "zod";
 import { Constants } from "@/lib/database.types";
 
 import type { OrderStatus } from "./status";
-import { isOrderToken } from "./tracking";
+import {
+  isOrderToken,
+  ORDER_LINK_VALID_HOURS,
+} from "./tracking";
 
 /** Chave do localStorage: os pedidos em andamento de uma loja. */
 export function openOrdersStorageKey(
@@ -129,9 +132,10 @@ const STOPPED_STATUS_LABELS: Partial<
 
 /**
  * Por quanto tempo o pedido recusado ou cancelado segue no cardápio, para
- * o cliente abrir e ver o motivo.
+ * o cliente abrir e ver o motivo: enquanto o link dele for válido.
  */
-export const STOPPED_ORDER_VISIBLE_HOURS = 4;
+export const STOPPED_ORDER_VISIBLE_HOURS =
+  ORDER_LINK_VALID_HOURS;
 
 export type OrderShortcut = {
   /** "Novo", "Em preparo"… ou "Recusado", "Cancelado". */
