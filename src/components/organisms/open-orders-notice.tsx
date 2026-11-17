@@ -12,13 +12,14 @@ import { ChevronRight } from "lucide-react";
 import {
   forgetOrders,
   lookUpOrderStatus,
-  openOrderLabel,
+  orderShortcut,
   openOrdersStorageKey,
   parseRememberedOrders,
+  type OrderShortcut,
 } from "@/lib/orders/open-orders";
-import type { OrderStatus } from "@/lib/orders/status";
 import { STATUS_REFRESH_SECONDS } from "@/lib/orders/tracking";
 import { orderPathFrom } from "@/lib/routing/store-paths";
+import { cn } from "@/lib/utils";
 
 // O localStorage não avisa a própria aba quando muda; este evento avisa.
 const ORDERS_CHANGED = "cardapio:pedidos-mudaram";
@@ -42,9 +43,10 @@ function read(key: string): string | null {
 }
 
 /**
- * Pedidos em andamento do cliente neste aparelho, no topo do cardápio: um
- * atalho por pedido para a tela de acompanhamento, com o status de agora.
- * Pedido que encerrou sai da lista sozinho.
+ * Pedidos do cliente neste aparelho, no topo do cardápio: um atalho por
+ * pedido para a tela de acompanhamento, com o status de agora. Recusado e
+ * cancelado seguem por algumas horas, para o cliente ver o motivo; pedido
+ * concluído sai da lista sozinho.
  */
 export function OpenOrdersNotice({
   storeId,
@@ -59,8 +61,8 @@ export function OpenOrdersNotice({
     // No servidor não há pedidos guardados: o aparelho preenche depois.
     () => null,
   );
-  const [statuses, setStatuses] = useState<
-    Record<string, OrderStatus>
+  const [shortcuts, setShortcuts] = useState<
+    Record<string, OrderShortcut>
   >({});
 
   useEffect(() => {
@@ -78,15 +80,28 @@ export function OpenOrdersNotice({
       );
       if (cancelled) return;
 
-      // Encerrado ou inexistente não volta a aparecer.
-      const finished = lookups.flatMap(
-        ({ token, lookup }) =>
-          lookup.found === false ||
-          (lookup.found &&
-            openOrderLabel(lookup.order.status) === null)
-            ? [token]
-            : [],
+      const now = new Date();
+      const found = lookups.flatMap(({ token, lookup }) =>
+        lookup.found
+          ? [
+              {
+                token,
+                shortcut: orderShortcut(lookup.order, now),
+              },
+            ]
+          : [],
       );
+
+      // Sai da lista o pedido que não existe mais ou que já não tem o que
+      // mostrar (concluído, ou recusado ou cancelado há mais tempo).
+      const finished = [
+        ...lookups.flatMap(({ token, lookup }) =>
+          lookup.found === false ? [token] : [],
+        ),
+        ...found.flatMap(({ token, shortcut }) =>
+          shortcut ? [] : [token],
+        ),
+      ];
       if (finished.length) {
         try {
           const kept = forgetOrders(orders, finished);
@@ -104,11 +119,11 @@ export function OpenOrdersNotice({
         window.dispatchEvent(new Event(ORDERS_CHANGED));
       }
 
-      setStatuses((current) => {
+      setShortcuts((current) => {
         const next = { ...current };
-        for (const { token, lookup } of lookups) {
-          if (lookup.found)
-            next[token] = lookup.order.status;
+        for (const { token, shortcut } of found) {
+          if (shortcut) next[token] = shortcut;
+          else delete next[token];
         }
         return next;
       });
@@ -130,19 +145,18 @@ export function OpenOrdersNotice({
     };
   }, [stored, storageKey]);
 
-  // Só aparece o pedido cujo status já foi conferido e segue em andamento.
+  // Só aparece o pedido cujo status já foi conferido.
   const open = parseRememberedOrders(stored).flatMap(
     (order) => {
-      const status = statuses[order.token];
-      const label = status ? openOrderLabel(status) : null;
-      return label ? [{ ...order, label }] : [];
+      const shortcut = shortcuts[order.token];
+      return shortcut ? [{ ...order, ...shortcut }] : [];
     },
   );
   if (open.length === 0) return null;
 
   return (
     <ul
-      aria-label="Seus pedidos em andamento"
+      aria-label="Seus pedidos"
       className="flex flex-col gap-2"
     >
       {open.map((order) => (
@@ -153,7 +167,12 @@ export function OpenOrdersNotice({
           >
             <span
               aria-hidden
-              className="size-2 shrink-0 rounded-full bg-primary"
+              className={cn(
+                "size-2 shrink-0 rounded-full",
+                order.stopped
+                  ? "bg-destructive"
+                  : "bg-primary",
+              )}
             />
             <span className="min-w-0 flex-1 truncate">
               Pedido{" "}

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   forgetOrders,
   lookUpOrderStatus,
-  openOrderLabel,
+  orderShortcut,
   parseRememberedOrders,
   rememberOrder,
 } from "./open-orders";
@@ -67,33 +67,99 @@ describe("pedidos guardados no aparelho", () => {
   });
 });
 
-describe("openOrderLabel", () => {
+describe("orderShortcut", () => {
+  const now = new Date("2026-11-16T22:00:00Z");
+  const hoursAgo = (hours: number) =>
+    new Date(
+      now.getTime() - hours * 3_600_000,
+    ).toISOString();
+
   it("pedido em andamento → rótulo do status", () => {
-    expect(openOrderLabel("RECEBIDO")).toBe("Novo");
-    expect(openOrderLabel("EM_PREPARO")).toBe("Em preparo");
-    expect(openOrderLabel("PRONTO")).toBe("Pronto");
-    expect(openOrderLabel("A_CAMINHO")).toBe(
-      "Saiu para entrega",
-    );
+    for (const [status, label] of [
+      ["RECEBIDO", "Novo"],
+      ["EM_PREPARO", "Em preparo"],
+      ["PRONTO", "Pronto"],
+      ["A_CAMINHO", "Saiu para entrega"],
+    ] as const) {
+      expect(
+        orderShortcut({ status, stoppedAt: null }, now),
+      ).toEqual({ label, stopped: false });
+    }
   });
 
-  it("concluído, recusado ou cancelado → não aparece", () => {
-    expect(openOrderLabel("CONCLUIDO")).toBeNull();
-    expect(openOrderLabel("REJEITADO")).toBeNull();
-    expect(openOrderLabel("CANCELADO")).toBeNull();
+  it("cancelado ou recusado há pouco → continua, em destaque, para ver o motivo", () => {
+    expect(
+      orderShortcut(
+        { status: "CANCELADO", stoppedAt: hoursAgo(1) },
+        now,
+      ),
+    ).toEqual({ label: "Cancelado", stopped: true });
+    expect(
+      orderShortcut(
+        { status: "REJEITADO", stoppedAt: hoursAgo(3.9) },
+        now,
+      ),
+    ).toEqual({ label: "Recusado", stopped: true });
+  });
+
+  it("cancelado há 4 horas ou mais → sai da lista", () => {
+    expect(
+      orderShortcut(
+        { status: "CANCELADO", stoppedAt: hoursAgo(4) },
+        now,
+      ),
+    ).toBeNull();
+    expect(
+      orderShortcut(
+        { status: "REJEITADO", stoppedAt: hoursAgo(30) },
+        now,
+      ),
+    ).toBeNull();
+  });
+
+  it("cancelado sem hora conhecida ou com hora inválida → sai da lista", () => {
+    expect(
+      orderShortcut(
+        { status: "CANCELADO", stoppedAt: null },
+        now,
+      ),
+    ).toBeNull();
+    expect(
+      orderShortcut(
+        { status: "CANCELADO", stoppedAt: "ontem" },
+        now,
+      ),
+    ).toBeNull();
+  });
+
+  it("concluído → sai da lista na hora", () => {
+    expect(
+      orderShortcut(
+        { status: "CONCLUIDO", stoppedAt: null },
+        now,
+      ),
+    ).toBeNull();
   });
 });
 
 describe("lookUpOrderStatus", () => {
   it("pedido encontrado → número e status", async () => {
     const send = vi.fn(async () =>
-      Response.json({ number: 1048, status: "EM_PREPARO" }),
+      Response.json({
+        number: 1048,
+        status: "EM_PREPARO",
+        stoppedAt: null,
+      }),
     );
     expect(
       await lookUpOrderStatus(token("a"), send),
     ).toEqual({
       found: true,
-      order: { number: 1048, status: "EM_PREPARO" },
+      order: {
+        number: 1048,
+        status: "EM_PREPARO",
+        stoppedAt: null,
+      },
     });
     expect(send).toHaveBeenCalledWith(
       `/api/pedidos/${token("a")}`,

@@ -6,6 +6,7 @@ import {
   isFinalStatus,
   isOrderToken,
   parseTrackedOrder,
+  stoppedAt,
   supportUrl,
   trackingHeadline,
 } from "./tracking";
@@ -160,6 +161,32 @@ describe("etapas do pedido", () => {
       stopped: true,
       note: "Item indisponível",
     });
+  });
+});
+
+describe("stoppedAt", () => {
+  it("pedido cancelado → hora do cancelamento", () => {
+    const cancelled = parseTrackedOrder({
+      ...fromDatabase,
+      status: "CANCELADO",
+      events: [
+        ...fromDatabase.events,
+        {
+          to_status: "CANCELADO",
+          note: "Cliente desistiu",
+          created_at: "2026-11-14T23:10:00Z",
+        },
+      ],
+    })!;
+    expect(stoppedAt(cancelled)).toBe(
+      "2026-11-14T23:10:00Z",
+    );
+  });
+
+  it("pedido em andamento → null", () => {
+    expect(
+      stoppedAt(parseTrackedOrder(fromDatabase)!),
+    ).toBeNull();
   });
 });
 

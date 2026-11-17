@@ -123,6 +123,28 @@ export function isFinalStatus(
   );
 }
 
+/**
+ * Quando a loja recusou ou cancelou o pedido (ISO). Null se o pedido não
+ * foi recusado nem cancelado.
+ */
+export function stoppedAt(
+  order: Pick<TrackedOrder, "status" | "events">,
+): string | null {
+  if (
+    order.status !== "REJEITADO" &&
+    order.status !== "CANCELADO"
+  ) {
+    return null;
+  }
+  return (
+    order.events
+      .filter((event) => event.toStatus === order.status)
+      .map((event) => event.createdAt)
+      .sort()
+      .at(-1) ?? null
+  );
+}
+
 export type TrackingHeadline = {
   title: string;
   description: string;
