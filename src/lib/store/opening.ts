@@ -391,6 +391,33 @@ export function manualOpeningFor(
   };
 }
 
+/**
+ * Depois de mudar os horários: a escolha manual em vigor ganha um prazo novo,
+ * calculado com os turnos novos a partir de agora (quem fechou até "sexta às
+ * 19h" e mudou a sexta para 18h passa a abrir às 18h). Null quando não há
+ * escolha manual valendo, e nada muda.
+ */
+export function refreshManualOpening(
+  current: { override: boolean | null; until: Date | null },
+  shifts: readonly Shift[],
+  now: Date,
+): { override: boolean; until: Date | null } | null {
+  const manual = activeOverride(
+    current.override,
+    current.until,
+    now,
+  );
+  if (manual === null) return null;
+  return {
+    override: manual,
+    until: manualOpeningDeadline(
+      manual ? "open" : "closed",
+      shifts,
+      now,
+    ),
+  };
+}
+
 /** Modo que reabre a loja fechada à mão: o horário, se já abriu; senão, agora. */
 export function reopenMode(
   shifts: readonly Shift[],

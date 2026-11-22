@@ -2,7 +2,10 @@
 // open_override_until), com os turnos que dão o status pelo horário.
 import "server-only";
 
-import type { Shift } from "@/lib/store/opening";
+import {
+  refreshManualOpening,
+  type Shift,
+} from "@/lib/store/opening";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 import { listStoreHours } from "./store-details";
@@ -58,4 +61,23 @@ export async function saveStoreOpening(
     })
     .eq("id", storeId);
   if (error) throw error;
+}
+
+/**
+ * Depois de salvar os horários: recalcula o prazo da loja aberta ou fechada à
+ * mão com os turnos novos. Sem escolha manual valendo, não grava nada.
+ */
+export async function refreshStoreOpening(
+  storeId: string,
+): Promise<void> {
+  const opening = await findStoreOpening(storeId);
+  const refreshed = refreshManualOpening(
+    {
+      override: opening.override,
+      until: opening.until ? new Date(opening.until) : null,
+    },
+    opening.shifts,
+    new Date(),
+  );
+  if (refreshed) await saveStoreOpening(storeId, refreshed);
 }
