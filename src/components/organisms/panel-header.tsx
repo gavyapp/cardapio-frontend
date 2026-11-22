@@ -5,8 +5,8 @@ import {
   StoreMenu,
   type MenuStore,
 } from "@/components/organisms/store-menu";
-import { Badge } from "@/components/atoms/badge";
 import { StoreAvatar } from "@/components/atoms/store-avatar";
+import { StoreOpeningMenu } from "@/components/organisms/store-opening-menu";
 import type { CatalogCounts } from "@/lib/data/catalog-counts";
 
 export type HeaderStore = MenuStore;
@@ -47,14 +47,7 @@ export function PanelHeader({
               {store?.name ?? "Loja"}
             </span>
           </p>
-          {/* Estado fixo por enquanto; a regra de loja aberta entra depois. */}
-          <Badge variant="success-solid">
-            <span
-              aria-hidden
-              className="size-1.5 rounded-full bg-current"
-            />
-            Aberta
-          </Badge>
+          <StoreOpeningMenu />
 
           <div className="ml-auto flex items-center gap-4">
             <Clock className="tabular hidden text-body sm:block" />

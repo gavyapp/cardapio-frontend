@@ -1,10 +1,11 @@
 -- Loja aberta ou fechada: is_store_open (horários, turno após a meia-noite,
--- botão do painel, loja inativa) e create_order recusando loja fechada.
+-- botão do painel e o prazo dele, loja inativa) e create_order recusando
+-- loja fechada.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(9);
+select plan(14);
 
 -- Dado: loja que abre sexta 18:00 e fecha sábado 02:00, sem botão do painel
 insert into public.stores (id, slug, name, is_open_override) values
@@ -26,6 +27,27 @@ select ok(not public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026
 -- Dado: a mesma loja com o botão do painel em aberta
 update public.stores set is_open_override = true where id = '5c000000-0000-0000-0000-000000000001';
 select ok(public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026-10-31 06:00Z'), 'sábado 03:00 com botão em aberta → aberta');
+
+-- Dado: a mesma loja fechada pelo botão na sexta 19:00, valendo até a
+-- próxima abertura (sexta da semana seguinte, 18:00)
+update public.stores
+set is_open_override = false, open_override_until = '2026-11-06 21:00Z'
+where id = '5c000000-0000-0000-0000-000000000001';
+select ok(not public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026-10-30 23:00Z'), 'sexta 20:00 com botão em fechada no prazo → fechada');
+select ok(public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026-11-06 23:00Z'), 'sexta seguinte 20:00, prazo vencido → aberta pelo horário');
+
+-- Dado: a mesma loja aberta pelo botão na quinta 17:00, valendo até a
+-- meia-noite
+update public.stores
+set is_open_override = true, open_override_until = '2026-10-30 03:00Z'
+where id = '5c000000-0000-0000-0000-000000000001';
+select ok(public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026-10-30 02:00Z'), 'quinta 23:00 com botão em aberta no prazo → aberta');
+select ok(not public.is_store_open('5c000000-0000-0000-0000-000000000001', '2026-10-30 04:00Z'), 'sexta 01:00, prazo vencido → fechada pelo horário');
+
+select throws_ok(
+  $$ update public.stores set is_open_override = null, open_override_until = '2026-10-30 03:00Z'
+     where id = '5c000000-0000-0000-0000-000000000001' $$,
+  '23514', null, 'prazo sem botão preenchido → recusado');
 
 -- Dado: a mesma loja desativada
 update public.stores set active = false where id = '5c000000-0000-0000-0000-000000000001';

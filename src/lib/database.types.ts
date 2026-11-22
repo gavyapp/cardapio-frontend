@@ -802,6 +802,7 @@ export type Database = {
           name: string
           next_order_number: number
           number: string | null
+          open_override_until: string | null
           phone: string | null
           plan: string | null
           settings: Json
@@ -821,6 +822,7 @@ export type Database = {
           name: string
           next_order_number?: number
           number?: string | null
+          open_override_until?: string | null
           phone?: string | null
           plan?: string | null
           settings?: Json
@@ -840,6 +842,7 @@ export type Database = {
           name?: string
           next_order_number?: number
           number?: string | null
+          open_override_until?: string | null
           phone?: string | null
           plan?: string | null
           settings?: Json

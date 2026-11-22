@@ -82,11 +82,16 @@ export type MenuContent = {
   store: MenuStore;
   /** Botão manual da loja: null segue o horário. */
   openOverride: boolean | null;
+  /** Até quando o botão vale (ISO); depois, segue o horário. */
+  openOverrideUntil: string | null;
   hours: Shift[];
   categories: MenuCategory[];
 };
 
-export type Menu = Omit<MenuContent, "openOverride"> & {
+export type Menu = Omit<
+  MenuContent,
+  "openOverride" | "openOverrideUntil"
+> & {
   status: StoreStatus;
   /** Dia da semana de agora no fuso da loja (0 = domingo). */
   todayWeekday: number;
@@ -116,12 +121,16 @@ export const findMenu = cache(async function findMenu(
   // impede o Next de pré-renderizar a página.
   const now = new Date();
 
-  const { openOverride, ...rest } = content;
+  const { openOverride, openOverrideUntil, ...rest } =
+    content;
   return {
     ...rest,
     status: resolveStoreStatus({
       isOpen: Boolean(isOpen),
       override: openOverride,
+      overrideUntil: openOverrideUntil
+        ? new Date(openOverrideUntil)
+        : null,
       shifts: content.hours,
       now,
     }),
@@ -144,7 +153,7 @@ async function findMenuContent(
   const { data: store, error: storeError } = await supabase
     .from("stores")
     .select(
-      "id, slug, name, phone, street, number, district, city, state, settings, is_open_override",
+      "id, slug, name, phone, street, number, district, city, state, settings, is_open_override, open_override_until",
     )
     .eq("slug", slug)
     .eq("active", true)
@@ -307,6 +316,7 @@ async function findMenuContent(
       rules: readStoreRules(store.settings),
     },
     openOverride: store.is_open_override,
+    openOverrideUntil: store.open_override_until,
     hours: (hours.data ?? []).map((shift) => ({
       weekday: shift.weekday,
       opensAt: shift.opens_at,
