@@ -7,6 +7,7 @@ import {
   OrderBoard,
 } from "@/components/organisms/order-board";
 import { ClosedOrders } from "@/components/organisms/closed-orders";
+import { StoreClosedBanner } from "@/components/organisms/store-closed-banner";
 import { OrderBoardTemplate } from "@/components/templates/order-board-template";
 import { ORDER_SEARCH_PARAM } from "@/lib/orders/board";
 
@@ -26,6 +27,7 @@ export default function OrdersPage() {
   return (
     <OrderBoardTemplate
       title={<TodayOrdersTitle />}
+      notice={<StoreClosedBanner />}
       below={
         <Suspense>
           <ClosedOrders />

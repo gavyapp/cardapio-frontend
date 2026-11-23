@@ -7,7 +7,6 @@ import {
 } from "@/components/organisms/panel-header";
 import { LiveOrdersProvider } from "@/components/providers/live-orders-provider";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
-import { StoreClosedBanner } from "@/components/organisms/store-closed-banner";
 import { StoreOpeningProvider } from "@/components/providers/store-opening-provider";
 import { PanelFrame } from "@/components/templates/panel-frame";
 import { Toaster } from "@/components/atoms/sonner";
@@ -85,9 +84,6 @@ async function PanelWithAccess({
           catalogCounts={catalogCounts}
           onSignOut={signOut}
         />
-        {/* Fora da área que rola: no quadro de pedidos, ocupa o topo e o
-            quadro fica com o resto da tela. */}
-        <StoreClosedBanner />
         {/* Na página do quadro (PanelFrame), o <main> rola sozinho com a
             altura da tela menos o cabeçalho, e o quadro ocupa essa primeira
             tela. */}

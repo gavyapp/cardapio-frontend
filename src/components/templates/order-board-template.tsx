@@ -13,8 +13,11 @@ export function OrderBoardTemplate({
   search,
   children,
   below,
+  notice,
 }: {
   title: ReactNode;
+  /** Aviso acima do título, como a barra de loja fechada. */
+  notice?: ReactNode;
   search?: ReactNode;
   children: ReactNode;
   below?: ReactNode;
@@ -25,6 +28,7 @@ export function OrderBoardTemplate({
   return (
     <>
       <div className="flex w-full flex-col gap-4 px-page pt-4 pb-4 sm:pt-6 lg:h-full lg:min-h-[560px] lg:shrink-0 lg:pb-6">
+        {notice}
         <PageHeader title={title} search={search} />
         {children}
       </div>
