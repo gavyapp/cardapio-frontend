@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  activeOverride,
   findCurrentClosing,
   findNextOpening,
+  formatDeadline,
   formatNextOpening,
   formatOpeningTime,
   localMoment,
+  manualOpeningDeadline,
+  manualOpeningFor,
+  refreshManualOpening,
+  reopenMode,
   resolveStoreStatus,
   type Shift,
 } from "./opening";
@@ -219,6 +225,7 @@ describe("resolveStoreStatus", () => {
       resolveStoreStatus({
         isOpen: false,
         override: null,
+        overrideUntil: null,
         shifts,
         now,
       }),
@@ -234,6 +241,7 @@ describe("resolveStoreStatus", () => {
       resolveStoreStatus({
         isOpen: true,
         override: null,
+        overrideUntil: null,
         shifts,
         now: saoPaulo(SEXTA, "19:00"),
       }),
@@ -244,11 +252,12 @@ describe("resolveStoreStatus", () => {
     });
   });
 
-  it("override aberto fora do horário → aberta, sem hora de fechar", () => {
+  it("override aberto sem prazo → aberta, sem hora de fechar", () => {
     expect(
       resolveStoreStatus({
         isOpen: true,
         override: true,
+        overrideUntil: null,
         shifts,
         now,
       }),
@@ -259,11 +268,12 @@ describe("resolveStoreStatus", () => {
     });
   });
 
-  it("override fechado → fechada sem previsão, mesmo com turno hoje", () => {
+  it("override fechado sem prazo → fechada sem previsão, mesmo com turno hoje", () => {
     expect(
       resolveStoreStatus({
         isOpen: false,
         override: false,
+        overrideUntil: null,
         shifts,
         now,
       }),
@@ -279,6 +289,7 @@ describe("resolveStoreStatus", () => {
       resolveStoreStatus({
         isOpen: false,
         override: null,
+        overrideUntil: null,
         shifts: [],
         now,
       }),
@@ -287,5 +298,363 @@ describe("resolveStoreStatus", () => {
       nextOpeningLabel: null,
       closingLabel: null,
     });
+  });
+});
+
+describe("resolveStoreStatus com o prazo do botão", () => {
+  const shifts = [shift(5, "19:00", "23:00")];
+
+  it("fechada à mão até amanhã → fechada com a reabertura do prazo", () => {
+    expect(
+      resolveStoreStatus({
+        isOpen: false,
+        override: false,
+        overrideUntil: saoPaulo(SABADO, "19:00"),
+        shifts,
+        now: saoPaulo(SEXTA, "22:00"),
+      }),
+    ).toEqual({
+      isOpen: false,
+      nextOpeningLabel: "abre amanhã às 19h",
+      closingLabel: null,
+    });
+  });
+
+  it("aberta à mão até a meia-noite → fecha à meia-noite", () => {
+    expect(
+      resolveStoreStatus({
+        isOpen: true,
+        override: true,
+        overrideUntil: saoPaulo(SABADO, "00:00"),
+        shifts,
+        now: saoPaulo(SEXTA, "23:10"),
+      }),
+    ).toEqual({
+      isOpen: true,
+      nextOpeningLabel: null,
+      closingLabel: "fecha à meia-noite",
+    });
+  });
+
+  it("prazo vencido → segue o horário", () => {
+    expect(
+      resolveStoreStatus({
+        isOpen: false,
+        override: true,
+        overrideUntil: saoPaulo(SEXTA, "09:00"),
+        shifts,
+        now: saoPaulo(SEXTA, "10:00"),
+      }),
+    ).toEqual({
+      isOpen: false,
+      nextOpeningLabel: "abre hoje às 19h",
+      closingLabel: null,
+    });
+  });
+});
+
+describe("activeOverride", () => {
+  const now = saoPaulo(SEXTA, "10:00");
+
+  it("sem botão → null", () => {
+    expect(activeOverride(null, null, now)).toBeNull();
+  });
+
+  it("no prazo → vale o botão", () => {
+    expect(
+      activeOverride(false, saoPaulo(SEXTA, "19:00"), now),
+    ).toBe(false);
+  });
+
+  it("no exato fim do prazo → já segue o horário", () => {
+    expect(activeOverride(true, now, now)).toBeNull();
+  });
+
+  it("sem prazo → vale até mudar à mão", () => {
+    expect(activeOverride(true, null, now)).toBe(true);
+  });
+});
+
+describe("manualOpeningDeadline", () => {
+  // Segunda a sexta, 19h às 23h.
+  const weekdays = [1, 2, 3, 4, 5].map((day) =>
+    shift(day, "19:00", "23:00"),
+  );
+  const QUINTA = "2026-11-12";
+
+  it("fechar na quinta às 22h → até sexta às 19h", () => {
+    expect(
+      manualOpeningDeadline(
+        "closed",
+        weekdays,
+        saoPaulo(QUINTA, "22:00"),
+      ),
+    ).toEqual(saoPaulo(SEXTA, "19:00"));
+  });
+
+  it("fechar na sexta às 22h → até segunda às 19h", () => {
+    expect(
+      manualOpeningDeadline(
+        "closed",
+        weekdays,
+        saoPaulo(SEXTA, "22:00"),
+      ),
+    ).toEqual(saoPaulo("2026-11-16", "19:00"));
+  });
+
+  it("fechar sem nenhum turno → sem prazo", () => {
+    expect(
+      manualOpeningDeadline(
+        "closed",
+        [],
+        saoPaulo(SEXTA, "22:00"),
+      ),
+    ).toBeNull();
+  });
+
+  it("abrir antes do turno → até o fechamento do turno", () => {
+    expect(
+      manualOpeningDeadline(
+        "open",
+        weekdays,
+        saoPaulo(QUINTA, "17:00"),
+      ),
+    ).toEqual(saoPaulo(QUINTA, "23:00"));
+  });
+
+  it("abrir depois do turno → até a meia-noite", () => {
+    expect(
+      manualOpeningDeadline(
+        "open",
+        weekdays,
+        saoPaulo(QUINTA, "23:10"),
+      ),
+    ).toEqual(saoPaulo(SEXTA, "00:00"));
+  });
+
+  it("abrir entre dois turnos → até o fim do segundo", () => {
+    const shifts = [
+      shift(5, "11:00", "14:00"),
+      shift(5, "18:00", "22:00"),
+    ];
+    expect(
+      manualOpeningDeadline(
+        "open",
+        shifts,
+        saoPaulo(SEXTA, "15:00"),
+      ),
+    ).toEqual(saoPaulo(SEXTA, "22:00"));
+  });
+
+  it("abrir antes de turno que passa da meia-noite → até a meia-noite", () => {
+    expect(
+      manualOpeningDeadline(
+        "open",
+        [shift(5, "18:00", "02:00")],
+        saoPaulo(SEXTA, "17:00"),
+      ),
+    ).toEqual(saoPaulo(SABADO, "00:00"));
+  });
+
+  it("abrir na madrugada de turno de ontem → até o fim dele", () => {
+    expect(
+      manualOpeningDeadline(
+        "open",
+        [shift(5, "18:00", "02:00")],
+        saoPaulo(SABADO, "01:00"),
+      ),
+    ).toEqual(saoPaulo(SABADO, "02:00"));
+  });
+
+  it("ignora os segundos de agora", () => {
+    expect(
+      manualOpeningDeadline(
+        "open",
+        weekdays,
+        new Date("2026-11-12T17:00:42-03:00"),
+      ),
+    ).toEqual(saoPaulo(QUINTA, "23:00"));
+  });
+});
+
+describe("manualOpeningFor", () => {
+  const shifts = [shift(5, "19:00", "23:00")];
+  const now = saoPaulo(SEXTA, "17:00");
+
+  it("seguir horário → limpa o botão e o prazo", () => {
+    expect(
+      manualOpeningFor("schedule", shifts, now),
+    ).toEqual({
+      override: null,
+      until: null,
+    });
+  });
+
+  it("abrir e fechar → botão com prazo", () => {
+    expect(manualOpeningFor("open", shifts, now)).toEqual({
+      override: true,
+      until: saoPaulo(SEXTA, "23:00"),
+    });
+    expect(manualOpeningFor("closed", shifts, now)).toEqual(
+      {
+        override: false,
+        until: saoPaulo(SEXTA, "19:00"),
+      },
+    );
+  });
+});
+
+describe("reopenMode", () => {
+  const shifts = [shift(5, "19:00", "23:00")];
+
+  it("dentro do horário → volta a seguir o horário", () => {
+    expect(
+      reopenMode(shifts, saoPaulo(SEXTA, "20:00")),
+    ).toBe("schedule");
+  });
+
+  it("fora do horário → abre agora", () => {
+    expect(
+      reopenMode(shifts, saoPaulo(SEXTA, "17:00")),
+    ).toBe("open");
+  });
+});
+
+describe("formatDeadline", () => {
+  const now = saoPaulo(SEXTA, "17:00");
+
+  it("hoje → só a hora", () => {
+    expect(
+      formatDeadline(saoPaulo(SEXTA, "23:00"), now),
+    ).toBe("23h");
+  });
+
+  it("meia-noite → meia-noite", () => {
+    expect(
+      formatDeadline(saoPaulo(SABADO, "00:00"), now),
+    ).toBe("meia-noite");
+  });
+
+  it("amanhã → amanhã às", () => {
+    expect(
+      formatDeadline(saoPaulo(SABADO, "19:30"), now),
+    ).toBe("amanhã às 19h30");
+  });
+
+  it("depois de amanhã → dia da semana", () => {
+    expect(
+      formatDeadline(saoPaulo("2026-11-16", "19:00"), now),
+    ).toBe("segunda às 19h");
+  });
+});
+
+describe("loja sem horários configurados", () => {
+  const now = saoPaulo(SEXTA, "17:00");
+
+  it("abrir agora → até a meia-noite", () => {
+    expect(manualOpeningFor("open", [], now)).toEqual({
+      override: true,
+      until: saoPaulo(SABADO, "00:00"),
+    });
+  });
+
+  it("fechar agora → sem prazo, até mudar à mão", () => {
+    expect(manualOpeningFor("closed", [], now)).toEqual({
+      override: false,
+      until: null,
+    });
+  });
+
+  it("Abrir loja na barra → abre agora", () => {
+    expect(reopenMode([], now)).toBe("open");
+  });
+
+  it("seguindo o horário → fechada, sem previsão", () => {
+    expect(
+      resolveStoreStatus({
+        isOpen: false,
+        override: null,
+        overrideUntil: null,
+        shifts: [],
+        now,
+      }),
+    ).toEqual({
+      isOpen: false,
+      nextOpeningLabel: null,
+      closingLabel: null,
+    });
+  });
+});
+
+describe("refreshManualOpening", () => {
+  const QUINTA = "2026-11-12";
+  const now = saoPaulo(QUINTA, "22:00");
+
+  it("sem escolha manual → nada muda", () => {
+    expect(
+      refreshManualOpening(
+        { override: null, until: null },
+        [shift(5, "18:00", "23:00")],
+        now,
+      ),
+    ).toBeNull();
+  });
+
+  it("prazo já vencido → nada muda", () => {
+    expect(
+      refreshManualOpening(
+        {
+          override: false,
+          until: saoPaulo(QUINTA, "21:00"),
+        },
+        [shift(5, "18:00", "23:00")],
+        now,
+      ),
+    ).toBeNull();
+  });
+
+  it("fechada até sexta 19h e a sexta passa a abrir às 18h → até sexta 18h", () => {
+    expect(
+      refreshManualOpening(
+        {
+          override: false,
+          until: saoPaulo(SEXTA, "19:00"),
+        },
+        [shift(5, "18:00", "23:00")],
+        now,
+      ),
+    ).toEqual({
+      override: false,
+      until: saoPaulo(SEXTA, "18:00"),
+    });
+  });
+
+  it("aberta até 23h e o turno passa a fechar às 22h30 → até 22h30", () => {
+    expect(
+      refreshManualOpening(
+        {
+          override: true,
+          until: saoPaulo(QUINTA, "23:00"),
+        },
+        [shift(4, "19:00", "22:30")],
+        now,
+      ),
+    ).toEqual({
+      override: true,
+      until: saoPaulo(QUINTA, "22:30"),
+    });
+  });
+
+  it("fechada e todos os horários removidos → fechada sem prazo", () => {
+    expect(
+      refreshManualOpening(
+        {
+          override: false,
+          until: saoPaulo(SEXTA, "19:00"),
+        },
+        [],
+        now,
+      ),
+    ).toEqual({ override: false, until: null });
   });
 });

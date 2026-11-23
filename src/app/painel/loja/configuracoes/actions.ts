@@ -14,6 +14,7 @@ import {
   parseAmountInput,
 } from "@/lib/format";
 import { updateOrderAlerts } from "@/lib/data/order-alerts";
+import { refreshStoreOpening } from "@/lib/data/store-opening";
 import { requireStoreForAction } from "@/lib/panel/access";
 import {
   errorMessage,
@@ -53,6 +54,7 @@ export async function saveStoreHoursAction(
   try {
     const store = await requireStoreForAction();
     await saveStoreHours(store.id, parsed.data);
+    await refreshStoreOpening(store.id);
     // O cardápio mostra "Fechado" fora do horário; expira o cache dele.
     afterMenuChange(store.id);
     return { ok: true };

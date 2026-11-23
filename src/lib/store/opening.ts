@@ -25,9 +25,9 @@ export type NextOpening = {
 
 export type StoreStatus = {
   isOpen: boolean;
-  /** Só quando fechada pelo horário; fechada manualmente não tem previsão. */
+  /** Quando fechada: "abre hoje às 18h", pelo horário ou pelo prazo do botão. */
   nextOpeningLabel: string | null;
-  /** Só quando aberta pelo horário; aberta manualmente não tem previsão. */
+  /** Quando aberta: "fecha às 23h", pelo horário ou pelo prazo do botão. */
   closingLabel: string | null;
 };
 
@@ -169,25 +169,41 @@ export function formatNextOpening(
 }
 
 /**
- * Status para a tela. `isOpen` vem do banco; `override` é o botão manual da
- * loja (stores.is_open_override): com ele ligado não há previsão de mudança.
+ * Status para a tela. `isOpen` vem do banco; `override` e `overrideUntil` são
+ * o botão do painel (stores.is_open_override e open_override_until). Com o
+ * botão valendo, a previsão vem do prazo dele: fechada até a próxima
+ * abertura, aberta até o próximo fechamento.
  */
 export function resolveStoreStatus({
   isOpen,
   override,
+  overrideUntil,
   shifts,
   now,
 }: {
   isOpen: boolean;
   override: boolean | null;
+  overrideUntil: Date | null;
   shifts: readonly Shift[];
   now: Date;
 }): StoreStatus {
-  if (override !== null) {
+  const manual = activeOverride(
+    override,
+    overrideUntil,
+    now,
+  );
+  if (manual !== null) {
+    const deadline = overrideUntil
+      ? deadlineMoment(overrideUntil, now)
+      : null;
     return {
       isOpen,
-      nextOpeningLabel: null,
-      closingLabel: null,
+      nextOpeningLabel:
+        !isOpen && deadline
+          ? formatNextOpening(deadline)
+          : null,
+      closingLabel:
+        isOpen && deadline ? formatClosing(deadline) : null,
     };
   }
   if (isOpen) {
@@ -208,4 +224,206 @@ export function resolveStoreStatus({
       : null,
     closingLabel: null,
   };
+}
+
+// Botão do painel ---------------------------------------------------------
+//
+// O lojista escolhe seguir o horário, abrir agora ou fechar agora. Abrir ou
+// fechar vale só até a próxima virada do horário, não para sempre: quem
+// fecha na quinta às 22h quer a loja abrindo sozinha na sexta. O banco
+// guarda o prazo (open_override_until) e is_store_open ignora o botão
+// depois dele.
+
+/** Escolha do botão do painel. */
+export type OpeningMode = "schedule" | "open" | "closed";
+
+/** O botão no momento: null quando não foi usado ou o prazo já venceu. */
+export function activeOverride(
+  override: boolean | null,
+  until: Date | null,
+  now: Date,
+): boolean | null {
+  if (override === null) return null;
+  if (until && now >= until) return null;
+  return override;
+}
+
+/** Aberta pelo horário em `now`, a mesma regra de is_store_open. */
+export function isOpenBySchedule(
+  shifts: readonly Shift[],
+  now: Date,
+): boolean {
+  return findCurrentClosing(shifts, now) !== null;
+}
+
+const MINUTES_IN_DAY = 24 * 60;
+
+/** `now` mais `minutes`, sem os segundos. São Paulo não tem horário de verão. */
+function minutesFromNow(now: Date, minutes: number): Date {
+  const startOfMinute =
+    Math.floor(now.getTime() / 60_000) * 60_000;
+  return new Date(startOfMinute + minutes * 60_000);
+}
+
+/**
+ * Até quando vale abrir ou fechar agora.
+ * - Fechar: até a próxima abertura pelo horário. Sem turnos, até mudar à
+ *   mão (null).
+ * - Abrir: até o fechamento do turno em andamento ou do próximo que começa
+ *   hoje, no máximo até a meia-noite, para a loja aberta fora do horário não
+ *   ficar aberta a noite toda.
+ */
+export function manualOpeningDeadline(
+  mode: "open" | "closed",
+  shifts: readonly Shift[],
+  now: Date,
+): Date | null {
+  const { weekday, minutes } = localMoment(now);
+
+  if (mode === "closed") {
+    const opening = findNextOpening(shifts, now);
+    if (!opening) return null;
+    return minutesFromNow(
+      now,
+      opening.daysAhead * MINUTES_IN_DAY +
+        toMinutes(opening.time) -
+        minutes,
+    );
+  }
+
+  const untilMidnight = MINUTES_IN_DAY - minutes;
+  const yesterday = (weekday + 6) % 7;
+  let closesIn = untilMidnight;
+
+  for (const shift of shifts) {
+    const opens = toMinutes(shift.opensAt);
+    const closes = toMinutes(shift.closesAt);
+    const crossesMidnight = closes <= opens;
+    // Turno de hoje que ainda não fechou (em andamento ou mais tarde), ou o
+    // de ontem que passou da meia-noite. Turno de hoje que passa da
+    // meia-noite fica no limite da meia-noite.
+    const laterToday =
+      shift.weekday === weekday &&
+      !crossesMidnight &&
+      minutes < closes;
+    const fromYesterday =
+      shift.weekday === yesterday &&
+      crossesMidnight &&
+      minutes < closes;
+    if (laterToday || fromYesterday) {
+      closesIn = Math.min(closesIn, closes - minutes);
+    }
+  }
+  return minutesFromNow(now, closesIn);
+}
+
+const localDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: STORE_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** Dias de calendário, no fuso da loja, entre `now` e `at`. */
+function daysBetween(now: Date, at: Date): number {
+  const day = (date: Date) =>
+    Date.parse(`${localDate.format(date)}T00:00:00Z`);
+  return Math.round((day(at) - day(now)) / 86_400_000);
+}
+
+/** Um prazo no mesmo formato da próxima abertura (dia relativo e hora). */
+function deadlineMoment(
+  until: Date,
+  now: Date,
+): NextOpening {
+  const { weekday, minutes } = localMoment(until);
+  return {
+    daysAhead: daysBetween(now, until),
+    weekday,
+    time: `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`,
+  };
+}
+
+function isMidnight(moment: NextOpening): boolean {
+  return moment.daysAhead === 1 && moment.time === "00:00";
+}
+
+/** "fecha às 23h" ou "fecha à meia-noite". */
+function formatClosing(moment: NextOpening): string {
+  return isMidnight(moment)
+    ? "fecha à meia-noite"
+    : `fecha às ${formatOpeningTime(moment.time)}`;
+}
+
+/**
+ * Prazo do botão para o painel: "23h" (hoje), "meia-noite",
+ * "amanhã às 19h" ou "sexta às 19h".
+ */
+export function formatDeadline(
+  until: Date,
+  now: Date,
+): string {
+  const moment = deadlineMoment(until, now);
+  if (isMidnight(moment)) return "meia-noite";
+  const time = formatOpeningTime(moment.time);
+  if (moment.daysAhead <= 0) return time;
+  const when =
+    moment.daysAhead === 1
+      ? "amanhã"
+      : WEEKDAYS[moment.weekday];
+  return `${when} às ${time}`;
+}
+
+/**
+ * O que gravar para cada escolha do botão. "Abrir loja" na barra de aviso
+ * usa `reopenMode`: volta ao horário se ele já está aberto, senão abre agora.
+ */
+export function manualOpeningFor(
+  mode: OpeningMode,
+  shifts: readonly Shift[],
+  now: Date,
+): { override: boolean | null; until: Date | null } {
+  if (mode === "schedule")
+    return { override: null, until: null };
+  return {
+    override: mode === "open",
+    until: manualOpeningDeadline(mode, shifts, now),
+  };
+}
+
+/**
+ * Depois de mudar os horários: a escolha manual em vigor ganha um prazo novo,
+ * calculado com os turnos novos a partir de agora (quem fechou até "sexta às
+ * 19h" e mudou a sexta para 18h passa a abrir às 18h). Null quando não há
+ * escolha manual valendo, e nada muda.
+ */
+export function refreshManualOpening(
+  current: { override: boolean | null; until: Date | null },
+  shifts: readonly Shift[],
+  now: Date,
+): { override: boolean; until: Date | null } | null {
+  const manual = activeOverride(
+    current.override,
+    current.until,
+    now,
+  );
+  if (manual === null) return null;
+  return {
+    override: manual,
+    until: manualOpeningDeadline(
+      manual ? "open" : "closed",
+      shifts,
+      now,
+    ),
+  };
+}
+
+/** Modo que reabre a loja fechada à mão: o horário, se já abriu; senão, agora. */
+export function reopenMode(
+  shifts: readonly Shift[],
+  now: Date,
+): OpeningMode {
+  return isOpenBySchedule(shifts, now)
+    ? "schedule"
+    : "open";
 }

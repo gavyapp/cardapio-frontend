@@ -7,18 +7,20 @@ import {
 } from "@/components/organisms/panel-header";
 import { LiveOrdersProvider } from "@/components/providers/live-orders-provider";
 import { NoStoreNotice } from "@/components/organisms/no-store-notice";
+import { StoreOpeningProvider } from "@/components/providers/store-opening-provider";
 import { PanelFrame } from "@/components/templates/panel-frame";
 import { Toaster } from "@/components/atoms/sonner";
 import { countCatalog } from "@/lib/data/catalog-counts";
 import { findOrderAlerts } from "@/lib/data/order-alerts";
 import { loadBoard } from "@/lib/data/orders";
 import { findStoreBySlug } from "@/lib/data/store";
+import { findStoreOpening } from "@/lib/data/store-opening";
 import {
   PANEL_ROUTE,
   requirePanelAccess,
 } from "@/lib/panel/access";
 
-import { signOut } from "./actions";
+import { setStoreOpeningAction, signOut } from "./actions";
 
 export const metadata: Metadata = { title: "Painel" };
 
@@ -41,13 +43,19 @@ async function PanelWithAccess({
     );
   }
 
-  const [store, catalogCounts, board, orderAlerts] =
-    await Promise.all([
-      findStoreBySlug(access.store.slug),
-      countCatalog(access.store.id),
-      loadBoard(access.store.id),
-      findOrderAlerts(access.store.id),
-    ]);
+  const [
+    store,
+    catalogCounts,
+    board,
+    orderAlerts,
+    opening,
+  ] = await Promise.all([
+    findStoreBySlug(access.store.slug),
+    countCatalog(access.store.id),
+    loadBoard(access.store.id),
+    findOrderAlerts(access.store.id),
+    findStoreOpening(access.store.id),
+  ]);
   const headerStore: HeaderStore | null = store
     ? {
         slug: store.slug,
@@ -66,17 +74,23 @@ async function PanelWithAccess({
       initialAlerts={orderAlerts}
       renderedAt={board.fetchedAt}
     >
-      <PanelHeader
-        store={headerStore}
-        catalogCounts={catalogCounts}
-        onSignOut={signOut}
-      />
-      {/* Na página do quadro (PanelFrame), o <main> rola sozinho com a
-          altura da tela menos o cabeçalho, e o quadro ocupa essa primeira
-          tela. */}
-      <main className="flex flex-1 flex-col lg:group-data-fill-viewport/panel:min-h-0 lg:group-data-fill-viewport/panel:overflow-y-auto">
-        {children}
-      </main>
+      <StoreOpeningProvider
+        opening={opening}
+        renderedAt={board.fetchedAt}
+        setOpening={setStoreOpeningAction}
+      >
+        <PanelHeader
+          store={headerStore}
+          catalogCounts={catalogCounts}
+          onSignOut={signOut}
+        />
+        {/* Na página do quadro (PanelFrame), o <main> rola sozinho com a
+            altura da tela menos o cabeçalho, e o quadro ocupa essa primeira
+            tela. */}
+        <main className="flex flex-1 flex-col lg:group-data-fill-viewport/panel:min-h-0 lg:group-data-fill-viewport/panel:overflow-y-auto">
+          {children}
+        </main>
+      </StoreOpeningProvider>
     </LiveOrdersProvider>
   );
 }

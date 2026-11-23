@@ -31,8 +31,8 @@ do $$ begin
 end $$;
 
 select lives_ok(
-  $$ update public.stores set name = 'Loja A Nova', is_open_override = false where id = '5a000000-0000-0000-0000-000000000001' $$,
-  'funcionário edita nome e botão de aberto → aceito');
+  $$ update public.stores set name = 'Loja A Nova', is_open_override = false, open_override_until = now() + interval '1 hour' where id = '5a000000-0000-0000-0000-000000000001' $$,
+  'funcionário edita nome, botão de aberto e o prazo dele → aceito');
 select throws_ok(
   $$ update public.stores set slug = 'outro-slug' where id = '5a000000-0000-0000-0000-000000000001' $$,
   '42501', null, 'funcionário muda o slug → negado');
