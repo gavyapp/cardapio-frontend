@@ -416,6 +416,49 @@ describe("totais", () => {
     ).toBeNull();
   });
 
+  it("produto em promoção: total e subtotal também pelo preço cheio", () => {
+    // Burger de R$ 30 por R$ 24; o bacon (R$ 5) não entra na promoção.
+    const onSale = product(
+      "burger",
+      24,
+      [doneness, extras],
+      {
+        promotion: {
+          name: "Burger 20%",
+          originalPrice: 30,
+        },
+      },
+    );
+    const withSale = resolveCart(
+      [
+        newLine(
+          "burger",
+          { ponto: ["mal"], adicionais: ["bacon"] },
+          "",
+          2,
+        ),
+        newLine("refri", {}, "", 1),
+      ],
+      [onSale, soda],
+    );
+    expect(withSale.map((item) => item.fullTotal)).toEqual([
+      70,
+      null,
+    ]);
+    const summary = summarizeCart(withSale, {
+      minimumOrder: 0,
+      freeDeliveryAbove: null,
+    });
+    expect(summary.subtotal).toBe(65);
+    expect(summary.fullSubtotal).toBe(77);
+    expect(
+      summarizeCart(items, {
+        minimumOrder: 0,
+        freeDeliveryAbove: null,
+      }).fullSubtotal,
+    ).toBeNull();
+  });
+
   it("desconto no pedido: o maior que o subtotal alcança, com o mínimo no rótulo", () => {
     const discount = (
       minSubtotal: number,

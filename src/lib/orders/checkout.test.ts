@@ -48,6 +48,7 @@ function cartItem(
     quantity: 1,
     unitPrice: 20,
     total: 20,
+    fullTotal: null,
     ...extra,
   };
 }

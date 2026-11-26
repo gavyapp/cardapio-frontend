@@ -284,6 +284,8 @@ export type CartItem = {
   quantity: number;
   unitPrice: number;
   total: number;
+  /** Total pelo preço cheio do produto; null quando não está em promoção. */
+  fullTotal: number | null;
 };
 
 /**
@@ -341,6 +343,15 @@ export function resolveCart(
       quantity: line.quantity,
       unitPrice: unit,
       total: round(unit * line.quantity),
+      // A promoção vale só no produto; os complementos seguem com preço cheio.
+      fullTotal: product.promotion
+        ? round(
+            (unit +
+              product.promotion.originalPrice -
+              product.price) *
+              line.quantity,
+          )
+        : null,
     });
   }
   return items;
@@ -350,6 +361,8 @@ export type CartSummary = {
   /** Soma das quantidades. */
   itemCount: number;
   subtotal: number;
+  /** Subtotal pelo preço cheio; null quando nenhum item está em promoção. */
+  fullSubtotal: number | null;
   /** Null quando a loja não oferece entrega grátis. */
   freeDelivery: {
     reached: boolean;
@@ -411,9 +424,23 @@ export function summarizeCart(
     rules.orderDiscounts ?? [],
   );
 
+  const hasPromotion = items.some(
+    (item) => item.fullTotal !== null,
+  );
+  const fullSubtotal = hasPromotion
+    ? round(
+        items.reduce(
+          (sum, item) =>
+            sum + (item.fullTotal ?? item.total),
+          0,
+        ),
+      )
+    : null;
+
   return {
     itemCount,
     subtotal,
+    fullSubtotal,
     freeDelivery,
     minimumOrder,
     discount: orderDiscount

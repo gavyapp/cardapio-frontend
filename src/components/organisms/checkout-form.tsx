@@ -724,8 +724,15 @@ function CheckoutFields({
                       </p>
                     ) : null}
                   </div>
-                  <p className="tabular shrink-0 text-body">
-                    {formatCurrency(item.total)}
+                  <p className="flex shrink-0 flex-col items-end">
+                    {item.fullTotal !== null ? (
+                      <s className="tabular text-support text-muted-foreground">
+                        {formatCurrency(item.fullTotal)}
+                      </s>
+                    ) : null}
+                    <span className="tabular text-body">
+                      {formatCurrency(item.total)}
+                    </span>
                   </p>
                 </li>
               );
@@ -742,7 +749,12 @@ function CheckoutFields({
                   "itens",
                 )}
               </dt>
-              <dd className="tabular">
+              <dd className="tabular flex items-baseline gap-2">
+                {summary.fullSubtotal !== null ? (
+                  <s className="text-muted-foreground">
+                    {formatCurrency(summary.fullSubtotal)}
+                  </s>
+                ) : null}
                 {formatCurrency(totals.subtotal)}
               </dd>
             </div>

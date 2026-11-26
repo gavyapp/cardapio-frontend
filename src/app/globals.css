@@ -257,3 +257,26 @@
     font-size: 16px;
   }
 }
+
+/* Rolagem horizontal discreta (ex.: "Peça também"): fina, na cor da borda e
+   sem as setas do Windows. Chrome e Safari ignoram o ::-webkit-scrollbar se
+   scrollbar-color estiver definido, por isso o padrão fica só para o Firefox. */
+@utility scrollbar-subtle {
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: var(--border-strong);
+  }
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+}
