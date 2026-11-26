@@ -609,6 +609,42 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_products: {
+        Row: {
+          created_at: string
+          product_id: string
+          promotion_id: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          promotion_id: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          promotion_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_products_product_id_fkey"
+            columns: ["store_id", "product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["store_id", "id"]
+          },
+          {
+            foreignKeyName: "promotion_products_promotion_id_fkey"
+            columns: ["store_id", "promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["store_id", "id"]
+          },
+        ]
+      }
       promotions: {
         Row: {
           created_at: string
@@ -629,8 +665,8 @@ export type Database = {
           is_active?: boolean
           kind: string
           name: string
-          rule?: Json
-          schedule?: Json
+          rule: Json
+          schedule: Json
           store_id: string
           updated_at?: string
         }
