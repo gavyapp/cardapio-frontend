@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { OrderModeIcon } from "@/components/atoms/order-mode-icon";
+import { FilterChips } from "@/components/molecules/filter-chips";
 import { Pagination } from "@/components/molecules/pagination";
 import { SearchParamInput } from "@/components/molecules/search-param-input";
 import { useLiveOrdersContext } from "@/components/providers/live-orders-provider";
@@ -141,45 +142,16 @@ export function ClosedOrders() {
           placeholder="Buscar concluídos e cancelados"
           label="Buscar nos concluídos e cancelados"
         />
-        <div
-          role="group"
-          aria-label="Filtrar"
-          className="flex flex-wrap gap-2"
-        >
-          {CLOSED_FILTERS.map(({ id, label }) => {
-            const count = summary.counts[id];
-            const active = filter === id;
-            const alert = id === "nao-pagos" && count > 0;
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => chooseFilter(id)}
-                className={cn(
-                  "flex h-11 shrink-0 items-center gap-2 rounded-control border px-3 text-support whitespace-nowrap outline-none hover:border-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 lg:h-9",
-                  active
-                    ? "border-foreground bg-foreground font-semibold text-background hover:border-foreground"
-                    : "bg-card text-foreground",
-                )}
-              >
-                {label}
-                <span
-                  className={cn(
-                    "tabular inline-flex h-5 min-w-5 items-center justify-center rounded-control text-caption font-semibold",
-                    alert
-                      ? "bg-destructive px-1 text-destructive-foreground"
-                      : active
-                        ? "text-background"
-                        : "text-muted-foreground",
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <FilterChips
+          chips={CLOSED_FILTERS.map(({ id, label }) => ({
+            id,
+            label,
+            count: summary.counts[id],
+            alert: id === "nao-pagos",
+          }))}
+          value={filter}
+          onChange={chooseFilter}
+        />
       </header>
 
       <div
