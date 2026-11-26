@@ -11,6 +11,11 @@ import type {
   MenuComplementGroup,
   MenuProduct,
 } from "@/lib/data/menu";
+import {
+  bestOrderDiscount,
+  orderDiscountLabel,
+  type OrderDiscount,
+} from "@/lib/promotions/order-discount";
 
 export const MAX_ITEM_QUANTITY = 20;
 export const MAX_NOTES_LENGTH = 140;
@@ -355,14 +360,17 @@ export type CartSummary = {
   } | null;
   /** Null quando o pedido mínimo já foi atingido ou a loja não tem. */
   minimumOrder: { value: number; missing: number } | null;
+  /** Desconto no pedido que o subtotal alcança; null sem desconto. */
+  discount: { amount: number; label: string } | null;
 };
 
-/** Totais do carrinho pelas regras de stores.settings. */
+/** Totais do carrinho pelas regras da loja e pelas promoções de agora. */
 export function summarizeCart(
   items: readonly CartItem[],
   rules: {
     minimumOrder: number;
     freeDeliveryAbove: number | null;
+    orderDiscounts?: readonly OrderDiscount[];
   },
 ): CartSummary {
   const subtotal = round(
@@ -397,11 +405,25 @@ export function summarizeCart(
         }
       : null;
 
+  // Mesma regra do checkout e do create_order: o maior que o subtotal alcança.
+  const orderDiscount = bestOrderDiscount(
+    subtotal,
+    rules.orderDiscounts ?? [],
+  );
+
   return {
     itemCount,
     subtotal,
     freeDelivery,
     minimumOrder,
+    discount: orderDiscount
+      ? {
+          amount: orderDiscount.amount,
+          label: orderDiscountLabel(
+            orderDiscount.minSubtotal,
+          ),
+        }
+      : null,
   };
 }
 

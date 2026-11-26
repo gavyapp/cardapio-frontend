@@ -4,6 +4,7 @@ import {
   automaticName,
   describeRule,
   describeSchedule,
+  discountTag,
   promotionalPrice,
 } from "./describe";
 
@@ -13,6 +14,13 @@ const money = (text: string) =>
 
 const classic = { id: "c", name: "The Classic", price: 42 };
 const bacon = { id: "b", name: "Bacon", price: 30 };
+
+describe("discountTag", () => {
+  it("percentual arredondado entre o preço cheio e o promocional", () => {
+    expect(discountTag(30, 25)).toBe("−17%");
+    expect(discountTag(50, 39.9)).toBe("−20%");
+  });
+});
 
 describe("promotionalPrice", () => {
   it("aplica os três modos, em centavos", () => {

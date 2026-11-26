@@ -415,6 +415,35 @@ describe("totais", () => {
       }).minimumOrder,
     ).toBeNull();
   });
+
+  it("desconto no pedido: o maior que o subtotal alcança, com o mínimo no rótulo", () => {
+    const discount = (
+      minSubtotal: number,
+      value: number,
+    ) => ({
+      id: `d${minSubtotal}`,
+      name: `R$ ${value} off`,
+      minSubtotal,
+      mode: "amount_off" as const,
+      value,
+    });
+    expect(
+      summarizeCart(items, {
+        minimumOrder: 0,
+        freeDeliveryAbove: null,
+        orderDiscounts: [discount(40, 5), discount(50, 10)],
+      }).discount,
+    ).toEqual({
+      amount: 5,
+      label: "Desconto (pedidos acima de R$\u00a040,00)",
+    });
+    expect(
+      summarizeCart(items, {
+        minimumOrder: 0,
+        freeDeliveryAbove: null,
+      }).discount,
+    ).toBeNull();
+  });
 });
 
 describe("peça também", () => {

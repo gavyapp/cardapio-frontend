@@ -26,6 +26,7 @@ import {
   type CartSummary,
 } from "@/lib/catalog/cart";
 import type { MenuProduct } from "@/lib/data/menu";
+import type { OrderDiscount } from "@/lib/promotions/order-discount";
 
 // Pedido que o cliente monta no cardápio. Guarda o carrinho no aparelho, um
 // por loja, e o confere com o cardápio de agora. Também controla o que está
@@ -145,6 +146,8 @@ export function CartProvider({
   rules: {
     minimumOrder: number;
     freeDeliveryAbove: number | null;
+    /** Descontos no pedido vigentes agora. */
+    orderDiscounts: readonly OrderDiscount[];
   };
   canOrder: boolean;
   nextOpeningLabel: string | null;

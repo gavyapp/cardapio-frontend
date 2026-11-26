@@ -2,6 +2,8 @@
 // pedido. Mesma regra do create_order (ADR 0006): o subtotal já vem com o
 // desconto dos produtos e não inclui a taxa de entrega. Puro, sem React.
 
+import { formatCurrency } from "@/lib/format";
+
 /** Desconto no pedido vigente agora, como o live_promotions devolve. */
 export type OrderDiscount = {
   id: string;
@@ -17,6 +19,14 @@ export type OrderPromotionRules = {
   freeDeliveryAbove: number | null;
   /** Descontos no pedido vigentes, do criado primeiro ao último. */
   orderDiscounts: readonly OrderDiscount[];
+};
+
+/** Desconto no pedido que o subtotal alcançou e quanto ele vale. */
+export type AppliedOrderDiscount = {
+  id: string;
+  name: string;
+  minSubtotal: number;
+  amount: number;
 };
 
 /** Desconto de uma promoção no subtotal; 0 se não alcança o mínimo. */
@@ -43,21 +53,30 @@ export function orderDiscountAmount(
 export function bestOrderDiscount(
   subtotal: number,
   discounts: readonly OrderDiscount[],
-): { id: string; name: string; amount: number } | null {
-  let best: {
-    id: string;
-    name: string;
-    amount: number;
-  } | null = null;
+): AppliedOrderDiscount | null {
+  let best: AppliedOrderDiscount | null = null;
   for (const discount of discounts) {
     const amount = orderDiscountAmount(discount, subtotal);
     if (amount > 0 && (!best || amount > best.amount)) {
       best = {
         id: discount.id,
         name: discount.name,
+        minSubtotal: discount.minSubtotal,
         amount,
       };
     }
   }
   return best;
+}
+
+/**
+ * Rótulo da linha do desconto no carrinho e no checkout, como no protótipo:
+ * "Desconto (pedidos acima de R$ 80,00)"; sem mínimo, só "Desconto".
+ */
+export function orderDiscountLabel(
+  minSubtotal: number,
+): string {
+  return minSubtotal > 0
+    ? `Desconto (pedidos acima de ${formatCurrency(minSubtotal)})`
+    : "Desconto";
 }

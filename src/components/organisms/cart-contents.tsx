@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Conteúdo do carrinho: itens com editar e remover, entrega grátis, pedido
- * mínimo, "Peça também" e o subtotal. Usado no cupom ao lado do cardápio e
+ * mínimo, "Peça também", o subtotal e o desconto no pedido. Usado no cupom ao lado do cardápio e
  * na folha do carrinho no celular.
  */
 export function CartContents() {
@@ -122,8 +122,17 @@ export function CartContents() {
                   {product.name}
                 </p>
                 <div className="flex items-end justify-between gap-2">
-                  <p className="tabular text-support font-semibold">
-                    {formatCurrency(product.price)}
+                  <p className="flex flex-col">
+                    {product.promotion ? (
+                      <s className="tabular text-caption text-muted-foreground">
+                        {formatCurrency(
+                          product.promotion.originalPrice,
+                        )}
+                      </s>
+                    ) : null}
+                    <span className="tabular text-support font-semibold">
+                      {formatCurrency(product.price)}
+                    </span>
                   </p>
                   <Button
                     size="icon-sm"
@@ -148,9 +157,25 @@ export function CartContents() {
             {formatCurrency(summary.subtotal)}
           </dd>
         </div>
+        {summary.discount ? (
+          <div className="flex items-baseline justify-between gap-3 text-support">
+            <dt className="text-muted-foreground">
+              {summary.discount.label}
+            </dt>
+            <dd className="tabular font-semibold whitespace-nowrap text-success">
+              − {formatCurrency(summary.discount.amount)}
+            </dd>
+          </div>
+        ) : null}
         <div className="flex items-baseline justify-between text-support text-muted-foreground">
           <dt>Entrega</dt>
-          <dd>calculada na próxima etapa</dd>
+          {freeDelivery?.reached ? (
+            <dd className="font-semibold text-success">
+              grátis
+            </dd>
+          ) : (
+            <dd>calculada na próxima etapa</dd>
+          )}
         </div>
       </dl>
 
@@ -189,8 +214,12 @@ export function CartContents() {
         }}
       >
         <span>Continuar</span>
+        {/* Como no protótipo: o que vai pagar até aqui, já sem o desconto. */}
         <span className="tabular">
-          {formatCurrency(summary.subtotal)}
+          {formatCurrency(
+            summary.subtotal -
+              (summary.discount?.amount ?? 0),
+          )}
         </span>
       </Button>
     </div>

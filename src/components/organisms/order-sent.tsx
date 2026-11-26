@@ -180,7 +180,14 @@ export function OrderSent({
               <dt className="text-muted-foreground">
                 Taxa de entrega
               </dt>
-              <dd className="tabular">
+              <dd className="tabular flex items-baseline gap-2">
+                {order.waivedDeliveryFee !== null ? (
+                  <s className="text-muted-foreground">
+                    {formatCurrency(
+                      order.waivedDeliveryFee,
+                    )}
+                  </s>
+                ) : null}
                 {order.deliveryFee > 0
                   ? formatCurrency(order.deliveryFee)
                   : "Grátis"}
@@ -192,7 +199,7 @@ export function OrderSent({
               <dt className="text-muted-foreground">
                 Desconto
               </dt>
-              <dd className="tabular font-semibold text-success">
+              <dd className="tabular font-semibold whitespace-nowrap text-success">
                 − {formatCurrency(order.discount)}
               </dd>
             </div>

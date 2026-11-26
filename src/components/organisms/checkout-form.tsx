@@ -770,9 +770,9 @@ function CheckoutFields({
             {totals.discount > 0 ? (
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">
-                  Desconto
+                  {totals.discountLabel}
                 </dt>
-                <dd className="tabular font-semibold text-success">
+                <dd className="tabular font-semibold whitespace-nowrap text-success">
                   − {formatCurrency(totals.discount)}
                 </dd>
               </div>

@@ -104,6 +104,28 @@ describe("parseTrackedOrder", () => {
     ]);
   });
 
+  it("entrega grátis em applied_promotions → taxa que deixou de cobrar", () => {
+    expect(
+      found({
+        ...fromDatabase,
+        delivery_fee: 0,
+        total: 45,
+        applied_promotions: [
+          {
+            id: "b1000000-0000-4000-8000-000000000001",
+            name: "Entrega grátis acima de R$ 40",
+            kind: "free_delivery",
+            amount: 6,
+          },
+        ],
+      }).waivedDeliveryFee,
+    ).toBe(6);
+    // Pedido sem a lista (anterior às promoções) ou sem entrega grátis.
+    expect(
+      found(fromDatabase).waivedDeliveryFee,
+    ).toBeNull();
+  });
+
   it("token sem pedido (null) → inexistente", () => {
     expect(parseTrackedOrder(null)).toEqual({
       state: "missing",

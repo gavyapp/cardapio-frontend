@@ -1,5 +1,6 @@
 import { Badge } from "@/components/atoms/badge";
 import { formatCurrency } from "@/lib/format";
+import { discountTag } from "@/lib/promotions/describe";
 import { cn } from "@/lib/utils";
 
 export type MenuProductCardProduct = {
@@ -7,6 +8,8 @@ export type MenuProductCardProduct = {
   name: string;
   description: string | null;
   price: number;
+  /** Promoção que vale agora; null sem promoção. */
+  promotion: { originalPrice: number } | null;
   imageUrl: string | null;
   badges: string[];
   /** false = esgotado. */
@@ -16,7 +19,9 @@ export type MenuProductCardProduct = {
 /**
  * Produto no cardápio do cliente. É um botão: o toque abre o detalhe do
  * produto. Sem foto, o card fica só com o texto, sem espaço reservado.
- * Esgotado aparece acinzentado, com o selo.
+ * Esgotado aparece acinzentado, com o selo. Em promoção, o preço antigo
+ * vem riscado e o selo diz o desconto ("−17%"), como no protótipo: ao lado
+ * do preço na lista, acima dele na grade.
  */
 export function MenuProductCard({
   product,
@@ -29,6 +34,13 @@ export function MenuProductCard({
 }) {
   const soldOut = !product.isAvailable;
   const grid = layout === "grade";
+  const promotion = product.promotion;
+
+  const oldPrice = promotion ? (
+    <s className="tabular text-support text-muted-foreground">
+      {formatCurrency(promotion.originalPrice)}
+    </s>
+  ) : null;
 
   const photo = product.imageUrl ? (
     // A foto já chega reduzida em WebP; o otimizador do Next não acrescenta nada.
@@ -68,22 +80,36 @@ export function MenuProductCard({
             {product.description}
           </span>
         ) : null}
-        <span className="mt-auto flex flex-wrap items-center gap-2 pt-2">
-          <span className="tabular text-body font-semibold">
-            {formatCurrency(product.price)}
+        <span className="mt-auto flex flex-col pt-2">
+          {grid ? oldPrice : null}
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="tabular text-body font-semibold">
+              {formatCurrency(product.price)}
+            </span>
+            {grid ? null : oldPrice}
+            {soldOut ? (
+              <Badge variant="muted">Esgotado</Badge>
+            ) : (
+              <>
+                {promotion ? (
+                  <Badge>
+                    {discountTag(
+                      promotion.originalPrice,
+                      product.price,
+                    )}
+                  </Badge>
+                ) : null}
+                {product.badges.map((badge) => (
+                  <Badge
+                    key={badge}
+                    className="bg-primary-soft text-primary-soft-foreground"
+                  >
+                    {badge}
+                  </Badge>
+                ))}
+              </>
+            )}
           </span>
-          {soldOut ? (
-            <Badge variant="muted">Esgotado</Badge>
-          ) : (
-            product.badges.map((badge) => (
-              <Badge
-                key={badge}
-                className="bg-primary-soft text-primary-soft-foreground"
-              >
-                {badge}
-              </Badge>
-            ))
-          )}
         </span>
       </span>
 
