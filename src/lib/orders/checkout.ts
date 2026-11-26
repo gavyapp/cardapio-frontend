@@ -10,6 +10,10 @@ import {
   parseAmountInput,
 } from "@/lib/format";
 import {
+  bestOrderDiscount,
+  type OrderDiscount,
+} from "@/lib/promotions/order-discount";
+import {
   deliveryFeeFor,
   findZoneByName,
   OTHER_ZONE,
@@ -96,6 +100,7 @@ export function checkoutTotals(
     deliveryFee: number;
     freeDeliveryAbove: number | null;
     deliveryZones?: readonly DeliveryZone[];
+    orderDiscounts?: readonly OrderDiscount[];
   },
   mode: OrderMode,
   zoneId = "",
@@ -117,8 +122,10 @@ export function checkoutTotals(
   );
   const deliveryFee =
     delivery && !isFree && !needsZone ? zoneFee : 0;
-  // Ainda não há cupom nem promoção: o desconto é sempre zero.
-  const discount = 0;
+  // Desconto no pedido: o maior que o subtotal alcança, como no banco.
+  const discount =
+    bestOrderDiscount(subtotal, rules.orderDiscounts ?? [])
+      ?.amount ?? 0;
 
   return {
     subtotal,

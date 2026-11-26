@@ -22,6 +22,7 @@ export function CheckoutTemplate({ menu }: { menu: Menu }) {
             deliveryFee: rules.deliveryFee,
             deliveryZones: rules.deliveryZones,
             freeDeliveryAbove: rules.freeDeliveryAbove,
+            orderDiscounts: rules.orderDiscounts,
             paymentMethods: rules.paymentMethods,
             deliveryTimeMinutes: rules.deliveryTimeMinutes,
             pickupTimeMinutes: rules.pickupTimeMinutes,

@@ -62,6 +62,7 @@ const product = (
   name: id,
   description: null,
   price,
+  promotion: null,
   imageUrl: null,
   badges: [],
   isAvailable: true,

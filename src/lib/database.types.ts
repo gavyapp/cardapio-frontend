@@ -913,6 +913,10 @@ export type Database = {
         Args: { p_at?: string; p_store_id: string }
         Returns: boolean
       }
+      live_promotions: {
+        Args: { p_at?: string; p_store_id: string }
+        Returns: Json
+      }
       mark_order_read: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: { p_store_id: string }; Returns: number }
       register_order_attempt: {
