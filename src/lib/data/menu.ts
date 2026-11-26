@@ -2,14 +2,15 @@
 //
 // O conteúdo (loja, horários, categorias, produtos e complementos) fica em
 // cache por loja, marcado com menuCacheTag; o painel expira essa marca a
-// cada alteração (afterMenuChange). O status aberta ou fechada depende da
-// hora, então é calculado a cada acesso, fora do cache.
+// cada alteração (afterMenuChange). O status aberta ou fechada e as
+// promoções dependem da hora, então são lidos a cada acesso, fora do cache.
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 import { cache } from "react";
 
 import { menuCacheTag } from "@/lib/catalog/menu-cache";
+import type { OrderPromotionRules } from "@/lib/promotions/order-discount";
 import {
   localMoment,
   resolveStoreStatus,
@@ -24,6 +25,10 @@ import {
   readStoreRules,
   type StoreRules,
 } from "./store-settings";
+import {
+  findLivePromotions,
+  type LivePromotions,
+} from "./live-promotions";
 
 export type MenuComplement = {
   id: string;
@@ -46,7 +51,13 @@ export type MenuProduct = {
   id: string;
   name: string;
   description: string | null;
+  /** O que o cliente paga agora, já com a promoção. */
   price: number;
+  /** Promoção que vale agora para o produto; null sem promoção. */
+  promotion: {
+    name: string;
+    originalPrice: number;
+  } | null;
   imageUrl: string | null;
   badges: string[];
   /** false = esgotado: aparece, mas não pode ser pedido. */
@@ -61,6 +72,9 @@ export type MenuCategory = {
   products: MenuProduct[];
 };
 
+/** Regras da loja com as promoções de agora sobre o pedido. */
+export type MenuRules = StoreRules & OrderPromotionRules;
+
 export type MenuStore = {
   id: string;
   slug: string;
@@ -74,12 +88,12 @@ export type MenuStore = {
     state: string | null;
   };
   appearance: StoreAppearance;
-  rules: StoreRules;
+  rules: MenuRules;
 };
 
 /** A parte do cardápio que não depende da hora. */
 export type MenuContent = {
-  store: MenuStore;
+  store: Omit<MenuStore, "rules"> & { rules: StoreRules };
   /** Botão manual da loja: null segue o horário. */
   openOverride: boolean | null;
   /** Até quando o botão vale (ISO); depois, segue o horário. */
@@ -90,8 +104,9 @@ export type MenuContent = {
 
 export type Menu = Omit<
   MenuContent,
-  "openOverride" | "openOverrideUntil"
+  "openOverride" | "openOverrideUntil" | "store"
 > & {
+  store: MenuStore;
   status: StoreStatus;
   /** Dia da semana de agora no fuso da loja (0 = domingo). */
   todayWeekday: number;
@@ -109,12 +124,13 @@ export const findMenu = cache(async function findMenu(
   if (!content) return null;
 
   const supabase = createAnonymousSupabase();
-  const { data: isOpen, error } = await supabase.rpc(
-    "is_store_open",
-    {
-      p_store_id: content.store.id,
-    },
-  );
+  const [{ data: isOpen, error }, promotions] =
+    await Promise.all([
+      supabase.rpc("is_store_open", {
+        p_store_id: content.store.id,
+      }),
+      findLivePromotions(content.store.id),
+    ]);
   if (error) throw error;
 
   // Só depois da consulta acima: ler a hora antes de um dado sem cache
@@ -125,6 +141,7 @@ export const findMenu = cache(async function findMenu(
     content;
   return {
     ...rest,
+    ...withPromotions(content, promotions),
     status: resolveStoreStatus({
       isOpen: Boolean(isOpen),
       override: openOverride,
@@ -137,6 +154,44 @@ export const findMenu = cache(async function findMenu(
     todayWeekday: localMoment(now).weekday,
   };
 });
+
+/**
+ * Aplica as promoções de agora: preço promocional nos produtos e entrega
+ * grátis e descontos no pedido nas regras da loja.
+ */
+function withPromotions(
+  content: MenuContent,
+  promotions: LivePromotions,
+): Pick<Menu, "store" | "categories"> {
+  return {
+    store: {
+      ...content.store,
+      rules: {
+        ...content.store.rules,
+        freeDeliveryAbove: promotions.freeDeliveryAbove,
+        orderDiscounts: promotions.orderDiscounts,
+      },
+    },
+    categories: content.categories.map((category) => ({
+      ...category,
+      products: category.products.map((product) => {
+        const promotion = promotions.products.get(
+          product.id,
+        );
+        return promotion
+          ? {
+              ...product,
+              price: promotion.price,
+              promotion: {
+                name: promotion.promotionName,
+                originalPrice: product.price,
+              },
+            }
+          : product;
+      }),
+    })),
+  };
+}
 
 /**
  * Conteúdo do cardápio, em cache por loja. Só itens visíveis: sem excluídos
@@ -289,6 +344,7 @@ async function findMenuContent(
       name: product.name,
       description: product.description,
       price: product.price,
+      promotion: null,
       imageUrl: product.image_url,
       badges: product.badges,
       isAvailable: product.is_available,

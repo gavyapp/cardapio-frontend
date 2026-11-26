@@ -49,6 +49,7 @@ import {
   rememberOrder,
 } from "@/lib/orders/open-orders";
 import { sendOrder } from "@/lib/orders/send-order";
+import type { OrderDiscount } from "@/lib/promotions/order-discount";
 import {
   hasDeliveryZones,
   lowestDeliveryFee,
@@ -67,6 +68,8 @@ type CheckoutRules = {
   /** Bairros com taxa própria; vazio em loja de taxa única. */
   deliveryZones: DeliveryZone[];
   freeDeliveryAbove: number | null;
+  /** Descontos no pedido vigentes agora. */
+  orderDiscounts: readonly OrderDiscount[];
   paymentMethods: PaymentMethod[];
   deliveryTimeMinutes: number | null;
   pickupTimeMinutes: number | null;

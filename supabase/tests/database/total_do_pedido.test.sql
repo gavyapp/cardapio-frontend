@@ -1,5 +1,5 @@
 -- Valores e numeração no create_order: pedido mínimo, taxa de entrega,
--- entrega grátis acima de um valor, número do pedido por loja e cadastro
+-- entrega grátis da promoção, número do pedido por loja e cadastro
 -- do cliente pelo telefone.
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -7,11 +7,14 @@ set local search_path = public, extensions;
 
 select plan(8);
 
--- Dado: loja aberta com pedido mínimo de R$ 15, entrega de R$ 5 e entrega
--- grátis a partir de R$ 30, vendendo Burger de R$ 10
+-- Dado: loja aberta com pedido mínimo de R$ 15, entrega de R$ 5 e a
+-- promoção de entrega grátis a partir de R$ 30, vendendo Burger de R$ 10
 insert into public.stores (id, slug, name, is_open_override, settings) values
   ('5a000000-0000-0000-0000-000000000001', 'teste-loja-a', 'Loja A', true,
-   '{"min_order": 15, "delivery_fee": 5, "free_delivery_above": 30}');
+   '{"min_order": 15, "delivery_fee": 5}');
+insert into public.promotions (store_id, name, kind, rule, schedule, is_active) values
+  ('5a000000-0000-0000-0000-000000000001', 'Entrega grátis acima de R$ 30', 'free_delivery',
+   '{"min_subtotal": 30}', '{"type": "always"}', true);
 insert into public.categories (id, store_id, name) values
   ('ca000000-0000-0000-0000-000000000001', '5a000000-0000-0000-0000-000000000001', 'Lanches');
 insert into public.products (id, store_id, category_id, name, price) values

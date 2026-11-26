@@ -5,7 +5,7 @@ import {
   lowestDeliveryFee,
 } from "@/lib/store/delivery-zones";
 import type { Enums } from "@/lib/database.types";
-import type { StoreRules } from "@/lib/data/store-settings";
+import type { MenuRules } from "@/lib/data/menu";
 import {
   formatCurrency,
   formatDuration,
@@ -133,7 +133,7 @@ export type InfoRow = { label: string; value: string };
  * quando a loja cobra por bairro.
  */
 export function deliveryFeeLabel(
-  rules: Pick<StoreRules, "deliveryFee" | "deliveryZones">,
+  rules: Pick<MenuRules, "deliveryFee" | "deliveryZones">,
 ): string {
   if (!hasDeliveryZones(rules)) {
     return rules.deliveryFee > 0
@@ -147,7 +147,7 @@ export function deliveryFeeLabel(
 }
 
 /** Linhas da aba "Entrega e pagamento", só com o que a loja configurou. */
-export function deliveryRows(rules: StoreRules): InfoRow[] {
+export function deliveryRows(rules: MenuRules): InfoRow[] {
   const rows: InfoRow[] = [
     {
       label: "Taxa de entrega",

@@ -35,6 +35,7 @@ function cartItem(
       name: key,
       description: null,
       price: 20,
+      promotion: null,
       imageUrl: null,
       badges: [],
       isAvailable: true,
@@ -109,6 +110,38 @@ describe("checkoutTotals", () => {
       deliveryFee: 0,
       waivedDeliveryFee: 6,
       total: 80,
+    });
+  });
+
+  it("desconto no pedido alcançado → entra no total, depois da entrega grátis", () => {
+    expect(
+      checkoutTotals(
+        101.76,
+        {
+          ...rules,
+          orderDiscounts: [
+            {
+              id: "a",
+              name: "R$ 15 off acima de R$ 100",
+              minSubtotal: 100,
+              mode: "amount_off",
+              value: 15,
+            },
+            {
+              id: "b",
+              name: "10% acima de R$ 80",
+              minSubtotal: 80,
+              mode: "percent",
+              value: 10,
+            },
+          ],
+        },
+        "ENTREGA",
+      ),
+    ).toMatchObject({
+      deliveryFee: 0,
+      discount: 15,
+      total: 86.76,
     });
   });
 });

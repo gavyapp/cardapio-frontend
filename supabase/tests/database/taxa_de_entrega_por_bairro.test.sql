@@ -11,10 +11,13 @@ select plan(10);
 -- R$ 100 e os bairros Centro (R$ 4) e Vila Nova (R$ 6); um Burger de R$ 20
 insert into public.stores (id, slug, name, is_open_override, settings) values
   ('5a000000-0000-0000-0000-000000000001', 'teste-loja-a', 'Loja A', true,
-   '{"delivery_fee": 8, "free_delivery_above": 100, "delivery_zones": [
+   '{"delivery_fee": 8, "delivery_zones": [
       {"id": "2a000000-0000-4000-8000-000000000001", "name": "Centro", "fee": 4},
       {"id": "2a000000-0000-4000-8000-000000000002", "name": "Vila Nova", "fee": 6}
     ]}');
+insert into public.promotions (store_id, name, kind, rule, schedule, is_active) values
+  ('5a000000-0000-0000-0000-000000000001', 'Entrega grátis acima de R$ 100', 'free_delivery',
+   '{"min_subtotal": 100}', '{"type": "always"}', true);
 insert into public.categories (id, store_id, name) values
   ('ca000000-0000-0000-0000-000000000001', '5a000000-0000-0000-0000-000000000001', 'Lanches');
 insert into public.products (id, store_id, category_id, name, price, is_available) values

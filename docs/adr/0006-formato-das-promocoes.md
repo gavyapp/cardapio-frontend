@@ -73,13 +73,48 @@ Tudo no fuso de São Paulo, como `is_store_open`.
 - **Subtotal das promoções de pedido:** soma dos itens já com o desconto de produto, sem a taxa de entrega.
 - **Entrega grátis:** só em pedido com entrega. Basta uma promoção `free_delivery` vigente com `min_subtotal` alcançado.
 - **Desconto no pedido:** entre as `order_discount` vigentes com `min_subtotal` alcançado, vale a de maior desconto em reais. `percent` arredonda para centavos. Soma com o desconto de produto e com a entrega grátis.
-- **Entrega grátis em `stores.settings.free_delivery_above`:** passa a ser uma promoção. Quando o cálculo das promoções entrar no `create_order`, a chave sai das configurações e a loja que a tinha ganha uma promoção `free_delivery` sempre ligada com o mesmo mínimo.
+- **Entrega grátis em `stores.settings.free_delivery_above`:** virou promoção. A chave saiu das configurações e a loja que a tinha ganhou uma promoção `free_delivery` ligada, "Sempre", com o mesmo mínimo.
+
+### Como o pedido grava
+
+Como no protótipo:
+
+- **Desconto em produtos:** no preço do item. `order_items.unit_price` grava o preço promocional e o subtotal já soma com desconto. Complemento segue com o preço cheio.
+- **Desconto no pedido:** em `orders.discount`.
+- **Entrega grátis:** `orders.delivery_fee` fica 0.
+- **`orders.applied_promotions`:** cada promoção usada e quanto ela economizou (soma dos itens, taxa que deixou de cobrar ou desconto do pedido):
+
+```json
+[
+  {
+    "id": "…",
+    "name": "Terça do Classic",
+    "kind": "product_discount",
+    "amount": 8
+  },
+  {
+    "id": "…",
+    "name": "Entrega grátis acima de R$ 70",
+    "kind": "free_delivery",
+    "amount": 6
+  },
+  {
+    "id": "…",
+    "name": "R$ 10 off acima de R$ 100",
+    "kind": "order_discount",
+    "amount": 10
+  }
+]
+```
+
+O cardápio lê `live_promotions(p_store_id)`, a cada acesso e fora do cache: preço promocional de cada produto, a entrega grátis vigente e os descontos no pedido vigentes. O `create_order` usa as mesmas funções, no momento do pedido.
 
 ### Onde a regra vive
 
 - Banco: checks `promotions_kind_check`, `promotions_rule_check` e `promotions_schedule_check` e o trigger de `promotion_products`. Recusam o que está fora do formato, com código `23514`.
 - Front: `src/lib/data/promotions.ts`, com as mesmas regras e mensagens em português para o formulário.
-- Testes: `supabase/tests/database/formato_das_promocoes.test.sql` e `src/lib/data/promotions.test.ts`.
+- Cálculo: funções `private.promotion_is_live`, `private.promotional_price`, `private.order_discount_amount` e `private.live_product_prices`, a pública `live_promotions` e o `create_order`. No front, o desconto no pedido do resumo do checkout repete a regra em `src/lib/promotions/order-discount.ts`.
+- Testes: `supabase/tests/database/formato_das_promocoes.test.sql`, `calculo_das_promocoes.test.sql`, `src/lib/data/promotions.test.ts` e `src/lib/promotions/order-discount.test.ts`.
 
 ## Consequências
 
