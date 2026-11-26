@@ -69,7 +69,7 @@ Tudo no fuso de São Paulo, como `is_store_open`.
 ### Como o desconto se aplica
 
 - **Preço do produto:** `percent` = preço × (1 − value/100); `amount_off` = preço − value; `fixed_price` = value. Arredonda para centavos (meio para cima). Só vale se o resultado ficar maior que 0 e menor que o preço cheio; senão o produto segue com o preço cheio.
-- **Um produto, uma promoção:** o painel não deixa o mesmo produto em duas promoções de produto ligadas e não encerradas. Se mesmo assim duas valerem no mesmo momento, vale o menor preço final; empate, a criada primeiro.
+- **Um produto, uma promoção:** o painel e o banco (trigger `promotion_products_are_unique`) não deixam o mesmo produto em duas promoções de produto ligadas, não excluídas e não encerradas; promoção pausada pode repetir produto. Se mesmo assim duas valerem no mesmo momento (dado antigo), vale o menor preço final; empate, a criada primeiro.
 - **Subtotal das promoções de pedido:** soma dos itens já com o desconto de produto, sem a taxa de entrega.
 - **Entrega grátis:** só em pedido com entrega. Basta uma promoção `free_delivery` vigente com `min_subtotal` alcançado.
 - **Desconto no pedido:** entre as `order_discount` vigentes com `min_subtotal` alcançado, vale a de maior desconto em reais. `percent` arredonda para centavos. Soma com o desconto de produto e com a entrega grátis.
@@ -112,9 +112,10 @@ O cardápio lê `live_promotions(p_store_id)`, a cada acesso e fora do cache: pr
 ### Onde a regra vive
 
 - Banco: checks `promotions_kind_check`, `promotions_rule_check` e `promotions_schedule_check` e o trigger de `promotion_products`. Recusam o que está fora do formato, com código `23514`.
+- Painel: `save_promotion` grava a promoção e os produtos numa transação só; produto em outra promoção em uso volta com código `P0001` e hint `promotion_product_conflict`. `promotion_order_counts` conta os pedidos de cada promoção (coluna "Pedidos (7 dias)").
 - Front: `src/lib/data/promotions.ts`, com as mesmas regras e mensagens em português para o formulário.
 - Cálculo: funções `private.promotion_is_live`, `private.promotional_price`, `private.order_discount_amount` e `private.live_product_prices`, a pública `live_promotions` e o `create_order`. No front, o desconto no pedido do resumo do checkout repete a regra em `src/lib/promotions/order-discount.ts`.
-- Testes: `supabase/tests/database/formato_das_promocoes.test.sql`, `calculo_das_promocoes.test.sql`, `src/lib/data/promotions.test.ts` e `src/lib/promotions/order-discount.test.ts`.
+- Testes: `supabase/tests/database/formato_das_promocoes.test.sql`, `calculo_das_promocoes.test.sql`, `gerenciar_promocoes.test.sql`, `src/lib/data/promotions.test.ts` e `src/lib/promotions/order-discount.test.ts`.
 
 ## Consequências
 

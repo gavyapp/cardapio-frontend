@@ -15,6 +15,9 @@ select plan(30);
 --   Suco caro         Suco a R$ 15, sempre (não baixa o preço)
 --   Desligada         50% nas Fritas, sempre, desligada
 --   Excluída          50% nas Fritas, sempre, excluída
+-- O painel e o banco não deixam um produto em duas promoções ligadas; aqui o
+-- trigger que recusa fica desligado (lojas A e B) para testar o que o
+-- cálculo faz se isso acontecer.
 insert into public.stores (id, slug, name, is_open_override) values
   ('5a000000-0000-0000-0000-000000000001', 'teste-loja-a', 'Loja A', true);
 insert into public.categories (id, store_id, name) values
@@ -37,6 +40,7 @@ insert into public.promotions (id, store_id, name, kind, rule, schedule, is_acti
    '{"mode": "percent", "value": 50}', '{"type": "always"}', false, null),
   ('a1000000-0000-0000-0000-000000000006', '5a000000-0000-0000-0000-000000000001', 'Excluída', 'product_discount',
    '{"mode": "percent", "value": 50}', '{"type": "always"}', true, now());
+alter table public.promotion_products disable trigger promotion_products_are_unique;
 insert into public.promotion_products (store_id, promotion_id, product_id) values
   ('5a000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', '9a000000-0000-0000-0000-000000000001'),
   ('5a000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000002', '9a000000-0000-0000-0000-000000000002'),
@@ -139,6 +143,7 @@ insert into public.promotion_products (store_id, promotion_id, product_id) value
   ('5b000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000004', '9b000000-0000-0000-0000-000000000003'),
   ('5b000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000005', '9b000000-0000-0000-0000-000000000004'),
   ('5b000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000006', '9b000000-0000-0000-0000-000000000004');
+alter table public.promotion_products enable trigger promotion_products_are_unique;
 
 -- Atalho: pedido na loja B com os itens [nome, quantidade, com Bacon extra]
 create function pg_temp.pedido_b(p_modo text, p_itens jsonb)

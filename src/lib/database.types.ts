@@ -919,6 +919,13 @@ export type Database = {
       }
       mark_order_read: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: { p_store_id: string }; Returns: number }
+      promotion_order_counts: {
+        Args: { p_since: string; p_store_id: string }
+        Returns: {
+          order_count: number
+          promotion_id: string
+        }[]
+      }
       register_order_attempt: {
         Args: { p_keys: string[]; p_limit?: number; p_window?: string }
         Returns: boolean
@@ -955,6 +962,19 @@ export type Database = {
           p_name: string
           p_price: number
           p_product_id?: string
+          p_store_id: string
+        }
+        Returns: string
+      }
+      save_promotion: {
+        Args: {
+          p_is_active: boolean
+          p_kind: string
+          p_name: string
+          p_product_ids: string[]
+          p_promotion_id?: string
+          p_rule: Json
+          p_schedule: Json
           p_store_id: string
         }
         Returns: string
