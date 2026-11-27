@@ -229,6 +229,26 @@
   }
 }
 
+/* Barra de rolagem fina, na cor da borda e sem trilho nem setas, para listas
+   que rolam de lado (como o "Peça também"). O Chrome e o Firefox usam as
+   propriedades padrão; o Safari, os pseudo-elementos. */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: var(--border-strong);
+  }
+}
+
 /* Margem lateral: 16px no celular, 24px a partir de 640px, 32px a partir de
    1024px e 40px a partir de 1280px. */
 @media (width >= 40rem) {

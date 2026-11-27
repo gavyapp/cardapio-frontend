@@ -48,6 +48,7 @@ function cartItem(
     quantity: 1,
     unitPrice: 20,
     total: 20,
+    savings: 0,
     ...extra,
   };
 }
@@ -89,6 +90,7 @@ describe("checkoutTotals", () => {
       isDeliveryFeePending: false,
       waivedDeliveryFee: null,
       discount: 0,
+      discountLabel: null,
       total: 56,
     });
   });
@@ -141,6 +143,8 @@ describe("checkoutTotals", () => {
     ).toMatchObject({
       deliveryFee: 0,
       discount: 15,
+      discountLabel:
+        "Desconto (pedidos acima de R$\u00a0100,00)",
       total: 86.76,
     });
   });

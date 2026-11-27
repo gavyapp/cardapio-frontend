@@ -49,7 +49,10 @@ import {
   rememberOrder,
 } from "@/lib/orders/open-orders";
 import { sendOrder } from "@/lib/orders/send-order";
-import type { OrderDiscount } from "@/lib/promotions/order-discount";
+import {
+  ITEM_SAVINGS_LABEL,
+  type OrderDiscount,
+} from "@/lib/promotions/order-discount";
 import {
   hasDeliveryZones,
   lowestDeliveryFee,
@@ -724,8 +727,17 @@ function CheckoutFields({
                       </p>
                     ) : null}
                   </div>
-                  <p className="tabular shrink-0 text-body">
-                    {formatCurrency(item.total)}
+                  <p className="flex shrink-0 flex-col items-end">
+                    {item.savings > 0 ? (
+                      <s className="tabular text-caption text-muted-foreground">
+                        {formatCurrency(
+                          item.total + item.savings,
+                        )}
+                      </s>
+                    ) : null}
+                    <span className="tabular text-body">
+                      {formatCurrency(item.total)}
+                    </span>
                   </p>
                 </li>
               );
@@ -742,10 +754,23 @@ function CheckoutFields({
                   "itens",
                 )}
               </dt>
+              {/* Sem as promoções dos produtos, que vêm na linha de baixo. */}
               <dd className="tabular">
-                {formatCurrency(totals.subtotal)}
+                {formatCurrency(
+                  totals.subtotal + summary.itemSavings,
+                )}
               </dd>
             </div>
+            {summary.itemSavings > 0 ? (
+              <div className="flex items-baseline justify-between gap-3">
+                <dt className="text-muted-foreground">
+                  {ITEM_SAVINGS_LABEL}
+                </dt>
+                <dd className="tabular font-semibold whitespace-nowrap text-success">
+                  − {formatCurrency(summary.itemSavings)}
+                </dd>
+              </div>
+            ) : null}
             {isDelivery ? (
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">
@@ -770,9 +795,9 @@ function CheckoutFields({
             {totals.discount > 0 ? (
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">
-                  Desconto
+                  {totals.discountLabel}
                 </dt>
-                <dd className="tabular font-semibold text-success">
+                <dd className="tabular font-semibold whitespace-nowrap text-success">
                   − {formatCurrency(totals.discount)}
                 </dd>
               </div>

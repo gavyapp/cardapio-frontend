@@ -1,5 +1,5 @@
-// Textos das promoções no painel, como no protótipo: tipo, regra, quando
-// vale e o nome automático. Puro, sem React.
+// Textos das promoções, como no protótipo: tipo, regra, quando vale e o nome
+// automático no painel; o selo de desconto também no cardápio. Puro, sem React.
 import type {
   PromotionFormat,
   PromotionKind,

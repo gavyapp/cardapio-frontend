@@ -104,6 +104,58 @@ describe("parseTrackedOrder", () => {
     ]);
   });
 
+  it("entrega grátis em applied_promotions → taxa que deixou de cobrar", () => {
+    expect(
+      found({
+        ...fromDatabase,
+        delivery_fee: 0,
+        total: 45,
+        applied_promotions: [
+          {
+            id: "b1000000-0000-4000-8000-000000000001",
+            name: "Entrega grátis acima de R$ 40",
+            kind: "free_delivery",
+            amount: 6,
+          },
+        ],
+      }).waivedDeliveryFee,
+    ).toBe(6);
+    // Pedido sem a lista (anterior às promoções) ou sem entrega grátis.
+    expect(
+      found(fromDatabase).waivedDeliveryFee,
+    ).toBeNull();
+  });
+
+  it("promoções de produto em applied_promotions → economia nos itens somada", () => {
+    expect(
+      found({
+        ...fromDatabase,
+        applied_promotions: [
+          {
+            id: "b1000000-0000-4000-8000-000000000002",
+            name: "Burger da semana",
+            kind: "product_discount",
+            amount: 2.4,
+          },
+          {
+            id: "b1000000-0000-4000-8000-000000000003",
+            name: "Refri gelado",
+            kind: "product_discount",
+            amount: 1.5,
+          },
+          {
+            id: "b1000000-0000-4000-8000-000000000004",
+            name: "10% acima de R$ 50",
+            kind: "order_discount",
+            amount: 5,
+          },
+        ],
+      }).itemSavings,
+    ).toBe(3.9);
+    // Pedido sem a lista (anterior às promoções).
+    expect(found(fromDatabase).itemSavings).toBe(0);
+  });
+
   it("token sem pedido (null) → inexistente", () => {
     expect(parseTrackedOrder(null)).toEqual({
       state: "missing",

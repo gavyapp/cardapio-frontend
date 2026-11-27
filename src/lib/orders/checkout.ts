@@ -11,6 +11,7 @@ import {
 } from "@/lib/format";
 import {
   bestOrderDiscount,
+  orderDiscountLabel,
   type OrderDiscount,
 } from "@/lib/promotions/order-discount";
 import {
@@ -87,6 +88,8 @@ export type CheckoutTotals = {
   /** Taxa que deixou de ser cobrada pela entrega grátis; null se não houve. */
   waivedDeliveryFee: number | null;
   discount: number;
+  /** Rótulo da linha do desconto; null sem desconto. */
+  discountLabel: string | null;
   total: number;
 };
 
@@ -123,9 +126,11 @@ export function checkoutTotals(
   const deliveryFee =
     delivery && !isFree && !needsZone ? zoneFee : 0;
   // Desconto no pedido: o maior que o subtotal alcança, como no banco.
-  const discount =
-    bestOrderDiscount(subtotal, rules.orderDiscounts ?? [])
-      ?.amount ?? 0;
+  const orderDiscount = bestOrderDiscount(
+    subtotal,
+    rules.orderDiscounts ?? [],
+  );
+  const discount = orderDiscount?.amount ?? 0;
 
   return {
     subtotal,
@@ -137,6 +142,9 @@ export function checkoutTotals(
         ? zoneFee
         : null,
     discount,
+    discountLabel: orderDiscount
+      ? orderDiscountLabel(orderDiscount.minSubtotal)
+      : null,
     total: round(subtotal + deliveryFee - discount),
   };
 }

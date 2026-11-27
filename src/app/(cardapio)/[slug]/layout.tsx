@@ -41,6 +41,7 @@ async function StoreShell({
         rules={{
           minimumOrder: store.rules.minimumOrder,
           freeDeliveryAbove: store.rules.freeDeliveryAbove,
+          orderDiscounts: store.rules.orderDiscounts,
         }}
         canOrder={menu.status.isOpen}
         nextOpeningLabel={menu.status.nextOpeningLabel}

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   bestOrderDiscount,
   orderDiscountAmount,
+  orderDiscountLabel,
   type OrderDiscount,
 } from "./order-discount";
 
@@ -48,6 +49,7 @@ describe("desconto no pedido", () => {
     ).toEqual({
       id: "a",
       name: fifteenOff.name,
+      minSubtotal: fifteenOff.minSubtotal,
       amount: 15,
     });
   });
@@ -70,5 +72,17 @@ describe("desconto no pedido", () => {
     expect(
       bestOrderDiscount(50, [fifteenOff, tenPercent]),
     ).toBeNull();
+  });
+});
+
+describe("orderDiscountLabel", () => {
+  it("diz o mínimo do pedido, como no protótipo", () => {
+    expect(orderDiscountLabel(80)).toBe(
+      "Desconto (pedidos acima de R$\u00a080,00)",
+    );
+  });
+
+  it("sem mínimo, fica só Desconto", () => {
+    expect(orderDiscountLabel(0)).toBe("Desconto");
   });
 });

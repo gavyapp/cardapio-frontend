@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { X } from "lucide-react";
 
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import {
   Dialog,
@@ -28,6 +29,7 @@ import {
 } from "@/lib/catalog/cart";
 import type { MenuProduct } from "@/lib/data/menu";
 import { formatCurrency } from "@/lib/format";
+import { discountTag } from "@/lib/promotions/describe";
 import { cn } from "@/lib/utils";
 
 /**
@@ -157,6 +159,14 @@ function ProductForm({
             !product.imageUrl && "pr-14",
           )}
         >
+          {product.promotion ? (
+            <Badge className="self-start">
+              {discountTag(
+                product.promotion.originalPrice,
+                product.price,
+              )}
+            </Badge>
+          ) : null}
           <DialogTitle className="text-page-title">
             {product.name}
           </DialogTitle>
@@ -165,8 +175,17 @@ function ProductForm({
               {product.description}
             </DialogDescription>
           ) : null}
-          <p className="tabular text-section-title font-semibold">
-            {formatCurrency(product.price)}
+          <p className="flex items-baseline gap-2">
+            <span className="tabular text-section-title font-semibold">
+              {formatCurrency(product.price)}
+            </span>
+            {product.promotion ? (
+              <s className="tabular text-body text-muted-foreground">
+                {formatCurrency(
+                  product.promotion.originalPrice,
+                )}
+              </s>
+            ) : null}
           </p>
         </div>
 

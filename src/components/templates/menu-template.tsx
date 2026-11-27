@@ -137,6 +137,7 @@ export function MenuTemplate({ menu }: { menu: Menu }) {
                         name: product.name,
                         description: product.description,
                         price: product.price,
+                        promotion: product.promotion,
                         imageUrl: product.imageUrl,
                         badges: product.badges,
                         isAvailable: product.isAvailable,

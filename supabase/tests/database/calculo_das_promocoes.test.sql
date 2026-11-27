@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(30);
+select plan(31);
 
 -- Dado: loja A com Classic R$ 40, Bacon R$ 30, Suco R$ 10 e Fritas R$ 12 e
 -- as promoções:
@@ -200,6 +200,10 @@ select is(
     {"id": "b1000000-0000-0000-0000-000000000001", "name": "Classic 15%", "kind": "product_discount", "amount": 5.98},
     {"id": "b1000000-0000-0000-0000-000000000007", "name": "Entrega grátis acima de R$ 60", "kind": "free_delivery", "amount": 6}]'::jsonb,
   'pedido 1 → applied_promotions com a economia de cada promoção e a taxa que deixou de cobrar');
+select is(
+  public.get_order_by_token((select public_token from public.orders where store_id = '5b000000-0000-0000-0000-000000000001' and number = 1)) -> 'applied_promotions',
+  (select applied_promotions from public.orders where store_id = '5b000000-0000-0000-0000-000000000001' and number = 1),
+  'pedido 1 consultado pelo link → traz applied_promotions, para a tela mostrar a taxa riscada');
 
 -- Pedido 2: retirada, 3 Classic (101,76)
 select results_eq(

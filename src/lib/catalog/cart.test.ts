@@ -355,6 +355,39 @@ describe("carrinho conferido com o cardápio", () => {
     const lines = [newLine("burger", {}, "", 1)];
     expect(resolveCart(lines, menu)).toEqual([]);
   });
+
+  it("item em promoção: quanto economiza, sem mexer nos complementos", () => {
+    // Dado: burger de 30 por 24, com bacon de 5, duas unidades.
+    const onSale = {
+      ...burger,
+      price: 24,
+      promotion: {
+        name: "Semana do burger",
+        originalPrice: 30,
+      },
+    };
+    const [item] = resolveCart(
+      [
+        newLine(
+          "burger",
+          { ponto: ["mal"], adicionais: ["bacon"] },
+          "",
+          2,
+        ),
+      ],
+      [onSale],
+    );
+    expect(item.total).toBe(58);
+    expect(item.savings).toBe(12);
+  });
+
+  it("item sem promoção não economiza nada", () => {
+    const [item] = resolveCart(
+      [newLine("refri", {}, "", 3)],
+      menu,
+    );
+    expect(item.savings).toBe(0);
+  });
 });
 
 describe("totais", () => {
@@ -373,8 +406,30 @@ describe("totais", () => {
     });
     expect(summary.subtotal).toBe(44);
     expect(summary.itemCount).toBe(3);
+    expect(summary.itemSavings).toBe(0);
     expect(summary.freeDelivery).toBeNull();
     expect(summary.minimumOrder).toBeNull();
+  });
+
+  it("economia das promoções dos produtos somada no pedido", () => {
+    // Dado: refri de 7 por 5,50 (2 unidades) e burger sem promoção.
+    const saleSoda = {
+      ...soda,
+      price: 5.5,
+      promotion: { name: "Refri gelado", originalPrice: 7 },
+    };
+    const summary = summarizeCart(
+      resolveCart(
+        [
+          newLine("burger", { ponto: ["mal"] }, "", 1),
+          newLine("refri", {}, "", 2),
+        ],
+        [burger, saleSoda],
+      ),
+      { minimumOrder: 0, freeDeliveryAbove: null },
+    );
+    expect(summary.subtotal).toBe(41);
+    expect(summary.itemSavings).toBe(3);
   });
 
   it("entrega grátis: quanto falta e a barra", () => {
@@ -413,6 +468,35 @@ describe("totais", () => {
         minimumOrder: 44,
         freeDeliveryAbove: null,
       }).minimumOrder,
+    ).toBeNull();
+  });
+
+  it("desconto no pedido: o maior que o subtotal alcança, com o mínimo no rótulo", () => {
+    const discount = (
+      minSubtotal: number,
+      value: number,
+    ) => ({
+      id: `d${minSubtotal}`,
+      name: `R$ ${value} off`,
+      minSubtotal,
+      mode: "amount_off" as const,
+      value,
+    });
+    expect(
+      summarizeCart(items, {
+        minimumOrder: 0,
+        freeDeliveryAbove: null,
+        orderDiscounts: [discount(40, 5), discount(50, 10)],
+      }).discount,
+    ).toEqual({
+      amount: 5,
+      label: "Desconto (pedidos acima de R$\u00a040,00)",
+    });
+    expect(
+      summarizeCart(items, {
+        minimumOrder: 0,
+        freeDeliveryAbove: null,
+      }).discount,
     ).toBeNull();
   });
 });

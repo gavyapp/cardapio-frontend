@@ -22,6 +22,32 @@ const text = z
   .nullish()
   .transform((value) => value?.trim() || null);
 
+/** Taxa que a entrega grátis deixou de cobrar; null se não houve. */
+function waivedDeliveryFee(
+  promotions: readonly { kind: string; amount: number }[],
+): number | null {
+  const free = promotions.find(
+    (promotion) => promotion.kind === "free_delivery",
+  );
+  return free && free.amount > 0 ? free.amount : null;
+}
+
+/** Quanto as promoções dos produtos tiraram do pedido; 0 se nenhuma. */
+function itemSavings(
+  promotions: readonly { kind: string; amount: number }[],
+): number {
+  const cents = promotions
+    .filter(
+      (promotion) => promotion.kind === "product_discount",
+    )
+    .reduce(
+      (sum, promotion) =>
+        sum + Math.round(promotion.amount * 100),
+      0,
+    );
+  return cents / 100;
+}
+
 const trackedOrderSchema = z
   .object({
     number: z.number(),
@@ -45,6 +71,15 @@ const trackedOrderSchema = z
     delivery_fee: z.number(),
     discount: z.number(),
     total: z.number(),
+    // Pedido de antes das promoções pode vir sem a lista.
+    applied_promotions: z
+      .array(
+        z.object({
+          kind: z.string(),
+          amount: z.number(),
+        }),
+      )
+      .nullish(),
     rejection_reason: text,
     created_at: z.string(),
     store: z.object({
@@ -89,6 +124,12 @@ const trackedOrderSchema = z
     deliveryFee: order.delivery_fee,
     discount: order.discount,
     total: order.total,
+    waivedDeliveryFee: waivedDeliveryFee(
+      order.applied_promotions ?? [],
+    ),
+    itemSavings: itemSavings(
+      order.applied_promotions ?? [],
+    ),
     rejectionReason: order.rejection_reason,
     createdAt: order.created_at,
     store: order.store,
