@@ -32,6 +32,22 @@ function waivedDeliveryFee(
   return free && free.amount > 0 ? free.amount : null;
 }
 
+/** Quanto as promoções dos produtos tiraram do pedido; 0 se nenhuma. */
+function itemSavings(
+  promotions: readonly { kind: string; amount: number }[],
+): number {
+  const cents = promotions
+    .filter(
+      (promotion) => promotion.kind === "product_discount",
+    )
+    .reduce(
+      (sum, promotion) =>
+        sum + Math.round(promotion.amount * 100),
+      0,
+    );
+  return cents / 100;
+}
+
 const trackedOrderSchema = z
   .object({
     number: z.number(),
@@ -109,6 +125,9 @@ const trackedOrderSchema = z
     discount: order.discount,
     total: order.total,
     waivedDeliveryFee: waivedDeliveryFee(
+      order.applied_promotions ?? [],
+    ),
+    itemSavings: itemSavings(
       order.applied_promotions ?? [],
     ),
     rejectionReason: order.rejection_reason,

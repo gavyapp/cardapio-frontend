@@ -70,6 +70,13 @@ export function bestOrderDiscount(
 }
 
 /**
+ * Rótulo da linha que soma o que as promoções dos produtos tiraram, no
+ * carrinho, no checkout e no pedido enviado. Fica logo abaixo do subtotal,
+ * que nessas telas aparece sem essas promoções.
+ */
+export const ITEM_SAVINGS_LABEL = "Promoções nos itens";
+
+/**
  * Rótulo da linha do desconto no carrinho e no checkout, como no protótipo:
  * "Desconto (pedidos acima de R$ 80,00)"; sem mínimo, só "Desconto".
  */

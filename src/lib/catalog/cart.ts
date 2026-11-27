@@ -284,8 +284,8 @@ export type CartItem = {
   quantity: number;
   unitPrice: number;
   total: number;
-  /** Total pelo preço cheio do produto; null quando não está em promoção. */
-  fullTotal: number | null;
+  /** Quanto a promoção do produto tira deste item; 0 sem promoção. */
+  savings: number;
 };
 
 /**
@@ -334,6 +334,13 @@ export function resolveCart(
     }
 
     const unit = unitPrice(product, selection);
+    // A promoção muda só o preço do produto, não o dos complementos.
+    const unitSavings = product.promotion
+      ? Math.max(
+          0,
+          product.promotion.originalPrice - product.price,
+        )
+      : 0;
     items.push({
       key: line.key,
       product,
@@ -343,15 +350,7 @@ export function resolveCart(
       quantity: line.quantity,
       unitPrice: unit,
       total: round(unit * line.quantity),
-      // A promoção vale só no produto; os complementos seguem com preço cheio.
-      fullTotal: product.promotion
-        ? round(
-            (unit +
-              product.promotion.originalPrice -
-              product.price) *
-              line.quantity,
-          )
-        : null,
+      savings: round(unitSavings * line.quantity),
     });
   }
   return items;
@@ -360,9 +359,10 @@ export function resolveCart(
 export type CartSummary = {
   /** Soma das quantidades. */
   itemCount: number;
+  /** O que os itens custam agora, já com as promoções dos produtos. */
   subtotal: number;
-  /** Subtotal pelo preço cheio; null quando nenhum item está em promoção. */
-  fullSubtotal: number | null;
+  /** Quanto as promoções dos produtos tiram do pedido; 0 sem promoção. */
+  itemSavings: number;
   /** Null quando a loja não oferece entrega grátis. */
   freeDelivery: {
     reached: boolean;
@@ -392,6 +392,9 @@ export function summarizeCart(
   const itemCount = items.reduce(
     (sum, item) => sum + item.quantity,
     0,
+  );
+  const itemSavings = round(
+    items.reduce((sum, item) => sum + item.savings, 0),
   );
 
   const threshold = rules.freeDeliveryAbove;
@@ -424,23 +427,10 @@ export function summarizeCart(
     rules.orderDiscounts ?? [],
   );
 
-  const hasPromotion = items.some(
-    (item) => item.fullTotal !== null,
-  );
-  const fullSubtotal = hasPromotion
-    ? round(
-        items.reduce(
-          (sum, item) =>
-            sum + (item.fullTotal ?? item.total),
-          0,
-        ),
-      )
-    : null;
-
   return {
     itemCount,
     subtotal,
-    fullSubtotal,
+    itemSavings,
     freeDelivery,
     minimumOrder,
     discount: orderDiscount

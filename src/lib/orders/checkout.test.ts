@@ -48,7 +48,7 @@ function cartItem(
     quantity: 1,
     unitPrice: 20,
     total: 20,
-    fullTotal: null,
+    savings: 0,
     ...extra,
   };
 }

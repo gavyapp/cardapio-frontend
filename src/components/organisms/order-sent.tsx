@@ -11,6 +11,7 @@ import { OrderTimeline } from "@/components/molecules/order-timeline";
 import { formatCurrency } from "@/lib/format";
 import { PAYMENT_LABELS } from "@/lib/orders/board";
 import { timelineSteps } from "@/lib/orders/detail";
+import { ITEM_SAVINGS_LABEL } from "@/lib/promotions/order-discount";
 import {
   formatDeliveryAddress,
   supportUrl,
@@ -171,10 +172,23 @@ export function OrderSent({
             <dt className="text-muted-foreground">
               Subtotal
             </dt>
+            {/* Sem as promoções dos produtos, como no checkout. */}
             <dd className="tabular">
-              {formatCurrency(order.subtotal)}
+              {formatCurrency(
+                order.subtotal + order.itemSavings,
+              )}
             </dd>
           </div>
+          {order.itemSavings > 0 ? (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">
+                {ITEM_SAVINGS_LABEL}
+              </dt>
+              <dd className="tabular font-semibold whitespace-nowrap text-success">
+                − {formatCurrency(order.itemSavings)}
+              </dd>
+            </div>
+          ) : null}
           {delivery ? (
             <div className="flex items-baseline justify-between gap-3">
               <dt className="text-muted-foreground">

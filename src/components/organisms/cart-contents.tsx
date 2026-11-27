@@ -10,6 +10,7 @@ import {
   type CartItem,
 } from "@/lib/catalog/cart";
 import { formatCurrency } from "@/lib/format";
+import { ITEM_SAVINGS_LABEL } from "@/lib/promotions/order-discount";
 import { checkoutPathFrom } from "@/lib/routing/store-paths";
 import { cn } from "@/lib/utils";
 
@@ -112,7 +113,7 @@ export function CartContents() {
           </h3>
           {/* Cartões lado a lado, com rolagem horizontal: o último aparece
               cortado para mostrar que há mais. */}
-          <ul className="-mx-1 scrollbar-subtle flex snap-x gap-2 overflow-x-auto px-1 pb-2">
+          <ul className="-mx-1 flex scrollbar-subtle snap-x gap-2 overflow-x-auto px-1 pb-2">
             {suggestions.map((product) => (
               <li
                 key={product.id}
@@ -153,15 +154,24 @@ export function CartContents() {
       <dl className="flex flex-col gap-1 border-t border-dashed border-border-strong pt-3">
         <div className="flex items-baseline justify-between text-body font-semibold">
           <dt>Subtotal</dt>
-          <dd className="tabular flex items-baseline gap-2">
-            {summary.fullSubtotal !== null ? (
-              <s className="text-support font-normal text-muted-foreground">
-                {formatCurrency(summary.fullSubtotal)}
-              </s>
-            ) : null}
-            {formatCurrency(summary.subtotal)}
+          {/* Sem as promoções dos produtos, que vêm logo abaixo: o cliente
+              vê quanto economiza. */}
+          <dd className="tabular">
+            {formatCurrency(
+              summary.subtotal + summary.itemSavings,
+            )}
           </dd>
         </div>
+        {summary.itemSavings > 0 ? (
+          <div className="flex items-baseline justify-between gap-3 text-support">
+            <dt className="text-muted-foreground">
+              {ITEM_SAVINGS_LABEL}
+            </dt>
+            <dd className="tabular font-semibold whitespace-nowrap text-success">
+              − {formatCurrency(summary.itemSavings)}
+            </dd>
+          </div>
+        ) : null}
         {summary.discount ? (
           <div className="flex items-baseline justify-between gap-3 text-support">
             <dt className="text-muted-foreground">
@@ -275,9 +285,9 @@ function CartLineRow({
       {/* Preço à esquerda; editar e quantidade à direita. */}
       <div className="flex items-center justify-between gap-3">
         <p className="flex flex-col">
-          {item.fullTotal !== null ? (
+          {item.savings > 0 ? (
             <s className="tabular text-caption text-muted-foreground">
-              {formatCurrency(item.fullTotal)}
+              {formatCurrency(item.total + item.savings)}
             </s>
           ) : null}
           <span className="tabular text-body font-semibold">
